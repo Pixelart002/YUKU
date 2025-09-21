@@ -622,18 +622,17 @@
                     }
                 },
             };
-            // document.addEventListener('DOMContentLoaded', () => { ... ke andar
-// ... app object ke baad aur app.init() se pehle
-
+           
 const savedToken = localStorage.getItem('authToken');
 if (savedToken) {
     authToken = savedToken;
     // User ki details dobara fetch karni hongi
-    app.fetchAndDisplayProfile(); 
+    app.fetchAndDisplayProfile();
     app.showDashboard('yuku-ai');
 }
 
 app.init();
+            
             app.init();
         });
     </script>
