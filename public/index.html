@@ -571,72 +571,59 @@ updateUserInfo(user) {
                 getPageContent(pageId) { const content = { 'yuku-ai': '<div class="glass-panel p-6 rounded-lg"><h3 class="text-2xl font-orbitron text-accent-green mb-4">AI CORE INTERFACE v2.5</h3><p class="text-text-secondary mb-4">Direct link established with Gemini-Flash. Input query below.</p><textarea id="ai-prompt-input" class="input-field w-full p-3 rounded-md" rows="6" placeholder="[Awaiting Directive...]"></textarea><button id="ai-execute-btn" class="tactical-btn mt-4 py-2 px-6 rounded-md">Execute</button><div id="ai-response-container" class="mt-6 glass-panel p-4 rounded-md min-h-[60px]"><p class="text-text-secondary">[GEMINI STATUS: STANDBY]</p></div></div>', dashboard: '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">GLOBAL STATUS</h4><p class="text-text-secondary">Systems Nominal</p></div><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">ACTIVE THREATS</h4><p class="text-text-secondary">0 Detected</p></div><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">TEAM SYNC</h4><p class="text-text-secondary">12 Agents Online</p></div></div>', profile: '<div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto"><h3 class="text-2xl font-orbitron text-accent-green mb-4">AGENT DOSSIER</h3><p class="text-text-secondary">Review and update your operative credentials.</p></div>', settings: '<div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto"><h3 class="text-2xl font-orbitron text-accent-green mb-4">SYSTEM CALIBRATION</h3><p class="text-text-secondary">Adjust interface parameters and security protocols.</p></div>' }; return content[pageId] || '<p>Content not found.</p>'; },
                 
                 async fetchAndDisplayProfile() {
-                    const contentContainer = document.getElementById('profile-content');
-                    if (!authToken) {
-                        contentContainer.innerHTML = `<p class="text-red-500">[ERROR: Authentication token not found.]</p>`;
-                        return;
-                    }
-                    try {
-                        const response = await fetch(`${this.config.API_BASE_URL}/users/me`, {
-                            method: 'GET',
-                            headers: { 'Authorization': `Bearer ${authToken}` }
-                        });
-                        if (!response.ok) { throw new Error('Failed to fetch agent dossier.'); }
-                        const userData = await response.json();
-                        contentContainer.innerHTML = `
-                      <div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto">
+    const contentContainer = document.getElementById('profile-content');
+    if (!authToken) {
+        this.showAuthPage();
+        return;
+    }
+    try {
+        const response = await fetch(`${this.config.API_BASE_URL}/users/me`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
 
-        <h3 class="text-2xl font-orbitron text-accent-green mb-6">AGENT DOSSIER</h3>
-
-        <div class="space-y-4">
-
-            <div>
-
-                <p class="text-sm text-text-secondary">USERNAME</p>
-
-                <p class="text-lg text-text-primary">@${userData.username}</p> </div>
-
-            <div>
-
-                <p class="text-sm text-text-secondary">FULL NAME</p>
-
-                <p class="text-lg text-text-primary">${userData.fullname}</p>
-
+        if (response.status === 401) {
+            this.showAuthPage();
+            return;
+        }
+        if (!response.ok) { throw new Error('Failed to fetch agent dossier.'); }
+        
+        const userData = await response.json();
+        
+        // --- YEH NAYI LINE AAPKI SAMASYA THEEK KAREGI ---
+        this.updateUserInfo(userData);
+        
+        // Baaki ka code jo main content area ko update karta hai
+        contentContainer.innerHTML = `
+            <div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto">
+                <h3 class="text-2xl font-orbitron text-accent-green mb-6">AGENT DOSSIER</h3>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm text-text-secondary">USERNAME</p>
+                        <p class="text-lg text-text-primary">@${userData.username}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-text-secondary">FULL NAME</p>
+                        <p class="text-lg text-text-primary">${userData.fullname}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-text-secondary">AGENT ID (EMAIL)</p>
+                        <p class="text-lg text-text-primary">${userData.email}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-text-secondary">USER ID</p>
+                        <p class="text-xs text-text-secondary">${userData.userId}</p>
+                    </div>
+                </div>
+                <div class="mt-6 text-center">
+                    <a href="/update-profile.html" class="tactical-btn py-2 px-6 rounded-md">Edit Profile</a>
+                </div>
             </div>
-
-            <div>
-
-                <p class="text-sm text-text-secondary">AGENT ID (EMAIL)</p>
-
-                <p class="text-lg text-text-primary">${userData.email}</p>
-
-            </div>
-
-            <div>
-
-                <p class="text-sm text-text-secondary">USER ID</p>
-
-                <p class="text-xs text-text-secondary">${userData.userId}</p> </div>
-
-        </div>
-
-    </div>
-    
-    
-
-
-
-        </div>
-
-        <div class="mt-6 text-center">
-            <a href="/update-profile.html" class="tactical-btn py-2 px-6 rounded-md">Edit Profile</a>
-        </div>
-    </div>
-`;
-                    } catch (error) {
-                        contentContainer.innerHTML = `<p class="text-red-500">[ERROR: ${error.message}]</p>`;
-                    }
-                },
+        `;
+    } catch (error) {
+        contentContainer.innerHTML = `<p class="text-red-500">[ERROR: ${error.message}]</p>`;
+    }
+},
             };
            
 const savedToken = localStorage.getItem('authToken');
