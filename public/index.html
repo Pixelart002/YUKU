@@ -183,6 +183,9 @@
             <div id="signup-form" class="form-transition form-hidden">
                 <form class="space-y-6" id="signupFormAction">
                     <input id="signup-fullname" type="text" autocomplete="name" required class="input-field w-full px-3 py-3 rounded-md" placeholder="FULL NAME">
+                    
+                    <input id="signup-username" type="text" autocomplete="username" required class="input-field w-full px-3 py-3 rounded-md" placeholder="CHOOSE A USERNAME">
+                    
                     <input id="signup-email-address" type="email" autocomplete="email" required class="input-field w-full px-3 py-3 rounded-md" placeholder="ASSIGN AGENT ID">
                     <input id="signup-password" type="password" autocomplete="new-password" required class="input-field w-full px-3 py-3 rounded-md" placeholder="CREATE PASSCODE">
                     <button type="submit" class="tactical-btn w-full py-3 rounded-md">Authorize & Proceed</button>
@@ -267,7 +270,7 @@
             let authToken = null;
             const app = {
                 config: {
-                    API_BASE_URL: 'https://magnetic-murielle-pixelart002-829a755b.koyeb.app'
+                    API_BASE_URL: 'https://open-feliza-pixelart002-78fb4fe8.koyeb.app/'
                 },
                 elements: {
                     authPage: document.getElementById('auth-page'),
@@ -310,24 +313,40 @@
                 
                 addEventListeners() {
                     const { elements } = this;
-                    elements.signupFormAction.addEventListener('submit', (e) => { e.preventDefault();
-                        this.handleSignup(); });
-                    elements.loginFormAction.addEventListener('submit', (e) => { e.preventDefault();
-                        this.handleLogin(); });
-                    elements.logoutBtn.addEventListener('click', (e) => { e.preventDefault();
-                        this.showAuthPage(); });
-                    elements.showSignupBtn.addEventListener('click', (e) => { e.preventDefault();
-                        this.toggleAuthForms('signup'); });
-                    elements.showLoginBtn.addEventListener('click', (e) => { e.preventDefault();
-                        this.toggleAuthForms('login'); });
+                    elements.signupFormAction.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.handleSignup();
+                    });
+                    elements.loginFormAction.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.handleLogin();
+                    });
+                    elements.logoutBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.showAuthPage();
+                    });
+                    elements.showSignupBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.toggleAuthForms('signup');
+                    });
+                    elements.showLoginBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.toggleAuthForms('login');
+                    });
                     
                     // --- NEW ---
-                    elements.showForgotPasswordBtn.addEventListener('click', (e) => { e.preventDefault();
-                        this.toggleAuthForms('forgot'); });
-                    elements.backToLoginBtn.addEventListener('click', (e) => { e.preventDefault();
-                        this.toggleAuthForms('login'); });
-                    elements.forgotPasswordFormAction.addEventListener('submit', (e) => { e.preventDefault();
-                        this.handleForgotPassword(); });
+                    elements.showForgotPasswordBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.toggleAuthForms('forgot');
+                    });
+                    elements.backToLoginBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.toggleAuthForms('login');
+                    });
+                    elements.forgotPasswordFormAction.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.handleForgotPassword();
+                    });
                     // --- END NEW ---
                     
                     elements.hamburgerBtn.addEventListener('click', () => this.openSidebar());
@@ -341,8 +360,8 @@
                             if (window.innerWidth < 768) this.closeSidebar();
                         });
                     });
-elements.profileBtn.addEventListener('mouseenter', () => this.showProfilePopup());
-elements.profileBtn.addEventListener('mouseleave', () => this.hideProfilePopup());
+                    elements.profileBtn.addEventListener('mouseenter', () => this.showProfilePopup());
+                    elements.profileBtn.addEventListener('mouseleave', () => this.hideProfilePopup());
                     elements.profileBtn.addEventListener('click', () => { this.navigateTo('profile'); if (window.innerWidth < 768) this.closeSidebar(); });
                 },
                 
@@ -369,9 +388,10 @@ elements.profileBtn.addEventListener('mouseleave', () => this.hideProfilePopup()
                 async handleSignup() {
                     const button = this.elements.signupFormAction.querySelector('button');
                     const fullname = document.getElementById('signup-fullname').value;
+                 const username = document.getElementById('signup-username').value;
                     const email = document.getElementById('signup-email-address').value;
                     const password = document.getElementById('signup-password').value;
-                    const result = await this.handleApiRequest('signup', { fullname, email, password }, button);
+                    const result = await this.handleApiRequest('signup', { fullname,username, email, password }, button);
                     if (result) { this.handleLogin(email, password); }
                 },
                 
@@ -513,11 +533,15 @@ elements.profileBtn.addEventListener('mouseleave', () => this.hideProfilePopup()
                 },
                 // --- END UPDATE ---
                 
-                openSidebar() { this.elements.sidebar.classList.remove('-translate-x-full');
-                    this.elements.overlay.classList.remove('hidden'); },
-                closeSidebar() { this.elements.sidebar.classList.add('-translate-x-full');
+                openSidebar() {
+                    this.elements.sidebar.classList.remove('-translate-x-full');
+                    this.elements.overlay.classList.remove('hidden');
+                },
+                closeSidebar() {
+                    this.elements.sidebar.classList.add('-translate-x-full');
                     this.elements.overlay.classList.add('hidden');
-                    this.hideProfilePopup(); },
+                    this.hideProfilePopup();
+                },
                 showProfilePopup() { this.elements.profilePopup.classList.remove('opacity-0', 'scale-95', 'pointer-events-none'); },
                 hideProfilePopup() { this.elements.profilePopup.classList.add('opacity-0', 'scale-95', 'pointer-events-none'); },
                 getPageContent(pageId) { const content = { 'yuku-ai': '<div class="glass-panel p-6 rounded-lg"><h3 class="text-2xl font-orbitron text-accent-green mb-4">AI CORE INTERFACE v2.5</h3><p class="text-text-secondary mb-4">Direct link established with Gemini-Flash. Input query below.</p><textarea id="ai-prompt-input" class="input-field w-full p-3 rounded-md" rows="6" placeholder="[Awaiting Directive...]"></textarea><button id="ai-execute-btn" class="tactical-btn mt-4 py-2 px-6 rounded-md">Execute</button><div id="ai-response-container" class="mt-6 glass-panel p-4 rounded-md min-h-[60px]"><p class="text-text-secondary">[GEMINI STATUS: STANDBY]</p></div></div>', dashboard: '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">GLOBAL STATUS</h4><p class="text-text-secondary">Systems Nominal</p></div><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">ACTIVE THREATS</h4><p class="text-text-secondary">0 Detected</p></div><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">TEAM SYNC</h4><p class="text-text-secondary">12 Agents Online</p></div></div>', profile: '<div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto"><h3 class="text-2xl font-orbitron text-accent-green mb-4">AGENT DOSSIER</h3><p class="text-text-secondary">Review and update your operative credentials.</p></div>', settings: '<div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto"><h3 class="text-2xl font-orbitron text-accent-green mb-4">SYSTEM CALIBRATION</h3><p class="text-text-secondary">Adjust interface parameters and security protocols.</p></div>' }; return content[pageId] || '<p>Content not found.</p>'; },
@@ -536,14 +560,43 @@ elements.profileBtn.addEventListener('mouseleave', () => this.hideProfilePopup()
                         if (!response.ok) { throw new Error('Failed to fetch agent dossier.'); }
                         const userData = await response.json();
                         contentContainer.innerHTML = `
-                        <div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto">
-                            <h3 class="text-2xl font-orbitron text-accent-green mb-6">AGENT DOSSIER</h3>
-                            <div class="space-y-4">
-                                <div><p class="text-sm text-text-secondary">FULL NAME</p><p class="text-lg text-text-primary">${userData.fullname}</p></div>
-                                <div><p class="text-sm text-text-secondary">AGENT ID (EMAIL)</p><p class="text-lg text-text-primary">${userData.email}</p></div>
-                                <div><p class="text-sm text-text-secondary">STATUS</p><p class="text-lg text-accent-green">ACTIVE</p></div>
-                            </div>
-                        </div>`;
+                      <div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto">
+
+        <h3 class="text-2xl font-orbitron text-accent-green mb-6">AGENT DOSSIER</h3>
+
+        <div class="space-y-4">
+
+            <div>
+
+                <p class="text-sm text-text-secondary">USERNAME</p>
+
+                <p class="text-lg text-text-primary">@${userData.username}</p> </div>
+
+            <div>
+
+                <p class="text-sm text-text-secondary">FULL NAME</p>
+
+                <p class="text-lg text-text-primary">${userData.fullname}</p>
+
+            </div>
+
+            <div>
+
+                <p class="text-sm text-text-secondary">AGENT ID (EMAIL)</p>
+
+                <p class="text-lg text-text-primary">${userData.email}</p>
+
+            </div>
+
+            <div>
+
+                <p class="text-sm text-text-secondary">USER ID</p>
+
+                <p class="text-xs text-text-secondary">${userData.userId}</p> </div>
+
+        </div>
+
+    </div>`;
                     } catch (error) {
                         contentContainer.innerHTML = `<p class="text-red-500">[ERROR: ${error.message}]</p>`;
                     }
