@@ -402,6 +402,13 @@
                     const result = await this.handleApiRequest('login', { email, password }, button);
                     if (result && result.user) {
                         authToken = result.token.access_token;
+                        
+                        localStorage.setItem('authToken', authToken); 
+                        
+                        
+                        
+                        
+                        
                         this.updateUserInfo(result.user);
                         this.showDashboard('yuku-ai');
                     }
@@ -449,6 +456,7 @@
                 
                 showAuthPage() {
                     authToken = null; // Clear token on logout
+                    localStorage.removeItem('authToken'); 
                     this.closeSidebar();
                     this.updateUserInfo({ fullname: '', email: '' });
                     this.elements.loginFormAction.reset();
