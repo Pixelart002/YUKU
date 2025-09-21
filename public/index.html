@@ -232,6 +232,7 @@
                 <div class="mt-auto relative" id="profile-container">
                     <div id="profile-popup" class="absolute left-0 bottom-full mb-4 w-full glass-panel rounded-md p-4 opacity-0 transform scale-95 pointer-events-none">
                         <h4 id="popup-name" class="font-bold text-accent-green"></h4>
+                        <p id="popup-username" class="text-sm text-text-secondary"></p>
                         <p id="popup-email" class="text-sm text-text-secondary"></p>
                     </div>
                     <div class="flex items-center space-x-2 p-2 border-t border-border-color">
@@ -434,13 +435,28 @@
                 },
                 // --- END NEW ---
                 
-                updateUserInfo(user) {
-                    const { fullname, email } = user;
-                    const initials = fullname.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                    this.elements.profileInitials.textContent = initials;
-                    this.elements.popupName.textContent = fullname;
-                    this.elements.popupEmail.textContent = email;
-                },
+                // updateUserInfo function ko isse replace karein
+
+updateUserInfo(user) {
+    // Ab hum username aur userId ko bhi istemaal karenge
+    const { fullname, email, username, userId } = user;
+    
+    // Yeh check karega ki fullname khali to nahi hai
+    const initials = fullname ? fullname.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '';
+    
+    this.elements.profileInitials.textContent = initials;
+    this.elements.popupName.textContent = fullname;
+    
+    // Username dikhane ke liye nayi lines
+    const popupUsernameEl = document.getElementById('popup-username');
+    if (popupUsernameEl && username) {
+        popupUsernameEl.textContent = `@${username}`;
+    } else if (popupUsernameEl) {
+        popupUsernameEl.textContent = ''; // Logout ke waqt isse khali kar dega
+    }
+    
+    this.elements.popupEmail.textContent = email;
+},
                 
                 showAuthError(message) {
                     this.elements.authErrorBox.textContent = `[ERROR]: ${message}`;
@@ -631,7 +647,7 @@ if (savedToken) {
     app.showDashboard('yuku-ai');
 }
 
-app.init();
+
             
             app.init();
         });
