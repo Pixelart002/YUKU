@@ -286,6 +286,134 @@
                 config: {
                     API_BASE_URL: 'https://open-feliza-pixelart002-78fb4fe8.koyeb.app'
                 },
+                
+                
+                
+                
+                    messaging: null, // <-- Add this new property
+
+    init() {
+        this.addEventListeners();
+        this.updateTimestamp();
+        setInterval(() => this.updateTimestamp(), 1000);
+        
+        // --- ADD THIS FIREBASE INIT LOGIC ---
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyBVLkg5-aTOIFxtfBB0hwvOXNOTb9ns3JU",
+                authDomain: "yukuprotocol01.firebaseapp.com",
+                projectId: "yukuprotocol01",
+                storageBucket: "yukuprotocol01.firebasestorage.app",
+                messagingSenderId: "1077444358098",
+                appId: "1:1077444358098:web:ca1fd1028ef6ef2762620b",
+            };
+
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            
+            // Check for browser support and initialize messaging
+            if (firebase.messaging.isSupported()) {
+                this.messaging = firebase.messaging();
+                console.log('Firebase Messaging is supported and initialized.');
+            } else {
+                console.log('Firebase Messaging is not supported in this browser.');
+            }
+        } catch (err) {
+            console.error("Firebase initialization failed:", err);
+        }
+        // --- END OF NEW LOGIC ---
+    },
+    
+    // ... other functions like addEventListeners ...
+2. Update the requestNotificationPermission function
+Now, modify your requestNotificationPermission function to use the messaging service we just initialized.
+
+JavaScript
+
+// Replace your old function with this one
+
+async requestNotificationPermission() {
+    // Use the messaging service we initialized earlier
+    const messaging = this.messaging; 
+    
+    if (!messaging) {
+        alert('Push notifications are not supported on this browser.');
+        return;
+    }
+
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            console.log('Notification permission granted.');
+            
+            const token = await messaging.getToken({
+                vapidKey: 'BGsW2JJzbhHoBwu_UkONW27lIHKsWKvyukxj_gFV16cBp-vUDtSPx94TeTk-FvKgO11OOZPeaH62YOBzb7j2QH8'
+            });
+
+            if (token) {
+                console.log('FCM Token:', token);
+                await fetch(`${this.config.API_BASE_URL}/notifications/subscribe`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ fcm_token: token })
+                });
+                alert('Notifications enabled successfully!');
+            }
+        } else {
+            console.log('User denied notification permission.');
+        }
+    } catch (err) {
+        console.error('An error occurred while enabling notifications:', err);
+        // Provide a more specific error for debugging
+        alert(`Could not enable notifications. Error: ${err.message}`); 
+    }
+},
+If It Still Fails: The Final Checks
+If you still get an error after these code changes, it means the issue is definitely with the firebase-messaging-sw.js file.
+
+Check the Browser Console: Open the Developer Tools (F12) -> Console and look for a specific error. It will likely say "Service Worker registration failed" or give a 404 error.
+
+Check the URL: Go directly to https://yuku-nine.vercel.app/firebase-messaging-sw.js. You must see code there, not a "Not Found" page. If you see an error page, it means the file was not deployed correctly.
+
+
+
+
+
+
+
+
+
+
+
+
+Tools
+
+Gemini can make mistakes, so do
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
                 elements: {
                     authPage: document.getElementById('auth-page'),
                     dashboardPage: document.getElementById('dashboard-page'),
