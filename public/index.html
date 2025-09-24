@@ -283,39 +283,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             let authToken = null;
             const app = {
-                    messaging: null, // <-- Add this new property
-    init() {
-        this.addEventListeners();
-        this.updateTimestamp();
-        setInterval(() => this.updateTimestamp(), 1000);
-        
-        // --- ADD THIS FIREBASE INIT LOGIC ---
-        try {
-            const firebaseConfig = {
-                apiKey: "AIzaSyBVLkg5-aTOIFxtfBB0hwvOXNOTb9ns3JU",
-                authDomain: "yukuprotocol01.firebaseapp.com",
-                projectId: "yukuprotocol01",
-                storageBucket: "yukuprotocol01.firebasestorage.app",
-                messagingSenderId: "1077444358098",
-                appId: "1:1077444358098:web:ca1fd1028ef6ef2762620b",
-            };
-
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            
-            // Check for browser support and initialize messaging
-            if (firebase.messaging.isSupported()) {
-                this.messaging = firebase.messaging();
-                console.log('Firebase Messaging is supported and initialized.');
-            } else {
-                console.log('Firebase Messaging is not supported in this browser.');
-            }
-        } catch (err) {
-            console.error("Firebase initialization failed:", err);
-        }
-        // --- END OF NEW LOGIC ---
-    },
                 config: {
                     API_BASE_URL: 'https://open-feliza-pixelart002-78fb4fe8.koyeb.app'
                 },
