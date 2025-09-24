@@ -379,45 +379,7 @@
                 },
 // Replace your old function with this one
 
-async requestNotificationPermission() {
-    // Use the messaging service we initialized earlier
-    const messaging = this.messaging;
-    
-    if (!messaging) {
-        alert('Push notifications are not supported on this browser.');
-        return;
-    }
-    
-    try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            console.log('Notification permission granted.');
-            
-            const token = await messaging.getToken({
-                vapidKey: 'BGsW2JJzbhHoBwu_UkONW27lIHKsWKvyukxj_gFV16cBp-vUDtSPx94TeTk-FvKgO11OOZPeaH62YOBzb7j2QH8'
-            });
-            
-            if (token) {
-                console.log('FCM Token:', token);
-                await fetch(`${this.config.API_BASE_URL}/notifications/subscribe`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ fcm_token: token })
-                });
-                alert('Notifications enabled successfully!');
-            }
-        } else {
-            console.log('User denied notification permission.');
-        }
-    } catch (err) {
-        console.error('An error occurred while enabling notifications:', err);
-        // Provide a more specific error for debugging
-        alert(`Could not enable notifications. Error: ${err.message}`);
-    }
-},
+
                 async handleApiRequest(endpoint, body, button) {
                     if (button) button.disabled = true;
                     this.elements.authErrorBox.classList.add('hidden');
