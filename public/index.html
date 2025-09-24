@@ -318,12 +318,7 @@
                 },
                 
                 
-             
-            messaging: null, // Property to hold the messaging service
-
-
-
-   
+                
                 
                 
 
@@ -332,43 +327,6 @@
                     this.updateTimestamp();
                     setInterval(() => this.updateTimestamp(), 1000);
                 },
-
-
-// --- CORRECT FIREBASE INITIALIZATION LOGIC ---
-                try {
-                    const firebaseConfig = {
-                        apiKey: "AIzaSyBVLkg5-aTOIFxtfBB0hwvOXNOTb9ns3JU",
-                        authDomain: "yukuprotocol01.firebaseapp.com",
-                        projectId: "yukuprotocol01",
-                        storageBucket: "yukuprotocol01.firebasestorage.app",
-                        messagingSenderId: "1077444358098",
-                        appId: "1:1077444358098:web:ca1fded28ef6ef2762620b",
-                        measurementId: "G-WHVQRZLFW0"
-                    };
-
-                    if (!firebase.apps.length) {
-                        firebase.initializeApp(firebaseConfig);
-                    }
-
-                    if (firebase.messaging.isSupported()) {
-                        this.messaging = firebase.messaging();
-                        console.log('Firebase Messaging is supported and initialized.');
-                    } else {
-                        console.log('Firebase Messaging is not supported in this browser.');
-                    }
-                } catch (err) {
-                    console.error("Firebase initialization failed:", err);
-                }
-                // --- END OF INITIALIZATION LOGIC ---
-            },
-
-
-
-
-
-
-
-
 
                 addEventListeners() {
                     const { elements } = this;
