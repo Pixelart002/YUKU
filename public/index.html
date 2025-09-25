@@ -548,46 +548,46 @@
                 },
                 
                 // SNIPPET 3: Replace your entire navigateTo function with this
-// ===========================================
-            navigateTo(pageId) {
-                this.elements.contentPanels.forEach(p => p.classList.remove('active'));
-                const contentContainer = document.getElementById(`${pageId}-content`);
-                
-                if (pageId === 'profile') {
-                    this.fetchAndDisplayProfile();
-                } else {
-                    contentContainer.innerHTML = this.getPageContent(pageId);
-                }
-                
-                contentContainer.classList.add('active');
-                
-                // Add event listeners AFTER the content has been injected
-                if (pageId === 'yuku-ai') { 
-                    document.getElementById('ai-execute-btn').addEventListener('click', () => this.handleAiQuery()); 
-                }
-                if (pageId === 'settings') {
-                    const enableBtn = document.getElementById('enable-notifications-btn');
-                    if (enableBtn) {
-                        enableBtn.addEventListener('click', () => {
-                            this.subscribeUserToPush().catch(err => {
-                                console.error('Failed to subscribe:', err);
-                                alert(`Error: ${err.message}`);
+                // ===========================================
+                navigateTo(pageId) {
+                    this.elements.contentPanels.forEach(p => p.classList.remove('active'));
+                    const contentContainer = document.getElementById(`${pageId}-content`);
+                    
+                    if (pageId === 'profile') {
+                        this.fetchAndDisplayProfile();
+                    } else {
+                        contentContainer.innerHTML = this.getPageContent(pageId);
+                    }
+                    
+                    contentContainer.classList.add('active');
+                    
+                    // Add event listeners AFTER the content has been injected
+                    if (pageId === 'yuku-ai') {
+                        document.getElementById('ai-execute-btn').addEventListener('click', () => this.handleAiQuery());
+                    }
+                    if (pageId === 'settings') {
+                        const enableBtn = document.getElementById('enable-notifications-btn');
+                        if (enableBtn) {
+                            enableBtn.addEventListener('click', () => {
+                                this.subscribeUserToPush().catch(err => {
+                                    console.error('Failed to subscribe:', err);
+                                    alert(`Error: ${err.message}`);
+                                });
                             });
-                        });
+                        }
                     }
-                }
-                
-                let activeLinkText = '';
-                this.elements.navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('data-page') === pageId) {
-                        link.classList.add('active');
-                        activeLinkText = link.textContent.trim();
-                    }
-                });
-                this.elements.headerTitle.textContent = activeLinkText;
-            },
-// ===========================================
+                    
+                    let activeLinkText = '';
+                    this.elements.navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('data-page') === pageId) {
+                            link.classList.add('active');
+                            activeLinkText = link.textContent.trim();
+                        }
+                    });
+                    this.elements.headerTitle.textContent = activeLinkText;
+                },
+                // ===========================================
                 
                 async handleAiQuery() {
                     const prompt = document.getElementById("ai-prompt-input").value;
@@ -664,12 +664,7 @@
                             <button id="enable-notifications-btn" class="tactical-btn py-2 px-6 rounded-md">Enable Push Notifications</button>
                         </div>
                         
-                        
-                        <div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto">
-                        <h3 class="text-2xl font-orbitron text-accent-green mb-4">SYSTEMS</h3>
-                        <p class="text-text-secondary mb-4">Manage your account and notifications.</p>
-                        <button id="enable-notifications-btn" class="tactical-btn py-2 px-6 rounded-md">Enable Push Notifications</button>
-                    </div>`
+                    `
                     };
                     return content[pageId] || '<p>Content not found.</p>';
                 },
