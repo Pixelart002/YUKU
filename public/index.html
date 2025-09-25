@@ -9,12 +9,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
-
-
-
+    
+    
+    
     <style>
         :root {
             --bg-dark: #1a1a1a;
@@ -25,7 +25,7 @@
             --text-primary: #e0e0e0;
             --text-secondary: #a0a0a0;
         }
-
+        
         body {
             font-family: 'Roboto Mono', monospace;
             background-color: var(--bg-dark);
@@ -33,15 +33,15 @@
             background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
             background-size: 20px 20px;
         }
-
+        
         .font-orbitron {
             font-family: 'Orbitron', sans-serif;
         }
-
+        
         .page {
             transition: opacity 0.5s ease-in-out, filter 0.5s ease-in-out;
         }
-
+        
         .page-hidden {
             opacity: 0;
             filter: blur(5px);
@@ -51,17 +51,17 @@
             right: 0;
             pointer-events: none;
         }
-
+        
         .page-visible {
             opacity: 1;
             filter: blur(0px);
             position: relative;
         }
-
+        
         .form-transition {
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
-
+        
         .form-hidden {
             opacity: 0;
             transform: translateY(20px);
@@ -71,50 +71,50 @@
             right: 0;
             pointer-events: none;
         }
-
+        
         .form-visible {
             opacity: 1;
             transform: translateY(0);
             position: static;
         }
-
+        
         .content-panel {
             display: none;
         }
-
+        
         .content-panel.active {
             display: block;
             animation: fadeIn 0.5s forwards;
         }
-
+        
         @keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: translateY(10px);
             }
-
+            
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-
+        
         .nav-link.active {
             background-color: rgba(0, 255, 127, 0.1);
             color: var(--accent-green);
             border-left: 3px solid var(--accent-green);
         }
-
+        
         .nav-link:hover {
             background-color: rgba(255, 255, 255, 0.05);
         }
-
+        
         .glass-panel {
             background: rgba(42, 42, 42, 0.8);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-color);
         }
-
+        
         .tactical-btn {
             background-color: var(--accent-green);
             color: var(--bg-dark);
@@ -123,39 +123,39 @@
             letter-spacing: 1px;
             transition: all 0.2s ease;
         }
-
+        
         .tactical-btn:hover {
             background-color: #fff;
             color: var(--bg-dark);
             box-shadow: 0 0 15px var(--accent-green);
         }
-
+        
         .tactical-btn:disabled {
             background-color: #555;
             color: #999;
             cursor: not-allowed;
         }
-
+        
         .input-field {
             background-color: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
         }
-
+        
         .input-field:focus {
             border-color: var(--accent-green);
             outline: none;
             box-shadow: 0 0 10px rgba(0, 255, 127, 0.5);
         }
-
+        
         .sidebar-transition {
             transition: transform 0.3s ease-in-out;
         }
-
+        
         #profile-popup {
             transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
         }
-
+        
         .dog-tag {
             clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
         }
@@ -163,7 +163,7 @@
 </head>
 
 <body class="overflow-hidden">
-
+    
     <div id="auth-page" class="page page-visible flex items-center justify-center min-h-screen p-4">
         <div class="relative w-full max-w-md p-8 space-y-6 glass-panel rounded-lg">
             <div id="auth-error-box" class="text-center text-red-400 p-2 rounded-md bg-red-900/50 border border-red-500 mb-4 hidden"></div>
@@ -171,7 +171,7 @@
                 <h1 class="text-3xl font-orbitron text-accent-green uppercase tracking-widest">YUKU Protocol</h1>
                 <p class="text-text-secondary">Authentication Required</p>
             </div>
-
+            
             <div id="login-form" class="form-transition form-visible">
                 <form class="space-y-6" id="loginFormAction">
                     <input id="login-email-address" type="email" autocomplete="email" required class="input-field w-full px-3 py-3 rounded-md" placeholder="AGENT ID (EMAIL)">
@@ -183,7 +183,7 @@
                 </form>
                 <p class="mt-6 text-center text-sm text-text-secondary">New operative? <a href="#" id="show-signup" class="font-bold text-accent-green hover:underline">Register Here</a></p>
             </div>
-
+            
             <div id="signup-form" class="form-transition form-hidden">
                 <form class="space-y-6" id="signupFormAction">
                     <input id="signup-fullname" type="text" autocomplete="name" required class="input-field w-full px-3 py-3 rounded-md" placeholder="FULL NAME">
@@ -194,7 +194,7 @@
                 </form>
                 <p class="mt-6 text-center text-sm text-text-secondary">Already registered? <a href="#" id="show-login" class="font-bold text-accent-green hover:underline">Access Terminal</a></p>
             </div>
-
+            
             <div id="forgot-password-form" class="form-transition form-hidden">
                 <div id="forgot-message" class="text-center p-2 rounded-md mb-4"></div>
                 <form class="space-y-6" id="forgotPasswordFormAction">
@@ -205,7 +205,7 @@
             </div>
         </div>
     </div>
-
+    
     <div id="dashboard-page" class="page page-hidden">
         <aside id="sidebar" class="glass-panel w-64 h-full fixed top-0 left-0 z-40 transform -translate-x-full sidebar-transition">
             <div class="p-4 h-full flex flex-col">
@@ -259,9 +259,9 @@
                 </div>
             </div>
         </aside>
-
+        
         <div id="overlay" class="fixed inset-0 bg-black bg-opacity-75 z-30 hidden"></div>
-
+        
         <div class="flex flex-col h-screen">
             <header class="glass-panel p-4 flex items-center z-20">
                 <button id="hamburgerBtn" class="p-2 mr-4 rounded-md hover:bg-gray-700">
@@ -273,7 +273,7 @@
                 
                 
                 
-            
+                
                 
                 
                 
@@ -291,54 +291,62 @@
             <footer class="glass-panel text-center p-2 text-xs text-text-secondary border-t border-border-color">YUKU PROTOCOL v2.5 :: STATUS: SECURE :: LOCATION: NOIDA, UP, INDIA :: TIMESTAMP: <span id="timestamp"></span></footer>
         </div>
     </div>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             let authToken = null;
             const app = {
-                // SNIPPET 1: YAHAN PASTE KAREIN
-// ===========================================
-        // Web Push Helper Functions
-        urlBase64ToUint8Array(base64String) {
-            const padding = '='.repeat((4 - base64String.length % 4) % 4);
-            const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-            const rawData = window.atob(base64);
-            const outputArray = new Uint8Array(rawData.length);
-            for (let i = 0; i < rawData.length; ++i) {
-                outputArray[i] = rawData.charCodeAt(i);
-            }
-            return outputArray;
-        },
-
-        async subscribeUserToPush() {
-            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                throw new Error('Push notifications are not supported by this browser.');
-            }
-            const registration = await navigator.serviceWorker.register('/sw.js');
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                throw new Error('Notification permission was not granted.');
-            }
-            const response = await fetch(`${this.config.API_BASE_URL}/webpush/vapid-public-key`);
-            if (!response.ok) {
-                throw new Error('Failed to get VAPID key from server.');
-            }
-            const { public_key } = await response.json();
-            const subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: this.urlBase64ToUint8Array(public_key)
-            });
-            await fetch(`${this.config.API_BASE_URL}/webpush/subscribe`, {
-                method: 'POST',
-                body: JSON.stringify(subscription),
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                }
-            });
-            alert('Notifications have been enabled successfully!');
-        },
-// ===========================================
+                // SNIPPET 1: Paste this right after `const app = {`
+                // ===========================================
+                urlBase64ToUint8Array(base64String) {
+                    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+                    const rawData = window.atob(base64);
+                    const outputArray = new Uint8Array(rawData.length);
+                    for (let i = 0; i < rawData.length; ++i) {
+                        outputArray[i] = rawData.charCodeAt(i);
+                    }
+                    return outputArray;
+                },
+                
+                async subscribeUserToPush() {
+                    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                        throw new Error('Push notifications are not supported by this browser.');
+                    }
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    const permission = await Notification.requestPermission();
+                    if (permission !== 'granted') {
+                        throw new Error('Notification permission was not granted.');
+                    }
+                    const response = await fetch(`${this.config.API_BASE_URL}/webpush/vapid-public-key`);
+                    if (!response.ok) {
+                        throw new Error('Failed to get VAPID key from server.');
+                    }
+                    const { public_key } = await response.json();
+                    const subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: this.urlBase64ToUint8Array(public_key)
+                    });
+                    await fetch(`${this.config.API_BASE_URL}/webpush/subscribe`, {
+                        method: 'POST',
+                        body: JSON.stringify(subscription),
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+                    alert('Notifications have been enabled successfully!');
+                },
+                // ===========================================
+                
+                
+                
+                
+                
+                
+                
+                
+                
                 config: {
                     API_BASE_URL: 'https://open-feliza-pixelart002-78fb4fe8.koyeb.app'
                 },
@@ -377,13 +385,13 @@
                 
                 
                 
-
+                
                 init() {
                     this.addEventListeners();
                     this.updateTimestamp();
                     setInterval(() => this.updateTimestamp(), 1000);
                 },
-
+                
                 addEventListeners() {
                     const { elements } = this;
                     elements.signupFormAction.addEventListener('submit', (e) => {
@@ -433,9 +441,9 @@
                     elements.profileBtn.addEventListener('mouseleave', () => this.hideProfilePopup());
                     elements.profileBtn.addEventListener('click', () => { this.navigateTo('profile'); if (window.innerWidth < 768) this.closeSidebar(); });
                 },
-// Replace your old function with this one
-
-
+                // Replace your old function with this one
+                
+                
                 async handleApiRequest(endpoint, body, button) {
                     if (button) button.disabled = true;
                     this.elements.authErrorBox.classList.add('hidden');
@@ -455,7 +463,7 @@
                         if (button) button.disabled = false;
                     }
                 },
-
+                
                 async handleSignup() {
                     const button = this.elements.signupFormAction.querySelector('button');
                     const fullname = document.getElementById('signup-fullname').value;
@@ -465,7 +473,7 @@
                     const result = await this.handleApiRequest('signup', { fullname, username, email, password }, button);
                     if (result) { this.handleLogin(email, password); }
                 },
-
+                
                 async handleLogin(emailOverride = null, passwordOverride = null) {
                     const button = this.elements.loginFormAction.querySelector('button');
                     const email = emailOverride || document.getElementById('login-email-address').value;
@@ -478,7 +486,7 @@
                         this.showDashboard('yuku-ai');
                     }
                 },
-
+                
                 async handleForgotPassword() {
                     const button = this.elements.forgotPasswordFormAction.querySelector('button');
                     const email = document.getElementById('forgot-email-input').value;
@@ -494,7 +502,7 @@
                         messageEl.style.color = 'red';
                     }
                 },
-
+                
                 updateUserInfo(user) {
                     const { fullname, email, username, userId } = user;
                     const initials = fullname ? fullname.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '';
@@ -508,19 +516,19 @@
                     }
                     this.elements.popupEmail.textContent = email;
                 },
-
+                
                 showAuthError(message) {
                     this.elements.authErrorBox.textContent = `[ERROR]: ${message}`;
                     this.elements.authErrorBox.classList.remove('hidden');
                 },
-
+                
                 showDashboard(defaultPage) {
                     this.elements.authErrorBox.classList.add('hidden');
                     this.elements.authPage.classList.replace('page-visible', 'page-hidden');
                     this.elements.dashboardPage.classList.replace('page-hidden', 'page-visible');
                     this.navigateTo(defaultPage);
                 },
-
+                
                 showAuthPage() {
                     authToken = null;
                     localStorage.removeItem('authToken');
@@ -534,38 +542,53 @@
                         this.elements.authPage.classList.replace('page-hidden', 'page-visible');
                     }, 300);
                 },
-
+                
                 updateTimestamp() {
                     this.elements.timestamp.textContent = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
                 },
-
-                navigateTo(pageId) {
-                    this.elements.contentPanels.forEach(p => p.classList.remove('active'));
-                    const contentContainer = document.getElementById(`${pageId}-content`);
-                    if (pageId === 'profile') {
-                        this.fetchAndDisplayProfile();
-                    } else {
-                        contentContainer.innerHTML = this.getPageContent(pageId);
+                
+                // SNIPPET 3: Replace your entire navigateTo function with this
+// ===========================================
+            navigateTo(pageId) {
+                this.elements.contentPanels.forEach(p => p.classList.remove('active'));
+                const contentContainer = document.getElementById(`${pageId}-content`);
+                
+                if (pageId === 'profile') {
+                    this.fetchAndDisplayProfile();
+                } else {
+                    contentContainer.innerHTML = this.getPageContent(pageId);
+                }
+                
+                contentContainer.classList.add('active');
+                
+                // Add event listeners AFTER the content has been injected
+                if (pageId === 'yuku-ai') { 
+                    document.getElementById('ai-execute-btn').addEventListener('click', () => this.handleAiQuery()); 
+                }
+                if (pageId === 'settings') {
+                    const enableBtn = document.getElementById('enable-notifications-btn');
+                    if (enableBtn) {
+                        enableBtn.addEventListener('click', () => {
+                            this.subscribeUserToPush().catch(err => {
+                                console.error('Failed to subscribe:', err);
+                                alert(`Error: ${err.message}`);
+                            });
+                        });
                     }
-                    contentContainer.classList.add('active');
-                    if (pageId === 'yuku-ai') { document.getElementById('ai-execute-btn').addEventListener('click', () => this.handleAiQuery()); }
-                    if (pageId === 'settings') {
-                        const enableBtn = document.getElementById('enable-notifications-btn');
-                        if (enableBtn) {
-                            enableBtn.addEventListener('click', () => this.requestNotificationPermission());
-                        }
+                }
+                
+                let activeLinkText = '';
+                this.elements.navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-page') === pageId) {
+                        link.classList.add('active');
+                        activeLinkText = link.textContent.trim();
                     }
-                    let activeLinkText = '';
-                    this.elements.navLinks.forEach(link => {
-                        link.classList.remove('active');
-                        if (link.getAttribute('data-page') === pageId) {
-                            link.classList.add('active');
-                            activeLinkText = link.textContent.trim();
-                        }
-                    });
-                    this.elements.headerTitle.textContent = activeLinkText;
-                },
-
+                });
+                this.elements.headerTitle.textContent = activeLinkText;
+            },
+// ===========================================
+                
                 async handleAiQuery() {
                     const prompt = document.getElementById("ai-prompt-input").value;
                     const responseContainer = document.getElementById("ai-response-container");
@@ -599,7 +622,7 @@
                         executeBtn.textContent = "Execute";
                     }
                 },
-
+                
                 toggleAuthForms(formToShow = 'login') {
                     this.elements.authErrorBox.classList.add("hidden");
                     const { loginForm, signupForm, forgotPasswordForm } = this.elements;
@@ -612,7 +635,7 @@
                         }
                     });
                 },
-
+                
                 openSidebar() {
                     this.elements.sidebar.classList.remove('-translate-x-full');
                     this.elements.overlay.classList.remove('hidden');
@@ -628,21 +651,29 @@
                 hideProfilePopup() {
                     this.elements.profilePopup.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
                 },
-
+                
                 getPageContent(pageId) {
                     const content = {
                         'yuku-ai': '<div class="glass-panel p-6 rounded-lg"><h3 class="text-2xl font-orbitron text-accent-green mb-4">AI CORE INTERFACE v2.5</h3><p class="text-text-secondary mb-4">Direct link established with Gemini-Flash. Input query below.</p><textarea id="ai-prompt-input" class="input-field w-full p-3 rounded-md" rows="6" placeholder="[Awaiting Directive...]"></textarea><button id="ai-execute-btn" class="tactical-btn mt-4 py-2 px-6 rounded-md">Execute</button><div id="ai-response-container" class="mt-6 glass-panel p-4 rounded-md min-h-[60px]"><p class="text-text-secondary">[GEMINI STATUS: STANDBY]</p></div></div>',
                         'dashboard': '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">GLOBAL STATUS</h4><p class="text-text-secondary">Systems Nominal</p></div><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">ACTIVE THREATS</h4><p class="text-text-secondary">0 Detected</p></div><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">TEAM SYNC</h4><p class="text-text-secondary">12 Agents Online</p></div></div>',
                         'profile': '<div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto"><h3 class="text-2xl font-orbitron text-accent-green mb-4">AGENT DOSSIER</h3><p class="text-text-secondary">Review and update your operative credentials.</p></div>',
-                        'settings':  `
+                        'settings': `
                         <div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto">
                             <h3 class="text-2xl font-orbitron text-accent-green mb-4">SYSTEMS</h3>
                             <p class="text-text-secondary mb-4">Manage your account and notifications.</p>
                             <button id="enable-notifications-btn" class="tactical-btn py-2 px-6 rounded-md">Enable Push Notifications</button>
-                        </div>`  };
+                        </div>
+                        
+                        
+                        <div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto">
+                        <h3 class="text-2xl font-orbitron text-accent-green mb-4">SYSTEMS</h3>
+                        <p class="text-text-secondary mb-4">Manage your account and notifications.</p>
+                        <button id="enable-notifications-btn" class="tactical-btn py-2 px-6 rounded-md">Enable Push Notifications</button>
+                    </div>`
+                    };
                     return content[pageId] || '<p>Content not found.</p>';
                 },
-
+                
                 async fetchAndDisplayProfile() {
                     const contentContainer = document.getElementById('profile-content');
                     if (!authToken) {
@@ -691,18 +722,19 @@
                     }
                 },
             };
-
+            
             const savedToken = localStorage.getItem('authToken');
             if (savedToken) {
                 authToken = savedToken;
                 app.fetchAndDisplayProfile();
                 app.showDashboard('yuku-ai');
             }
-
+            
             app.init();
         });
     </script>
     
-  
+    
 </body>
+
 </html>
