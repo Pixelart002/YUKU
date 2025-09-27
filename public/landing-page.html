@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YUKU Protocol :: The Sentient Core</title>
+    
+    <!-- SheryJS CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/sheryjs/dist/Shery.css" />
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Roboto+Mono:wght@300;400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #000000;
+            --accent-green: #00ff7f;
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a0;
+        }
+        ::selection { background-color: var(--accent-green); color: var(--bg-dark); }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Roboto Mono', monospace;
+            overflow: hidden; /* Lenis handles the scroll */
+            cursor: none;
+        }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        #webgl-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            outline: none;
+            z-index: 1;
+        }
+
+        .content-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .content-section {
+            width: 100%;
+            padding: 0 1.5rem; /* px-6 */
+            display: flex;
+            align-items: center;
+        }
+        #hero { height: 100vh; }
+        .feature-section { min-height: 100vh; }
+
+        .text-content { pointer-events: all; }
+        
+        #preloader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-dark); z-index: 9999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            color: var(--text-primary);
+        }
+        #loader-text { font-size: 2.5rem; }
+        #loader-subtext { color: var(--text-secondary); margin-top: 1rem; }
+
+        #mobile-menu {
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* PERFECTED CURSOR */
+        #cursor-follower {
+            position: fixed; top: 0; left: 0;
+            width: 32px; height: 32px;
+            border: 2px solid var(--accent-green);
+            border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #cursor-dot {
+            position: fixed; top: 0; left: 0;
+            width: 6px; height: 6px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        .interactive-hover #cursor-follower {
+            width: 60px; height: 60px;
+            background-color: rgba(0, 255, 127, 0.1);
+        }
+        .button-hover #cursor-follower {
+            border-radius: 2rem; /* Pill shape for buttons */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- 3D Canvas in the background -->
+    <canvas id="webgl-canvas"></canvas>
+    
+    <!-- Custom Cursor -->
+    <div id="cursor-follower"></div>
+    <div id="cursor-dot"></div>
+
+    <!-- Pre-loader -->
+    <div id="preloader">
+        <h1 id="loader-text" class="font-orbitron">0%</h1>
+        <p id="loader-subtext">Awakening Consciousness...</p>
+    </div>
+
+    <!-- Main Content Overlay -->
+    <div id="main-container" class="content-overlay">
+        <!-- HEADER -->
+        <header class="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-20 text-content">
+             <div class="font-orbitron text-2xl font-bold tracking-widest shery-text interactive">YUKU</div>
+             <nav class="hidden md:flex space-x-8">
+                <a href="#feature1" class="shery-magnetic interactive" data-strength="25">Architecture</a>
+                <a href="#feature2" class="shery-magnetic interactive" data-strength="25">Intelligence</a>
+                <a href="#cta" class="shery-magnetic interactive" data-strength="25">Synthesize</a>
+             </nav>
+             <button id="menu-btn" class="md:hidden shery-magnetic interactive" data-strength="50">
+                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+             </button>
+        </header>
+        
+        <!-- MOBILE MENU PANEL -->
+        <div id="mobile-menu" class="fixed top-0 right-0 h-full w-full bg-black/80 backdrop-blur-lg z-50 transform translate-x-full text-content">
+            <button id="close-btn" class="absolute top-6 right-6 p-2 shery-magnetic interactive">
+                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <nav class="h-full flex flex-col justify-center items-center space-y-8 font-orbitron text-3xl">
+                <a href="#feature1" class="shery-magnetic interactive" data-strength="50">Architecture</a>
+                <a href="#feature2" class="shery-magnetic interactive" data-strength="50">Intelligence</a>
+                <a href="#cta" class="shery-magnetic interactive" data-strength="50">Synthesize</a>
+            </nav>
+        </div>
+
+        <!-- HERO SECTION -->
+        <section id="hero" class="content-section justify-center text-center">
+            <div class="text-content">
+                 <h1 class="font-orbitron text-5xl md:text-8xl lg:text-9xl font-black uppercase text-white tracking-wider leading-tight shery-text">
+                    NEURAL GENESIS
+                </h1>
+            </div>
+        </section>
+
+        <!-- FEATURES SECTION 1 -->
+        <section id="feature1" class="feature-section content-section">
+            <div class="container mx-auto">
+                <div class="w-full md:w-1/2 lg:w-2/5 text-content">
+                    <div class="bg-black/50 backdrop-blur-md border border-white/10 p-8 rounded-2xl">
+                        <h3 class="font-orbitron text-4xl md:text-5xl font-bold shery-text">Hexagonal Mind</h3>
+                        <p class="mt-4 text-text-secondary leading-relaxed">YUKU operates on a hexagonal shard architecture, mirroring nature's most efficient structure. This creates a resilient, infinitely scalable, and truly decentralized neural network.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- FEATURES SECTION 2 -->
+        <section id="feature2" class="feature-section content-section justify-end">
+             <div class="container mx-auto">
+                 <div class="w-full md:w-1/2 lg:w-2/5 ml-auto text-right text-content">
+                    <div class="bg-black/50 backdrop-blur-md border border-white/10 p-8 rounded-2xl">
+                        <h3 class="font-orbitron text-4xl md:text-5xl font-bold shery-text">Crystalline Consciousness</h3>
+                        <p class="mt-4 text-text-secondary leading-relaxed">At its core lies a quantum-proof diamond logic, ensuring that the network's foundational truths are immutable and eternal, protected from any conceivable threat, digital or physical.</p>
+                    </div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- CTA SECTION -->
+        <section id="cta" class="feature-section content-section justify-center text-center">
+             <div class="text-content">
+                <h2 class="font-orbitron text-4xl md:text-6xl font-black text-white shery-text">Synthesize with the Core.</h2>
+                <button class="mt-8 bg-[--accent-green] text-black px-10 py-4 rounded-full font-bold uppercase text-lg shery-magnetic interactive button-like" data-strength="100" data-ease="0.8">Initiate Genesis</button>
+             </div>
+        </section>
+        
+        <footer class="content-section text-center py-20 text-content">
+             <p class="text-text-secondary text-sm">&copy; 2025 YUKU Protocol. Genesis is inevitable.</p>
+        </footer>
+    </div>
+
+    <!-- All JS Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/sheryjs/dist/Shery.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.0.45/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <script>
+        // --- 1. CORE SETUP ---
+        const lenis = new Lenis({ lerp: 0.07, smoothWheel: true });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+        gsap.registerPlugin(ScrollTrigger);
+
+        Shery.mouseFollower(); // We will control the visuals with our own CSS
+        Shery.makeMagnet(".shery-magnetic" , { ease: "cubic-bezier(0.23, 1, 0.320, 1)", duration: 1});
+        Shery.textAnimate(".shery-text", { style: 1, y: 10, duration: 2, ease: "cubic-bezier(0.23, 1, 0.320, 1)", multiplier: 0.1 });
+        
+        const preloader = document.getElementById('preloader');
+        const loaderText = document.getElementById('loader-text');
+        let percent = { val: 0 };
+        gsap.to(percent, {
+            val: 100, duration: 4, ease: "power2.out",
+            onUpdate: () => { loaderText.textContent = `${Math.floor(percent.val)}%`; },
+            onComplete: () => gsap.to(preloader, { opacity: 0, duration: 1.5, onComplete: () => preloader.style.display = 'none' })
+        });
+        
+        // --- PERFECTED CURSOR ---
+        const cursorFollower = document.getElementById('cursor-follower');
+        const interactiveElements = document.querySelectorAll('.interactive, .shery-magnetic');
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursorFollower.classList.add('interactive-hover');
+                if (el.classList.contains('button-like')) {
+                     cursorFollower.classList.add('button-hover');
+                }
+            });
+            el.addEventListener('mouseleave', () => {
+                 cursorFollower.classList.remove('interactive-hover');
+                 cursorFollower.classList.remove('button-hover');
+            });
+        });
+
+        // --- 2. 3D SCENE ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0, 15);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('webgl-canvas'), antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        const clock = new THREE.Clock();
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.enableZoom = false;
+        controls.enablePan = false;
+        
+        const cubeRenderTarget = new THREE.WebGLCubeRenderTarget( 256, { format: THREE.RGBAFormat, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
+        const cubeCamera = new THREE.CubeCamera( 1, 1000, cubeRenderTarget );
+        
+        // --- 3. NEURAL GENESIS CORE MODEL ---
+        const genesisGroup = new THREE.Group();
+        scene.add(genesisGroup);
+
+        const diamondMaterial = new THREE.ShaderMaterial({
+            uniforms: { uTime: { value: 0 }, uIntensity: { value: 0.7 } },
+            vertexShader: `
+                varying vec3 vNormal;
+                void main() { vNormal = normal; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+            `,
+            fragmentShader: `
+                uniform float uTime;
+                uniform float uIntensity;
+                varying vec3 vNormal;
+                void main() {
+                    float pulse = 0.5 + 0.5 * sin(uTime * 3.0);
+                    float fresnel = pow(1.0 - dot(normalize(vNormal), vec3(0,0,1.0)), 3.0);
+                    gl_FragColor = vec4(vec3(fresnel * pulse * uIntensity), 1.0);
+                }
+            `,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+        });
+        const diamondGeometry = new THREE.OctahedronGeometry(1.5, 1);
+        const diamond = new THREE.Mesh(diamondGeometry, diamondMaterial);
+        genesisGroup.add(diamond);
+        
+        const brainGroup = new THREE.Group();
+        genesisGroup.add(brainGroup);
+        const hexGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.1, 6);
+        const hexMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff7f, wireframe: true, transparent: true, opacity: 0.1 });
+        const brainRadius = 3.5;
+        for(let i=0; i < 150; i++) {
+            const phi = Math.acos(-1 + (2 * i) / 150);
+            const theta = Math.sqrt(150 * Math.PI) * phi;
+            const hex = new THREE.Mesh(hexGeometry, hexMaterial);
+            hex.position.setFromSphericalCoords(brainRadius, phi, theta);
+            hex.lookAt(0,0,0);
+            brainGroup.add(hex);
+        }
+        
+        // --- 4. POST-PROCESSING (FOR GLOW EFFECT) ---
+        const renderScene = new THREE.RenderPass( scene, camera );
+        const bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+        bloomPass.threshold = 0;
+        bloomPass.strength = 1.8;
+        bloomPass.radius = 0.6;
+        
+        const composer = new THREE.EffectComposer( renderer );
+        composer.addPass( renderScene );
+        composer.addPass( bloomPass );
+
+        // --- 5. GSAP CINEMATIC TIMELINE ---
+        ScrollTrigger.defaults({ scroller: "#main-container" });
+        
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#main-container",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.5,
+            }
+        });
+        
+        tl.to(camera.position, { z: 6, ease: "power2.inOut" }, "start");
+        tl.to(genesisGroup.rotation, { y: Math.PI * 2 }, "start");
+        tl.to(camera.position, { x: 5, z: 8 }, "scene2");
+        tl.to(camera.position, { x: -5, z: 7 }, "scene3");
+        tl.to(camera.position, { x: 0, y: 0, z: 4.5 }, "scene4");
+        tl.to(camera.rotation, { x: Math.PI / 4 }, "scene4");
+        
+
+        // --- 6. RENDER LOOP & RESPONSIVENESS ---
+        function animate() {
+            const elapsedTime = clock.getElapsedTime();
+            brainGroup.rotation.y = elapsedTime * 0.1;
+            diamond.rotation.y = elapsedTime * 0.2;
+            diamondMaterial.uniforms.uTime.value = elapsedTime;
+            
+            controls.update();
+            composer.render();
+        }
+        renderer.setAnimationLoop(animate);
+        
+        const menuBtn = document.getElementById('menu-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn.addEventListener('click', () => { mobileMenu.style.transform = 'translateX(0)'; });
+        closeBtn.addEventListener('click', () => { mobileMenu.style.transform = 'translateX(100%)'; });
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => { mobileMenu.style.transform = 'translateX(100%)'; });
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        });
+
+    </script>
+</body>
+</html>
+

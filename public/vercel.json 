@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "name": "YUKU Protocol :: The Sentient Core",
+  "builds": [
+    {
+      "src": "main.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/main.html"
+    }
+  ]
+}
