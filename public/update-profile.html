@@ -72,7 +72,7 @@
             <button type="submit" id="save-btn" class="tactical-btn w-full py-3 rounded-md">Save Changes</button>
         </form>
         <p class="mt-6 text-center text-sm">
-            <a href="/index.html" class="font-bold text-gray-400 hover:text-accent-green">← Back to Dashboard</a>
+            <a href="/app.html" class="font-bold text-gray-400 hover:text-accent-green">← Back to Dashboard</a>
         </p>
     </div>
 
@@ -88,7 +88,7 @@
             // 1. Get auth token from localStorage
             const authToken = localStorage.getItem('authToken');
             if (!authToken) {
-                window.location.href = '/index.html'; // Agar login nahi hai, to wapas bhej do
+                window.location.href = '/app.html'; // Agar login nahi hai, to wapas bhej do
             }
 
             // 2. Page load par current user data fetch karo
