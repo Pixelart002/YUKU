@@ -1,0 +1,68 @@
+      getPageContent(pageId) {
+                    const content = {
+                        'yuku-ai': '<div class="glass-panel p-6 rounded-lg"><h3 class="text-2xl font-orbitron text-accent-green mb-4">AI CORE INTERFACE v2.5</h3><p class="text-text-secondary mb-4">Direct link established with Gemini-Flash. Input query below.</p><textarea id="ai-prompt-input" class="input-field w-full p-3 rounded-md" rows="6" placeholder="[Awaiting Directive...]"></textarea><button id="ai-execute-btn" class="tactical-btn mt-4 py-2 px-6 rounded-md">Execute</button><div id="ai-response-container" class="mt-6 glass-panel p-4 rounded-md min-h-[60px]"><p class="text-text-secondary">[GEMINI STATUS: STANDBY]</p></div></div>',
+                        'dashboard': '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">GLOBAL STATUS</h4><p class="text-text-secondary">Systems Nominal</p></div><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">ACTIVE THREATS</h4><p class="text-text-secondary">0 Detected</p></div><div class="glass-panel p-4 rounded-lg"><h4 class="font-orbitron text-accent-green">TEAM SYNC</h4><p class="text-text-secondary">12 Agents Online</p></div></div>',
+                        'profile': '<div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto"><h3 class="text-2xl font-orbitron text-accent-green mb-4">AGENT DOSSIER</h3><p class="text-text-secondary">Review and update your operative credentials.</p></div>',
+                        'settings': `
+                        <div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto">
+                            <h3 class="text-2xl font-orbitron text-accent-green mb-4">SYSTEMS</h3>
+                            <p class="text-text-secondary mb-4">Manage your account and notifications.</p>
+                            <button id="enable-notifications-btn" class="tactical-btn py-2 px-6 rounded-md">Enable Push Notifications</button>
+                        </div>
+                        
+                  
+                  
+                    `
+                    };
+                    return content[pageId] || '<p>Content not found.</p>';
+                },
+                
+                
+                
+                
+    <!------ bext navigate to &----->
+    this
+                // ===========================================
+                navigateTo(pageId) {
+                    this.elements.contentPanels.forEach(p => p.classList.remove('active'));
+                    const contentContainer = document.getElementById(`${pageId}-content`);
+                    
+                    if (pageId === 'profile') {
+                        this.fetchAndDisplayProfile();
+                    } else {
+                        contentContainer.innerHTML = this.getPageContent(pageId);
+                    }
+                    
+                    contentContainer.classList.add('active');
+                    
+                    // Add event listeners AFTER the content has been injected
+                    if (pageId === 'yuku-ai') {
+                        document.getElementById('ai-execute-btn').addEventListener('click', () => this.handleAiQuery());
+                    }
+                    if (pageId === 'settings') {
+                        const enableBtn = document.getElementById('enable-notifications-btn');
+                        if (enableBtn) {
+                            enableBtn.addEventListener('click', () => {
+                                this.subscribeUserToPush().catch(err => {
+                                    console.error('Failed to subscribe:', err);
+                                    alert(`Error: ${err.message}`);
+                                });
+                            });
+                        }
+                    }
+                    
+                    let activeLinkText = '';
+                    this.elements.navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('data-page') === pageId) {
+                            link.classList.add('active');
+                            activeLinkText = link.textContent.trim();
+                        }
+                    });
+                    this.elements.headerTitle.textContent = activeLinkText;
+                },
+                // ===========================================
+             
+                
+                
+                
