@@ -591,15 +591,17 @@
                     if (pageId === 'yuku-ai') {
                         document.getElementById('ai-execute-btn').addEventListener('click', () => this.handleAiQuery());
                     }
-                    if (pageId === 'settings') {
-                        const enableBtn = document.getElementById('enable-notifications-btn');
-                        if (enableBtn) {
-                            enableBtn.addEventListener('click', () => {
-                                // Yahan aapka notification wala code aayega
-                                console.log('Enable notifications clicked');
-                            });
-                        }
-                    }
+                                     if (pageId === 'settings') {
+                      const enableBtn = document.getElementById('enable-notifications-btn');
+                      if (enableBtn) {
+                          enableBtn.addEventListener('click', () => {
+                              this.subscribeUserToPush().catch(err => {
+                                  console.error('Failed to subscribe:', err);
+                                  alert(`Error: ${err.message}`);
+                              });
+                          });
+                      }
+                  }
                 } catch (error) {
                     console.error('Failed to navigate:', error);
                     contentContainer.innerHTML = `<p class="text-red-400 text-center">[ERROR]: Could not load content for this page.</p>`;
