@@ -220,6 +220,21 @@
                             <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
                         </svg>AI CORE
                     </a>
+                    
+                    
+                    <!-- ... baaki ke nav links ke baad -->
+                    <a href="#" class="nav-link flex items-center p-3 rounded-md" data-page="admin-notify">
+                        <!-- Icon SVG yahan daalein -->
+                        <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.2 0 7.625-3.514 7.625-7.812V5.882" />
+                        </svg>
+                        SEND NOTIFY
+                    </a>
+                    
+                    
+                    
+                    
+                    
                     <a href="#" class="nav-link flex items-center p-3 rounded-md" data-page="dashboard">
                         <svg class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM2 10a8 8 0 1116 0 8 8 0 01-16 0z" />
@@ -282,6 +297,14 @@
                 <div id="dashboard-content" class="content-panel"></div>
                 <div id="profile-content" class="content-panel"></div>
                 <div id="settings-content" class="content-panel"></div>
+                
+                
+                
+                <!-- <main> tag ke andar, doosre content-panels ke baad yeh line add karein -->
+                
+                <div id="settings-content" class="content-panel"></div>
+                <!-- YAHAN NAYA DIV ADD KAREIN -->
+                <div id="admin-notify-content" class="content-panel"></div>
             </main>
             <footer class="glass-panel text-center p-2 text-xs text-text-secondary border-t border-border-color">YUKU PROTOCOL v2.5 :: STATUS: SECURE :: LOCATION: NOIDA, UP, INDIA :: TIMESTAMP: <span id="timestamp"></span></footer>
         </div>
@@ -544,6 +567,7 @@
                 
                 // SNIPPET 2: PURANE navigateTo FUNCTION KO ISSE REPLACE KAREIN
                 async navigateTo(pageId) {
+                    
                     // Pehle active link aur header title set karein
                     let activeLinkText = '';
                     this.elements.navLinks.forEach(link => {
@@ -564,6 +588,11 @@
                         return;
                     }
                     
+                   
+                    
+                    
+                    
+                    
                     try {
                         // Agar profile page hai, to seedhe data fetch karein
                         if (pageId === 'profile') {
@@ -571,6 +600,67 @@
                             contentContainer.classList.add('active');
                             return; // Yahan se return ho jaayein
                         }
+                        
+                        
+                        
+                        if (pageId === 'admin-notify') {
+    try {
+        const response = await fetch(`pages/admin-notify.html`);
+        if (!response.ok) throw new Error(`Could not load page: ${response.statusText}`);
+        const html = await response.text();
+        contentContainer.innerHTML = html;
+        contentContainer.classList.add('active');
+
+        // Attach event listeners inside admin-notify
+        const btn = contentContainer.querySelector('#send-custom-notif-btn');
+        const statusEl = contentContainer.querySelector('#notif-status');
+
+        if (btn) {
+            btn.addEventListener('click', () => {
+                const targetEmail = contentContainer.querySelector('#target-email').value;
+                const title = contentContainer.querySelector('#notif-title').value;
+                const body = contentContainer.querySelector('#notif-body').value;
+
+                if (!title || !body) {
+                    statusEl.textContent = 'Title and Body are required.';
+                    statusEl.className = 'text-red-400';
+                    return;
+                }
+
+                const endpoint = targetEmail ? 'send-custom' : 'broadcast';
+                const payload = targetEmail ? { target_email: targetEmail, title, body } : { title, body };
+
+                statusEl.textContent = 'Sending...';
+                statusEl.className = 'text-yellow-400';
+
+                fetch(`${this.config.API_BASE_URL}/webpush/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.detail) throw new Error(data.detail);
+                    statusEl.textContent = data.message || 'Notification sent!';
+                    statusEl.className = 'text-green-400';
+                })
+                .catch(err => {
+                    statusEl.textContent = `Error: ${err.message}`;
+                    statusEl.className = 'text-red-400';
+                });
+            });
+        }
+    } catch (err) {
+        contentContainer.innerHTML = `<p class="text-red-400">Error loading admin-notify: ${err.message}</p>`;
+        contentContainer.classList.add('active');
+    }
+    return;
+}
+                        
+                        
                         
                         // Baaki pages ke liye HTML file fetch karein
                         const response = await fetch(`pages/${pageId}.html`);
@@ -582,6 +672,7 @@
                         // Fetched HTML ko container mein daalein
                         contentContainer.innerHTML = html;
                         contentContainer.classList.add('active');
+                        
                         
                         // HTML load hone ke baad event listeners attach karein
                         if (pageId === 'yuku-ai') {
@@ -597,7 +688,9 @@
                                     });
                                 });
                             }
+                                          
                         }
+        
                     } catch (error) {
                         console.error('Failed to navigate:', error);
                         contentContainer.innerHTML = `<p class="text-red-400 text-center">[ERROR]: Could not load content for this page.</p>`;
