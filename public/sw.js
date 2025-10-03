@@ -5,7 +5,7 @@ self.addEventListener('push', event => {
   const title = data.title || "YUKU Protocol";
   const options = {
     body: data.body,
-    icon: '/yuku-icon.png', // Optional: You can change this to your logo's path
+    icon: '/ofc.jpg', // Optional: You can change this to your logo's path
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
