@@ -1,22 +1,28 @@
 <div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto">
-  <h3 class="text-2xl font-orbitron text-accent-green mb-6">Custom Notification Console</h3>
+  <h3 class="text-2xl font-orbitron text-accent-green mb-4">NOTIFICATION DISPATCHER</h3>
+  <p class="text-text-secondary mb-6">
+    Send a notification to a specific user by providing their email, or leave the email field blank to broadcast to all subscribed users.
+  </p>
   
   <div class="space-y-4">
     <div>
-      <label for="target-email" class="block text-sm font-medium text-text-secondary">Target Email (Leave blank to broadcast to all)</label>
-      <input type="email" id="target-email" class="input-field mt-1 block w-full rounded-md" placeholder="agent.email@example.com">
+      <label for="target-email" class="block text-sm font-medium text-text-secondary">Target Email (Optional)</label>
+      <input type="email" id="target-email" class="input-field mt-1 w-full p-3 rounded-md" placeholder="user@example.com">
     </div>
     <div>
-      <label for="notif-title" class="block text-sm font-medium text-text-secondary">Notification Title</label>
-      <input type="text" id="notif-title" class="input-field mt-1 block w-full rounded-md" placeholder="System Alert">
+      <label for="notif-title" class="block text-sm font-medium text-text-secondary">Notification Title (Required)</label>
+      <input type="text" id="notif-title" class="input-field mt-1 w-full p-3 rounded-md" placeholder="System-Wide Announcement!">
     </div>
     <div>
-      <label for="notif-body" class="block text-sm font-medium text-text-secondary">Notification Body</label>
-      <textarea id="notif-body" rows="4" class="input-field mt-1 block w-full rounded-md" placeholder="Your message here..."></textarea>
+      <label for="notif-body" class="block text-sm font-medium text-text-secondary">Notification Body (Required)</label>
+      <textarea id="notif-body" class="input-field mt-1 w-full p-3 rounded-md" rows="4" placeholder="A new feature has been added..."></textarea>
     </div>
-    <div class="pt-4">
-      <button id="send-custom-notif-btn" class="tactical-btn w-full py-3 rounded-md">Send Notification</button>
-    </div>
-    <div id="notif-status" class="text-center text-sm pt-2"></div>
+  </div>
+  
+  <div class="mt-6">
+    <button id="send-custom-notif-btn" class="tactical-btn w-full py-3 rounded-md">Dispatch Notification</button>
+  </div>
+  
+  <div id="notif-status" class="mt-4 text-center text-sm">
   </div>
 </div>
