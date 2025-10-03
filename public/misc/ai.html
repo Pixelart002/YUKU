@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mistral API Test</title>
+</head>
+<body>
+  <h2>Mistral AI Query</h2>
+  <input type="text" id="question" placeholder="Enter your question">
+  <button id="sendBtn">Send</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    document.getElementById('sendBtn').addEventListener('click', async () => {
+      const question = document.getElementById('question').value;
+      const url = `/api?question=${encodeURIComponent(question)}`;
+      const options = { method: 'GET' };
+
+      try {
+        const response = await fetch(url, options);
+        const data = await response.json();
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        console.log(data);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
