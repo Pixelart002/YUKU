@@ -633,7 +633,7 @@
                 statusEl.textContent = 'Sending...';
                 statusEl.className = 'text-yellow-400';
 
-                fetch(`${this.config.API_BASE_URL}/webpush/${endpoint}`, {
+                fetch(`${this.config.API_BASE_URL}/notifications/${endpoint}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
