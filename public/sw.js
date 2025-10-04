@@ -6,6 +6,7 @@ self.addEventListener('push', event => {
   const options = {
     body: data.body,
     icon: '/ofc.jpg', // Optional: You can change this to your logo's path
+    image: data.image
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
