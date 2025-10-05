@@ -1,64 +1,8 @@
-
-<div class="max-w-3xl mx-auto space-y-8">
-
-    <div class="glass-panel p-6 rounded-lg">
-        <h3 class="text-xl font-orbitron text-accent-green mb-4 border-b border-border-color pb-2">🎨 APPEARANCE</h3>
-        <div class="flex items-center justify-between">
-            <p class="text-text-secondary">Interface Theme</p>
-            <div class="flex items-center space-x-4">
-                <span class="text-text-primary font-bold">DARK</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="theme-toggler">
-                    <span class="slider"></span>
-                </label>
-                <span class="text-text-secondary">LIGHT</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="glass-panel p-6 rounded-lg">
-        <h3 class="text-xl font-orbitron text-accent-green mb-4 border-b border-border-color pb-2">🔔 NOTIFICATIONS</h3>
-        <p class="text-text-secondary mb-4">Manage how you receive alerts from the system.</p>
-        <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <p class="text-text-primary">Enable Push Notifications</p>
-                <button id="enable-notifications-btn" class="tactical-btn py-2 px-6 rounded-md text-sm">CONNECT</button>
-            </div>
-            <div class="flex items-center justify-between">
-                <p class="text-text-primary">AI Core Alerts</p>
-                 <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
-            </div>
-             <div class="flex items-center justify-between">
-                <p class="text-text-primary">Admin Broadcasts</p>
-                 <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
-            </div>
-        </div>
-    </div>
-
-    <div class="glass-panel p-6 rounded-lg">
-        <h3 class="text-xl font-orbitron text-accent-green mb-4 border-b border-border-color pb-2">🔒 SECURITY</h3>
-        <div class="space-y-4">
-             <div class="flex items-center justify-between">
-                <p class="text-text-primary">Change Passcode</p>
-                <button id="change-passcode-btn" class="tactical-btn py-2 px-6 rounded-md text-sm">UPDATE</button>
-            </div>
-            <div class="flex items-center justify-between">
-                <p class="text-text-primary">Two-Factor Authentication (2FA)</p>
-                <button id="setup-2fa-btn" class="tactical-btn py-2 px-6 rounded-md text-sm bg-gray-600 hover:bg-gray-500">SETUP</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="border-2 border-red-500/50 p-6 rounded-lg">
-        <h3 class="text-xl font-orbitron text-red-400 mb-4">🚨 DANGER ZONE</h3>
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-text-primary font-bold">Delete Account</p>
-                <p class="text-text-secondary text-sm">Once deleted, all your data will be gone forever.</p>
-            </div>
-            <button id="delete-account-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-md uppercase text-sm">DELETE</button>
-        </div>
-    </div>
-</div>
-
-<script src="/public/sw.js" type="text/javascript" charset="utf-8"></script>
+<div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto">
+          <h3 class="text-2xl font-orbitron text-accent-green mb-4">SYSTEMS</h3>
+          <p class="text-text-secondary mb-4">Manage your account and notifications.</p>
+          <button id="enable-notifications-btn" class="tactical-btn py-2 px-6 rounded-md">Enable Push Notifications</button>
+      </div>
+      
+      
+    <script src="/public/sw.js" type="text/javascript" charset="utf-8"></script>
