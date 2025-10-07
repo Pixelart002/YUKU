@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         
         elements: {
-            
             authPage: document.getElementById('auth-page'),
             dashboardPage: document.getElementById('dashboard-page'),
             loginFormAction: document.getElementById('loginFormAction'),
