@@ -11,51 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         
         
-        urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-        }
-        return outputArray;
-    },
-    
-    async subscribeUserToPush() {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            throw new Error('Push notifications are not supported by this browser.');
-        }
         
-        const registration = await navigator.serviceWorker.register('/sw.js');
-        await navigator.serviceWorker.ready;
-        const permission = await Notification.requestPermission();
-        
-        if (permission !== 'granted') {
-            throw new Error('Notification permission was not granted.');
-        }
-        
-        const response = await fetch(`${this.config.API_BASE_URL}/webpush/vapid-public-key`);
-        if (!response.ok) {
-            throw new Error('Failed to get VAPID key from server.');
-        }
-        const { public_key } = await response.json();
-        
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: this.urlBase64ToUint8Array(public_key)
-        });
-        
-        await fetch(`${this.config.API_BASE_URL}/webpush/subscribe`, {
-            method: 'POST',
-            body: JSON.stringify(subscription),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.getAuthToken()}`
-            }
-        });
-    },      
         elements: {
+            
             authPage: document.getElementById('auth-page'),
             dashboardPage: document.getElementById('dashboard-page'),
             loginFormAction: document.getElementById('loginFormAction'),
