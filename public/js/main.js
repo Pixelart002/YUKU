@@ -1,11 +1,60 @@
 document.addEventListener('DOMContentLoaded', () => {
     let authToken = null;
-
+    
     const app = {
         currentPageScript: null,
         config: {
             API_BASE_URL: 'https://open-feliza-pixelart002-78fb4fe8.koyeb.app'
         },
+        
+        
+        
+        
+        
+        urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    },
+    
+    async subscribeUserToPush() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            throw new Error('Push notifications are not supported by this browser.');
+        }
+        
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        await navigator.serviceWorker.ready;
+        const permission = await Notification.requestPermission();
+        
+        if (permission !== 'granted') {
+            throw new Error('Notification permission was not granted.');
+        }
+        
+        const response = await fetch(`${this.config.API_BASE_URL}/webpush/vapid-public-key`);
+        if (!response.ok) {
+            throw new Error('Failed to get VAPID key from server.');
+        }
+        const { public_key } = await response.json();
+        
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: this.urlBase64ToUint8Array(public_key)
+        });
+        
+        await fetch(`${this.config.API_BASE_URL}/webpush/subscribe`, {
+            method: 'POST',
+            body: JSON.stringify(subscription),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.getAuthToken()}`
+            }
+        });
+    },      
         elements: {
             authPage: document.getElementById('auth-page'),
             dashboardPage: document.getElementById('dashboard-page'),
@@ -25,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             profileInitials: document.getElementById('profile-initials'),
             timestamp: document.getElementById('timestamp'),
         },
-
+        
         init() {
             this.addEventListeners();
             this.updateTimestamp();
@@ -37,13 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.showDashboard('yuku-ai');
             }
         },
-
+        
         addEventListeners() {
-            this.elements.signupFormAction.addEventListener('submit', (e) => { e.preventDefault(); this.handleSignup(); });
-            this.elements.loginFormAction.addEventListener('submit', (e) => { e.preventDefault(); this.handleLogin(); });
-            this.elements.logoutBtn.addEventListener('click', (e) => { e.preventDefault(); this.showAuthPage(); });
-            this.elements.showSignupBtn.addEventListener('click', (e) => { e.preventDefault(); this.toggleAuthForms('signup'); });
-            this.elements.showLoginBtn.addEventListener('click', (e) => { e.preventDefault(); this.toggleAuthForms('login'); });
+            this.elements.signupFormAction.addEventListener('submit', (e) => { e.preventDefault();
+                this.handleSignup(); });
+            this.elements.loginFormAction.addEventListener('submit', (e) => { e.preventDefault();
+                this.handleLogin(); });
+            this.elements.logoutBtn.addEventListener('click', (e) => { e.preventDefault();
+                this.showAuthPage(); });
+            this.elements.showSignupBtn.addEventListener('click', (e) => { e.preventDefault();
+                this.toggleAuthForms('signup'); });
+            this.elements.showLoginBtn.addEventListener('click', (e) => { e.preventDefault();
+                this.toggleAuthForms('login'); });
             this.elements.hamburgerBtn.addEventListener('click', () => this.openSidebar());
             this.elements.closeBtn.addEventListener('click', () => this.closeSidebar());
             this.elements.overlay.addEventListener('click', () => this.closeSidebar());
@@ -59,13 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
         getAuthToken() {
             return authToken;
         },
-
+        
         async navigateTo(pageId) {
             if (this.currentPageScript) {
                 document.body.removeChild(this.currentPageScript);
                 this.currentPageScript = null;
             }
-
+            
             let activeLinkText = '';
             this.elements.navLinks.forEach(link => {
                 link.classList.remove('active');
@@ -75,24 +129,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             this.elements.headerTitle.textContent = activeLinkText;
-
+            
             this.elements.contentPanels.forEach(p => p.classList.remove('active'));
             const contentContainer = document.getElementById(`${pageId}-content`);
             if (!contentContainer) return;
-
+            
             if (pageId === 'profile') {
                 await this.fetchAndDisplayProfile();
                 contentContainer.classList.add('active');
                 return;
             }
-
+            
             try {
                 const response = await fetch(`pages/${pageId}.html`);
                 if (!response.ok) throw new Error(`Could not load page: ${response.statusText}`);
                 const html = await response.text();
                 contentContainer.innerHTML = html;
                 contentContainer.classList.add('active');
-
+                
                 const scriptPath = `js/pages/${pageId}.js`;
                 const scriptCheck = await fetch(scriptPath);
                 
@@ -114,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 contentContainer.classList.add('active');
             }
         },
-
+        
         async handleApiRequest(endpoint, options = {}, button = null) {
             if (button) button.disabled = true;
             this.elements.authErrorBox.classList.add('hidden');
@@ -154,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const button = this.elements.loginFormAction.querySelector('button');
             const email = emailOverride || document.getElementById('login-email-address').value;
             const password = passwordOverride || document.getElementById('login-password').value;
-             const options = {
+            const options = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -167,13 +221,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.showDashboard('yuku-ai');
             }
         },
-
+        
         async handleAiQuery() {
             const prompt = document.getElementById("ai-prompt-input").value;
             const responseContainer = document.getElementById("ai-response-container");
             const executeBtn = document.getElementById("ai-execute-btn");
             if (!prompt.trim()) return;
-
+            
             executeBtn.disabled = true;
             executeBtn.textContent = "Processing...";
             responseContainer.innerHTML = "<p class='text-text-secondary'>[TRANSMITTING...]</p>";
@@ -184,8 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ prompt })
             };
             const data = await this.handleApiRequest('ai/ask', options);
-
-            if(data && data.response) {
+            
+            if (data && data.response) {
                 responseContainer.innerHTML = `<h5 class="font-orbitron text-accent-green">YUKU RESPONSE:</h5><p class="mt-2 whitespace-pre-wrap">${data.response.trim()}</p>`;
             } else {
                 responseContainer.innerHTML = `<p class='text-red-500'>[CONNECTION FAILED]</p>`;
@@ -193,25 +247,25 @@ document.addEventListener('DOMContentLoaded', () => {
             executeBtn.disabled = false;
             executeBtn.textContent = "Execute";
         },
-
+        
         updateUserInfo(user) {
             const { fullname, email } = user;
             const initials = fullname ? fullname.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';
             this.elements.profileInitials.textContent = initials;
         },
-
+        
         showAuthError(message) {
             this.elements.authErrorBox.textContent = `[ERROR]: ${message}`;
             this.elements.authErrorBox.classList.remove('hidden');
         },
-
+        
         showDashboard(defaultPage) {
             this.fetchAndDisplayProfile();
             this.elements.authPage.classList.replace('page-visible', 'page-hidden');
             this.elements.dashboardPage.classList.replace('page-hidden', 'page-visible');
             this.navigateTo(defaultPage);
         },
-
+        
         showAuthPage() {
             authToken = null;
             localStorage.removeItem('authToken');
@@ -222,28 +276,28 @@ document.addEventListener('DOMContentLoaded', () => {
             this.elements.dashboardPage.classList.replace('page-visible', 'page-hidden');
             this.elements.authPage.classList.replace('page-hidden', 'page-visible');
         },
-
+        
         updateTimestamp() {
             this.elements.timestamp.textContent = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
         },
-
+        
         toggleAuthForms(formToShow) {
             document.getElementById('login-form').classList.toggle('form-visible', formToShow === 'login');
             document.getElementById('login-form').classList.toggle('form-hidden', formToShow !== 'login');
             document.getElementById('signup-form').classList.toggle('form-visible', formToShow === 'signup');
             document.getElementById('signup-form').classList.toggle('form-hidden', formToShow !== 'signup');
         },
-
+        
         openSidebar() {
             this.elements.sidebar.classList.remove('-translate-x-full');
             this.elements.overlay.classList.remove('hidden');
         },
-
+        
         closeSidebar() {
             this.elements.sidebar.classList.add('-translate-x-full');
             this.elements.overlay.classList.add('hidden');
         },
-
+        
         async fetchAndDisplayProfile() {
             const options = {
                 method: 'GET',
@@ -263,8 +317,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.showAuthPage();
             }
         },
+        
+    
     };
-
+    
     window.app = app;
     app.init();
 });
