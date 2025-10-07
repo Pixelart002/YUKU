@@ -116,11 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const contentContainer = document.getElementById(`${pageId}-content`);
             if (!contentContainer) return;
             
-            if (pageId === 'profile') {
-                await this.fetchAndDisplayProfile();
-                contentContainer.classList.add('active');
-                return;
-            }
+        
             
             try {
                 const response = await fetch(`pages/${pageId}.html`);
