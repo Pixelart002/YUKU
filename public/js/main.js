@@ -30,6 +30,16 @@ document.addEventListener('DOMContentLoaded', () => {
             headerTitle: document.getElementById('header-title'),
             profileInitials: document.getElementById('profile-initials'),
             timestamp: document.getElementById('timestamp'),
+            // START: YEH LINES ADD KAREIN
+            headerActions: document.getElementById('header-actions'),
+            profileBtn: document.getElementById('profile-btn'),
+            profilePopup: document.getElementById('profile-popup'),
+            popupName: document.getElementById('popup-name'),
+            popupUsername: document.getElementById('popup-username'),
+            popupEmail: document.getElementById('popup-email'),
+            // END: YEH LINES ADD KAREIN
+       
+       
         },
         
         init() {
@@ -45,16 +55,26 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         addEventListeners() {
-            this.elements.signupFormAction.addEventListener('submit', (e) => { e.preventDefault();
-                this.handleSignup(); });
-            this.elements.loginFormAction.addEventListener('submit', (e) => { e.preventDefault();
-                this.handleLogin(); });
-            this.elements.logoutBtn.addEventListener('click', (e) => { e.preventDefault();
-                this.showAuthPage(); });
-            this.elements.showSignupBtn.addEventListener('click', (e) => { e.preventDefault();
-                this.toggleAuthForms('signup'); });
-            this.elements.showLoginBtn.addEventListener('click', (e) => { e.preventDefault();
-                this.toggleAuthForms('login'); });
+            this.elements.signupFormAction.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleSignup();
+            });
+            this.elements.loginFormAction.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleLogin();
+            });
+            this.elements.logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showAuthPage();
+            });
+            this.elements.showSignupBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleAuthForms('signup');
+            });
+            this.elements.showLoginBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleAuthForms('login');
+            });
             this.elements.hamburgerBtn.addEventListener('click', () => this.openSidebar());
             this.elements.closeBtn.addEventListener('click', () => this.closeSidebar());
             this.elements.overlay.addEventListener('click', () => this.closeSidebar());
@@ -65,6 +85,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (window.innerWidth < 768) this.closeSidebar();
                 });
             });
+            // START: YEH LINES ADD KAREIN
+    this.elements.profileBtn.addEventListener('mouseenter', () => this.showProfilePopup());
+    this.elements.profileBtn.addEventListener('mouseleave', () => this.hideProfilePopup());
+    this.elements.profileBtn.addEventListener('click', () => { this.navigateTo('profile'); if (window.innerWidth < 768) this.closeSidebar(); });
+    // END: YEH LINES ADD KAREIN
         },
         
         getAuthToken() {
@@ -205,11 +230,16 @@ document.addEventListener('DOMContentLoaded', () => {
             executeBtn.textContent = "Execute";
         },
         
-        updateUserInfo(user) {
-            const { fullname, email } = user;
-            const initials = fullname ? fullname.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';
-            this.elements.profileInitials.textContent = initials;
-        },
+        // Is poore function ko apne purane 'updateUserInfo' function se replace karein
+updateUserInfo(user) {
+    const { fullname, username, email } = user;
+    const initials = fullname ? fullname.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';
+    
+    this.elements.profileInitials.textContent = initials;
+    this.elements.popupName.textContent = fullname || '';
+    this.elements.popupUsername.textContent = username ? `@${username}` : '';
+    this.elements.popupEmail.textContent = email || '';
+},
         
         showAuthError(message) {
             this.elements.authErrorBox.textContent = `[ERROR]: ${message}`;
@@ -253,8 +283,18 @@ document.addEventListener('DOMContentLoaded', () => {
         closeSidebar() {
             this.elements.sidebar.classList.add('-translate-x-full');
             this.elements.overlay.classList.add('hidden');
+      this.hideProfilePopup(); // Ise yahan bhi call karein
         },
         
+        // START: YEH DO FUNCTIONS ADD KAREIN
+showProfilePopup() {
+    this.elements.profilePopup.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+},
+
+hideProfilePopup() {
+    this.elements.profilePopup.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+},
+// END: YEH DO FUNCTIONS ADD KAREIN
         async fetchAndDisplayProfile() {
             const options = {
                 method: 'GET',
@@ -275,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         
-    
+        
     };
     
     window.app = app;
