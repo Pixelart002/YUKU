@@ -304,12 +304,40 @@ hideProfilePopup() {
             if (userData) {
                 this.updateUserInfo(userData);
                 const contentContainer = document.getElementById('profile-content');
-                contentContainer.innerHTML = `<div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto space-y-4">
-                    <h3 class="text-2xl font-orbitron text-accent-green">AGENT DOSSIER</h3>
-                    <div><p class="text-sm text-text-secondary">USERNAME</p><p class="text-lg">@${userData.username}</p></div>
-                    <div><p class="text-sm text-text-secondary">FULL NAME</p><p class="text-lg">${userData.fullname}</p></div>
-                    <div><p class="text-sm text-text-secondary">AGENT ID (EMAIL)</p><p class="text-lg">${userData.email}</p></div>
-                </div>`;
+                contentContainer.innerHTML = `<div class="glass-panel relative p-6 rounded-lg max-w-2xl mx-auto space-y-4 border border-[var(--border-color)] bg-[var(--bg-medium)]/50 backdrop-blur-md shadow-md">
+    <!-- Header with right-aligned edit icon -->
+    <div class="flex items-center justify-between">
+        <h3 class="text-2xl font-orbitron text-[var(--accent-green)]">AGENT DOSSIER</h3>
+
+        <a 
+            href="/misc/update-profile.html" 
+            title="Edit Profile"
+            class="transition-transform hover:scale-110"
+        >
+            <img 
+                src="https://cdn-icons-png.flaticon.com/512/1782/1782750.png" 
+                alt="Edit Profile"
+                class="w-6 h-6 opacity-90 hover:opacity-100 drop-shadow-[0_0_6px_var(--accent-green)]"
+            >
+        </a>
+    </div>
+
+    <!-- Profile Info -->
+    <div>
+        <p class="text-sm text-text-secondary">USERNAME</p>
+        <p class="text-lg">@${userData.username}</p>
+    </div>
+
+    <div>
+        <p class="text-sm text-text-secondary">FULL NAME</p>
+        <p class="text-lg">${userData.fullname}</p>
+    </div>
+
+    <div>
+        <p class="text-sm text-text-secondary">AGENT ID (EMAIL)</p>
+        <p class="text-lg">${userData.email}</p>
+    </div>
+</div>`;
             } else {
                 this.showAuthPage();
             }
