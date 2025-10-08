@@ -382,6 +382,74 @@ hideProfilePopup() {
         },
         
         
+        
+        
+        // File: js/main.js -> inside the 'app' object
+async handleFeedbackSubmit(rating, comment) {
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.getAuthToken()}`
+        },
+        body: JSON.stringify({ rating, comment })
+    };
+    const result = await this.handleApiRequest('feedback/', options);
+    return result !== null;
+},
+        
+   
+   
+   
+   
+   // File: js/main.js -> inside the 'app' object
+
+// This is a helper function to generate star HTML
+_createStarsHtml(rating) {
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            stars += `<span class="text-2xl ${i <= rating ? 'text-accent-green' : 'text-gray-600'}">&star;</span>`;
+        }
+        return `<div class="flex">${stars}</div>`;
+    },
+    
+    async handleFetchTestimonials() {
+        const container = document.getElementById('testimonials-list');
+        if (!container) return;
+        
+        container.innerHTML = `<p class="text-center text-text-secondary">Loading testimonials...</p>`;
+        
+        const testimonials = await this.handleApiRequest('feedback/');
+        
+        if (testimonials && testimonials.length > 0) {
+            container.innerHTML = ''; // Clear loading message
+            testimonials.forEach(item => {
+                const date = new Date(item.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                const card = `
+                <div class="glass-panel p-6 rounded-lg border-l-4 border-accent-green">
+                    <p class="text-text-primary italic">"${item.comment}"</p>
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="text-sm">
+                            <span class="font-bold text-accent-green">@${item.username}</span>
+                            <span class="text-text-secondary ml-2">${date}</span>
+                        </div>
+                        ${this._createStarsHtml(item.rating)}
+                    </div>
+                </div>
+            `;
+                container.innerHTML += card;
+            });
+        } else if (testimonials) {
+            container.innerHTML = `<p class="text-center text-text-secondary">No testimonials submitted yet.</p>`;
+        } else {
+            container.innerHTML = `<p class="text-center text-red-400">[ERROR] Could not load testimonials.</p>`;
+        }
+    },
+   
+   
+   
+   
+        
     };
     
     window.app = app;
