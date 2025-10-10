@@ -419,7 +419,7 @@ _createStarsHtml(rating) {
         
         container.innerHTML = `<p class="text-center text-text-secondary">Loading testimonials...</p>`;
         
-        const testimonials = await this.handleApiRequest('feedback/');
+        const testimonials = await     this.handleApiRequest('feedback/');
         
         if (testimonials && testimonials.length > 0) {
             container.innerHTML = ''; // Clear loading message
