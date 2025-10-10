@@ -1,89 +1,10 @@
 <style>
-    :root {
-        --bg-dark: #1a1a1a;
-        --bg-medium: #2a2a2a;
-        --border-color: #444;
-        --accent-green: #00ff7f;
-        --text-primary: #e0e0e0;
-        --text-secondary: #a0a0a0;
-    }
-    
-    .glass-panel {
-        background: rgba(42, 42, 42, 0.6);
-        backdrop-filter: blur(8px);
-        border: 1px solid var(--border-color);
-        box-shadow: 0 0 20px rgba(0, 255, 127, 0.15);
-    }
-    
-    .rating {
-        display: flex;
-        flex-direction: row-reverse;
-        justify-content: center;
-        gap: 8px;
-    }
-    
-    .rating>input {
-        display: none;
-    }
-    
-    .rating>label {
-        position: relative;
-        font-size: 2.5rem;
-        color: var(--border-color);
-        cursor: pointer;
-        transition: color 0.2s ease, transform 0.2s ease;
-    }
-    
-    .rating>label::before {
-        content: "★";
-    }
-    
-    .rating>label:hover,
-    .rating>label:hover~label {
-        color: var(--accent-green);
-        transform: scale(1.1);
-    }
-    
-    .rating>input:checked~label {
-        color: var(--accent-green);
-    }
-    
-    .input-field {
-        background: var(--bg-medium);
-        border: 1px solid var(--border-color);
-        color: var(--text-primary);
-        resize: none;
-        transition: border-color 0.3s ease;
-    }
-    
-    .input-field:focus {
-        border-color: var(--accent-green);
-        outline: none;
-    }
-    
-    .tactical-btn {
-        background: var(--accent-green);
-        color: var(--bg-dark);
-        font-weight: 600;
-        transition: background 0.3s ease, transform 0.2s ease;
-    }
-    
-    .tactical-btn:hover {
-        background: #00e673;
-        transform: scale(1.03);
-    }
-    
-    .font-orbitron {
-        font-family: 'Orbitron', sans-serif;
-    }
-    
-    .text-accent-green {
-        color: var(--accent-green);
-    }
-    
-    .text-text-secondary {
-        color: var(--text-secondary);
-    }
+    .rating { display: flex; flex-direction: row-reverse; justify-content: center; }
+    .rating > input { display: none; }
+    .rating > label { position: relative; width: 1.1em; font-size: 2.5rem; color: var(--border-color); cursor: pointer; }
+    .rating > label::before { content: "\2605"; position: absolute; opacity: 1; }
+    .rating > label:hover:before, .rating > label:hover ~ label:before { color: var(--accent-green); opacity: 0.7; }
+    .rating > input:checked ~ label:before { color: var(--accent-green); opacity: 1; }
 </style>
 
 <div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto text-center">
@@ -91,15 +12,15 @@
     <p class="text-text-secondary mb-6">How would you rate your experience?</p>
     
     <div id="feedback-status" class="mb-4 text-center"></div>
-    
+
     <div class="rating mb-4">
-        <input type="radio" id="star5" name="rating" value="5"><label for="star5" title="5 stars"></label>
-        <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 stars"></label>
-        <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 stars"></label>
-        <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 stars"></label>
-        <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 star"></label>
+        <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 stars"></label>
+        <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars"></label>
+        <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars"></label>
+        <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars"></label>
+        <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star"></label>
     </div>
-    
+
     <textarea id="feedback-textarea" class="input-field w-full p-3 rounded-md h-32" placeholder="Tell us more about your experience (min. 10 characters)..."></textarea>
     
     <button id="submit-feedback-btn" class="tactical-btn w-full mt-4 py-3 rounded-md">
