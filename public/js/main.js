@@ -426,17 +426,24 @@ _createStarsHtml(rating) {
             testimonials.forEach(item => {
                 const date = new Date(item.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
                 const card = `
-                <div class="glass-panel p-6 rounded-lg border-l-4 border-accent-green">
-                    <p class="text-text-primary italic">"${item.comment}"</p>
-                    <div class="flex items-center justify-between mt-4">
-                        <div class="text-sm">
-                            <span class="font-bold text-accent-green">@${item.username}</span>
-                            <span class="text-text-secondary ml-2">${date}</span>
-                        </div>
-                        ${this._createStarsHtml(item.rating)}
-                    </div>
-                </div>
-            `;
+                <div class="glass-panel p-6 rounded-xl border-l-4 border-accent-green bg-[rgba(26,26,26,0.8)] shadow-lg backdrop-blur-md transition-transform hover:-translate-y-1 hover:shadow-2xl duration-300 break-words">
+    <!-- Comment Text -->
+    <p class="text-text-primary italic text-sm md:text-base leading-relaxed mb-4">"${item.comment}"</p>
+
+    <!-- User Info + Stars -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between">
+        <!-- Username & Date -->
+        <div class="text-sm flex items-center gap-2">
+            <span class="font-bold text-accent-green">@${item.username}</span>
+            <span class="text-text-secondary ml-0 md:ml-2">${date}</span>
+        </div>
+
+        <!-- Star Rating -->
+        <div class="flex items-center space-x-1 mt-2 md:mt-0">
+            ${this._createStarsHtml(item.rating)}
+        </div>
+    </div>
+</div>    `;
                 container.innerHTML += card;
             });
         } else if (testimonials) {
