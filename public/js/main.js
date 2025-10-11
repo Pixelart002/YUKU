@@ -338,6 +338,13 @@ showAuthError(error) {
             this.elements.authPage.classList.replace('page-visible', 'page-hidden');
             this.elements.dashboardPage.classList.replace('page-hidden', 'page-visible');
             this.navigateTo(defaultPage);
+            
+            
+            
+    // DASHBOARD DIKHNE KE 5 SECONDS BAAD PROMPT CALL HOGA
+    setTimeout(() => {
+        promptForNotifications();
+    }, 5000); // 5000 milliseconds = 5 seconds
         },
         
         showAuthPage() {
