@@ -55,10 +55,24 @@ document.addEventListener('DOMContentLoaded', () => {
             dashboardPage: document.getElementById('dashboard-page'),
             loginFormAction: document.getElementById('loginFormAction'),
             signupFormAction: document.getElementById('signupFormAction'),
+            // START: YEH LINE ADD KAREIN
+forgotPasswordFormAction: document.getElementById('forgotPasswordFormAction'),
+// END: YEH LINE ADD KAREIN
+
+
+
             logoutBtn: document.getElementById('logoutBtn'),
             authErrorBox: document.getElementById('auth-error-box'),
             showSignupBtn: document.getElementById('show-signup'),
             showLoginBtn: document.getElementById('show-login'),
+            
+            
+            // START: YEH DO LINES ADD KAREIN
+showForgotPasswordBtn: document.getElementById('show-forgot-password'),
+backToLoginBtn: document.getElementById('back-to-login'),
+// END: YEH DO LINES ADD KAREIN
+
+
             hamburgerBtn: document.getElementById('hamburgerBtn'),
             closeBtn: document.getElementById('closeBtn'),
             sidebar: document.getElementById('sidebar'),
@@ -101,6 +115,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 this.handleLogin();
             });
+            
+            
+            
+            
+            
+            // START: YEH LINES ADD KAREIN
+this.elements.forgotPasswordFormAction.addEventListener('submit', (e) => { e.preventDefault(); this.handleForgotPassword(); });
+this.elements.showForgotPasswordBtn.addEventListener('click', (e) => { e.preventDefault(); this.toggleAuthForms('forgot'); });
+this.elements.backToLoginBtn.addEventListener('click', (e) => { e.preventDefault(); this.toggleAuthForms('login'); });
+// END: YEH LINES ADD KAREIN
+            
+            
+            
             this.elements.logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.showAuthPage();
@@ -306,13 +333,16 @@ updateUserInfo(user) {
             this.elements.timestamp.textContent = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
         },
         
-        toggleAuthForms(formToShow) {
-            document.getElementById('login-form').classList.toggle('form-visible', formToShow === 'login');
-            document.getElementById('login-form').classList.toggle('form-hidden', formToShow !== 'login');
-            document.getElementById('signup-form').classList.toggle('form-visible', formToShow === 'signup');
-            document.getElementById('signup-form').classList.toggle('form-hidden', formToShow !== 'signup');
-        },
-        
+        // File: js/main.js -> Is poore function ko replace karein
+toggleAuthForms(formToShow) {
+    ['login-form', 'signup-form', 'forgot-password-form'].forEach(formId => {
+        const formEl = document.getElementById(formId);
+        if (formEl) {
+            formEl.classList.toggle('form-visible', formId.startsWith(formToShow));
+            formEl.classList.toggle('form-hidden', !formId.startsWith(formToShow));
+        }
+    });
+},
         openSidebar() {
             this.elements.sidebar.classList.remove('-translate-x-full');
             this.elements.overlay.classList.remove('hidden');
@@ -413,6 +443,32 @@ _createStarsHtml(rating) {
         return `<div class="flex">${stars}</div>`;
     },
     
+    // File: js/main.js -> handleLogin ke baad is function ko add karein
+async handleForgotPassword() {
+    const button = this.elements.forgotPasswordFormAction.querySelector('button');
+    const email = document.getElementById('forgot-email-input').value;
+    const messageEl = document.getElementById('forgot-message');
+    
+    messageEl.textContent = 'Processing...';
+    messageEl.className = 'text-center p-2 rounded-md mb-4 text-yellow-400';
+    
+    const options = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+    };
+    
+    const result = await this.handleApiRequest('forgot-password', options, button);
+    
+    if (result) {
+        messageEl.textContent = result.message || "Password reset link sent successfully.";
+        messageEl.className = 'text-center p-2 rounded-md mb-4 text-green-400';
+    } else {
+        // handleApiRequest already shows the main error, this is a fallback.
+        messageEl.textContent = 'Failed. Please check the error message at the top.';
+        messageEl.className = 'text-center p-2 rounded-md mb-4 text-red-400';
+    }
+},
     async handleFetchTestimonials() {
         const container = document.getElementById('testimonials-list');
         if (!container) return;
