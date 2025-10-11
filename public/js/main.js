@@ -219,6 +219,10 @@ this.elements.backToLoginBtn.addEventListener('click', (e) => { e.preventDefault
         async handleApiRequest(endpoint, options = {}, button = null) {
             if (button) button.disabled = true;
             this.elements.authErrorBox.classList.add('hidden');
+            
+            
+            
+            
             try {
                 const response = await fetch(`${this.config.API_BASE_URL}/${endpoint}`, options);
                 const data = await response.json();
@@ -233,6 +237,10 @@ this.elements.backToLoginBtn.addEventListener('click', (e) => { e.preventDefault
                 if (button) button.disabled = false;
             }
         },
+        
+        
+        
+        
         
         async handleSignup() {
             const button = this.elements.signupFormAction.querySelector('button');
@@ -306,10 +314,24 @@ updateUserInfo(user) {
     this.elements.popupEmail.textContent = email || '';
 },
         
-        showAuthError(message) {
-            this.elements.authErrorBox.textContent = `[ERROR]: ${message}`;
-            this.elements.authErrorBox.classList.remove('hidden');
-        },
+        // --- SNIPPET 1: ISSE REPLACE KAREIN ---
+showAuthError(error) {
+    let errorMessage = 'An unknown error occurred.'; // Default message
+    
+    if (typeof error === 'string') {
+        // Agar error pehle se hi ek string hai
+        errorMessage = error;
+    } else if (error instanceof Error) {
+        // Agar yeh ek standard JavaScript Error object hai
+        errorMessage = error.message;
+    } else if (typeof error === 'object' && error !== null) {
+        // Agar yeh ek custom object hai, to uske andar se message dhoondhein
+        errorMessage = error.detail || error.message || JSON.stringify(error);
+    }
+    
+    this.elements.authErrorBox.textContent = `[ERROR]: ${errorMessage}`;
+    this.elements.authErrorBox.classList.remove('hidden');
+},
         
         showDashboard(defaultPage) {
             this.fetchAndDisplayProfile();
