@@ -1,7 +1,38 @@
-<div class="glass-panel p-6 rounded-lg">
-    <h3 class="text-2xl font-orbitron text-accent-green mb-4">YUKU.AI</h3>
-    <p class="text-text-secondary mb-4"> A FULL FLEGED AI FLR YOUR OWN TASKS</p><textarea id="ai-prompt-input" class="input-field w-full p-3 rounded-md" rows="6" placeholder="[Awaiting Directive...]"></textarea><button id="ai-execute-btn" class="tactical-btn mt-4 py-2 px-6 rounded-md">Execute</button>
-    <div id="ai-response-container" class="mt-6 glass-panel p-4 rounded-md min-h-[60px]">
-        <p class="text-text-secondary">[GEMINI STATUS: STANDBY]</p>
+<!-- Styling specific to this chat interface -->
+<style>
+    .chat-bubble { max-width: 80%; }
+    .user-bubble { background-color: var(--accent-green); color: var(--bg-dark); }
+    .yuku-bubble { background-color: var(--bg-medium); }
+    .code-block { margin-top: 1rem; margin-bottom: 1rem; }
+    .copy-btn { cursor: pointer; }
+</style>
+
+<div class="h-full flex flex-col max-w-4xl mx-auto">
+    <!-- Chat History -->
+    <div id="chat-history" class="flex-grow overflow-y-auto p-4 space-y-6">
+        <!-- Chat messages will be dynamically inserted here -->
+        <div class="flex justify-start">
+            <div class="chat-bubble yuku-bubble rounded-lg p-3">
+                <p class="font-bold text-accent-green">YUKU MCP</p>
+                <p class="text-sm">Directive received. I am YUKU. Ready to assist.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Preview Area -->
+    <div id="file-preview-container" class="p-2 hidden"></div>
+
+    <!-- Input Bar -->
+    <div class="glass-panel p-4 border-t border-[var(--border-color)]">
+        <div class="flex items-center space-x-3">
+            <input type="file" id="file-input" class="hidden">
+            <button id="attach-file-btn" class="p-2 hover:bg-gray-700 rounded-full">
+                <svg class="h-6 w-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+            </button>
+            <textarea id="ai-prompt-input" rows="1" class="input-field w-full p-3 rounded-md resize-none" placeholder="Enter your directive..."></textarea>
+            <button id="ai-execute-btn" class="p-3 tactical-btn rounded-full">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+            </button>
+        </div>
     </div>
 </div>

@@ -277,32 +277,36 @@ this.elements.backToLoginBtn.addEventListener('click', (e) => { e.preventDefault
             }
         },
         
-        async handleAiQuery() {
-            const prompt = document.getElementById("ai-prompt-input").value;
-            const responseContainer = document.getElementById("ai-response-container");
-            const executeBtn = document.getElementById("ai-execute-btn");
-            if (!prompt.trim()) return;
-            
-            executeBtn.disabled = true;
-            executeBtn.textContent = "Processing...";
-            responseContainer.innerHTML = "<p class='text-text-secondary'>[TRANSMITTING...]</p>";
-            
-            const options = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                body: JSON.stringify({ prompt })
-            };
-            const data = await this.handleApiRequest('ai/ask', options);
-            
-            if (data && data.response) {
-                responseContainer.innerHTML = `<h5 class="font-orbitron text-accent-green">YUKU RESPONSE:</h5><p class="mt-2 whitespace-pre-wrap">${data.response.trim()}</p>`;
-            } else {
-                responseContainer.innerHTML = `<p class='text-red-500'>[CONNECTION FAILED]</p>`;
-            }
-            executeBtn.disabled = false;
-            executeBtn.textContent = "Execute";
-        },
-        
+       
+async handleAiQuery(formData) {
+    const executeBtn = document.getElementById("ai-execute-btn");
+    if (executeBtn) executeBtn.disabled = true;
+
+    try {
+        const response = await fetch(`${this.config.API_BASE_URL}/ai/ask`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.getAuthToken()}`
+                // IMPORTANT: 'Content-Type' header yahan nahi lagana hai.
+                // Browser FormData ke saath isko a__ut_omatically handle karta hai.
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ detail: 'An unknown error occurred.' }));
+            throw new Error(errorData.detail);
+        }
+        return await response.json();
+
+    } catch (error) {
+        this.showAuthError(error);
+        return null;
+    } finally {
+        if (executeBtn) executeBtn.disabled = false;
+    }
+},
+ 
         // Is poore function ko apne purane 'updateUserInfo' function se replace karein
 updateUserInfo(user) {
     const { fullname, username, email } = user;
