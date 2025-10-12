@@ -216,29 +216,53 @@ this.elements.backToLoginBtn.addEventListener('click', (e) => { e.preventDefault
             }
         },
         
-        async handleApiRequest(endpoint, options = {}, button = null) {
-            if (button) button.disabled = true;
-            this.elements.authErrorBox.classList.add('hidden');
+       // --- SNIPPET: Is poore function ko apne purane 'handleApiRequest' function se replace karein ---
+
+async handleApiRequest(endpoint, options = {}, button = null) {
+    if (button) button.disabled = true;
+    this.elements.authErrorBox.classList.add('hidden');
+    
+    try {
+        const response = await fetch(`${this.config.API_BASE_URL}/${endpoint}`, options);
+        
+        // Agar response successful nahi hai (e.g., status 422, 401, 500)
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => {
+                // Agar server se JSON mein error nahi aaya
+                throw new Error(`Request failed with status: ${response.status}`);
+            });
             
-            
-            
-            
-            try {
-                const response = await fetch(`${this.config.API_BASE_URL}/${endpoint}`, options);
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.detail || 'An unknown error occurred.');
-                }
-                return data;
-            } catch (error) {
-                this.showAuthError(error.message);
-                return null;
-            } finally {
-                if (button) button.disabled = false;
+            // YEH HAI "ULTRA GOD MODE" LOGIC
+            // Agar 'detail' ek array hai (validation errors ke liye)
+            if (Array.isArray(errorData.detail)) {
+                // Har error message ko extract karke ek line mein jodo
+                const readableError = errorData.detail.map(err => err.msg).join('. ');
+                throw new Error(readableError);
             }
-        },
+            
+            // Agar 'detail' ek simple string hai
+            if (typeof errorData.detail === 'string') {
+                throw new Error(errorData.detail);
+            }
+            
+            throw new Error('An unknown error occurred.');
+        }
         
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            return await response.json();
+        } else {
+            return { success: true };
+        }
         
+    } catch (error) {
+        // Ab yahan hamesha ek readable error message hi aayega
+        this.showAuthError(error.message);
+        return null;
+    } finally {
+        if (button) button.disabled = false;
+    }
+},
         
         
         
