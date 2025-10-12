@@ -1,20 +1,23 @@
 <style>
-.chat-bubble { max-width: 85%; } .user-bubble { background-color: var(--accent-green); color: var(--bg-dark); } .yuku-bubble { background-color: var(--bg-medium); }
-.CodeMirror { border: 1px solid var(--border-color); border-radius: 0.375rem; height: 300px; font-family: 'Roboto Mono', monospace; font-size: 14px; }
-.file-tab { cursor: pointer; padding: 8px 16px; border-bottom: 2px solid transparent; } .file-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); }
-.chip-btn { cursor: pointer; background-color: var(--bg-medium); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 9999px; font-size: 12px; transition: all 0.2s; }
+.chat-bubble { max-width: 85%; word-break: break-word; } .user-bubble { background-color: var(--accent-green); color: var(--bg-dark); } .yuku-bubble { background-color: var(--bg-medium); }
+.CodeMirror { border: 1px solid var(--border-color); border-radius: 0.375rem; height: 350px; font-family: 'Roboto Mono', monospace; font-size: 14px; }
+.file-tab { cursor: pointer; padding: 8px 16px; border-bottom: 2px solid transparent; transition: all 0.2s; } .file-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); }
+.chip-btn { cursor: pointer; background-color: var(--bg-medium); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 9999px; font-size: 12px; transition: all 0.2s; white-space: nowrap; }
 .chip-btn:hover { background-color: var(--accent-green); color: var(--bg-dark); }
+#tool-modal{transition:opacity .3s ease-in-out} #tool-modal.hidden{pointer-events:none;opacity:0}
+.tool-card{transition:all .2s ease-in-out;border:1px solid var(--border-color)} .tool-card:hover{border-color:var(--accent-green);transform:translateY(-4px);box-shadow:0 10px 15px -3px rgba(0, 255, 127, .1),0 4px 6px -2px rgba(0, 255, 127, .05)}
+#chips-container::-webkit-scrollbar { display: none; } #chips-container { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
 <div class="h-full flex flex-col max-w-7xl mx-auto">
     <div id="chat-history" class="flex-grow overflow-y-auto p-4 space-y-6">
-        <div class="flex justify-start"><div class="chat-bubble yuku-bubble rounded-lg p-3"><p class="font-bold text-accent-green">YUKU MCP</p><p class="text-sm">Directive received. I am YUKU. Ready to assist.</p></div></div>
+        <div class="flex justify-start"><div class="chat-bubble yuku-bubble rounded-lg p-3"><p class="font-bold text-accent-green">YUKU MCP</p><p class="text-sm">Directive received. I will select the best tool automatically, or you can choose one with the '+' button.</p></div></div>
     </div>
 
     <div id="code-section" class="hidden glass-panel rounded-lg m-4">
         <div class="flex items-center justify-between bg-black/20 p-2 border-b border-[var(--border-color)]">
-            <div id="file-tabs" class="flex items-center space-x-2"></div>
-            <button id="preview-btn" class="tactical-btn py-1 px-3 rounded-md text-xs">Preview</button>
+            <div id="file-tabs" class="flex items-center space-x-2 overflow-x-auto"></div>
+            <button id="preview-btn" class="tactical-btn py-1 px-3 rounded-md text-xs flex-shrink-0">Preview</button>
         </div>
         <div id="code-editor-container" class="p-4"></div>
         <div id="preview-container" class="p-4 border-t border-[var(--border-color)] hidden">
@@ -23,16 +26,21 @@
     </div>
     
     <div class="glass-panel p-4 border-t border-[var(--border-color)]">
-        <div id="chips-container" class="flex items-center space-x-2 pb-3"></div>
+        <div id="chips-container" class="flex items-center space-x-2 pb-3 overflow-x-auto"></div>
+        <div id="file-preview-container" class="pb-2"></div>
         <div class="flex items-center space-x-3">
-            <input type="file" id="file-input" class="hidden"><button id="attach-file-btn" class="p-2 hover:bg-gray-700 rounded-full"><svg class="h-6 w-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg></button>
+            <button id="tool-select-btn" class="p-2 hover:bg-gray-700 rounded-full flex-shrink-0"><svg class="h-6 w-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg></button>
+            <input type="file" id="file-input" class="hidden">
+            <button id="attach-file-btn" class="p-2 hover:bg-gray-700 rounded-full flex-shrink-0"><svg class="h-6 w-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg></button>
             <textarea id="ai-prompt-input" rows="1" class="input-field w-full p-3 rounded-md resize-none" placeholder="Ask YUKU to create code, generate an image, or answer a question..."></textarea>
-            <button id="ai-execute-btn" class="p-3 tactical-btn rounded-full"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg></button>
+            <button id="ai-execute-btn" class="p-3 tactical-btn rounded-full flex-shrink-0"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg></button>
+        </div>
+    </div>
+
+    <div id="tool-modal" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="glass-panel rounded-lg p-6 max-w-2xl w-full">
+            <div class="flex justify-between items-center mb-4"><h3 class="font-orbitron text-accent-green text-xl">Manual Tool Override</h3><button id="close-modal-btn" class="text-2xl leading-none p-1 rounded-full hover:bg-gray-700">&times;</button></div>
+            <div id="tool-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
     </div>
 </div>
-
-
-
-
-

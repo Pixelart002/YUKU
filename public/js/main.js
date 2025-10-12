@@ -302,34 +302,45 @@ async handleApiRequest(endpoint, options = {}, button = null) {
         },
         
        
+// SNIPPET 1: Is function ko apne main.js mein REPLACE karein
 async handleAiQuery(formData) {
-    const executeBtn = document.getElementById("ai-execute-btn");
-    if (executeBtn) executeBtn.disabled = true;
-
-    try {
-        const response = await fetch(`${this.config.API_BASE_URL}/ai/ask`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${this.getAuthToken()}`
-                // IMPORTANT: 'Content-Type' header yahan nahi lagana hai.
-                // Browser FormData ke saath isko a__ut_omatically handle karta hai.
-            },
-            body: formData
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: 'An unknown error occurred.' }));
-            throw new Error(errorData.detail);
+        const executeBtn = document.getElementById("ai-execute-btn");
+        if (executeBtn) executeBtn.disabled = true;
+        try {
+            const response = await fetch(`${this.config.API_BASE_URL}/ai/ask`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${this.getAuthToken()}` },
+                body: formData
+            });
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ detail: 'An unknown error occurred.' }));
+                throw new Error(errorData.detail);
+            }
+            return await response.json();
+        } catch (error) {
+            this.showAuthError(error);
+            return null;
+        } finally {
+            if (executeBtn) executeBtn.disabled = false;
         }
-        return await response.json();
-
-    } catch (error) {
-        this.showAuthError(error);
-        return null;
-    } finally {
-        if (executeBtn) executeBtn.disabled = false;
-    }
-},
+    },
+    
+    // SNIPPET 2: Yeh do naye functions apne main.js mein ADD karein
+    async getTools() {
+            return await this.handleApiRequest('ai/tools', { method: 'GET' });
+        },
+        
+        async hostCodeForPreview(files) {
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.getAuthToken()}`
+                },
+                body: JSON.stringify({ files })
+            };
+            return await this.handleApiRequest('ai/sandbox/host', options);
+        },
  
         // Is poore function ko apne purane 'updateUserInfo' function se replace karein
 updateUserInfo(user) {
