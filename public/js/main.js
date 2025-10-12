@@ -580,6 +580,19 @@ async handleForgotPassword() {
    
    
    
+
+// SNIPPET: YEH NAYA FUNCTION 'app' OBJECT KE ANDAR ADD KAREIN
+async handleFeedbackUpdate(rating, comment) {
+    const options = {
+        method: 'PUT', // Use PUT for updating
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.getAuthToken()}`
+        },
+        body: JSON.stringify({ rating, comment })
+    };
+    return await this.handleApiRequest('feedback/', options);
+},
         
     };
     
