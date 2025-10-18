@@ -1,0 +1,10 @@
+{
+        "$schema": "https://openapi.vercel.sh/microfrontends.json",
+        "applications": {
+                "yuku": {
+                        "development": {
+                                "fallback": "yuku-nine.vercel.app"
+                        }
+                }
+        }
+}
