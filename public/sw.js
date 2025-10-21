@@ -8,7 +8,7 @@ self.addEventListener('push', event => {
     badge: '/ofc.jpg', // Optional: Add a badge icon
     data: {
       url: data.url || '/' // URL to open on click
-    }
+    } 
   };
   event.waitUntil(
     self.registration.showNotification(data.title, options)
