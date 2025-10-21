@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const app = {
         currentPageScript: null,
         config: {
-            API_BASE_URL: 'https://open-feliza-pixelart002-78fb4fe8.koyeb.app'
+            API_BASE_URL: 'https://giant-noell-pixelart002-1c1d1fda.koyeb.app'
         },
         
         
