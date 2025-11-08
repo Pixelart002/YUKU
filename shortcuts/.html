@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YUKU - Admin Dashboard</title>
+    <link rel="stylesheet" href="admin_style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+</head>
+
+
+
+
+<style>
+        /* --- Global & Theme --- */
+:root {
+    --bg-dark-primary: #1a1a1a;
+    --bg-dark-secondary: #2c2c2c;
+    --bg-dark-tertiary: #333333;
+    --text-light: #e0e0e0;
+    --text-dark: #1a1a1a;
+    --accent: #00f0c0; /* Bright tech-green accent */
+    --accent-danger: #ff4d4d;
+    --font-heading: 'Orbitron', sans-serif;
+    --font-body: 'Montserrat', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-dark-primary);
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+h1, h2, h3 {
+    font-family: var(--font-heading);
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* --- Sidebar (Your requested hamburger menu) --- */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px; /* Hidden by default */
+    width: 250px;
+    height: 100vh;
+    background-color: var(--bg-dark-secondary);
+    border-right: 1px solid var(--accent);
+    transition: left 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+#sidebar.open {
+    left: 0;
+}
+
+.sidebar-header {
+    padding: 1.5rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid #444;
+}
+
+.sidebar-links {
+    list-style: none;
+    padding: 1rem 0;
+}
+
+.sidebar-links li a {
+    display: block;
+    padding: 1rem 1.5rem;
+    color: var(--text-light);
+    font-weight: 600;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar-links li a:hover,
+.sidebar-links li a.active {
+    background-color: var(--accent);
+    color: var(--text-dark);
+}
+
+#menu-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    font-size: 1.5rem;
+    background: var(--bg-dark-tertiary);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 5px 10px;
+    cursor: pointer;
+    z-index: 1001;
+    transition: left 0.3s ease-in-out;
+}
+
+#sidebar.open + #menu-toggle {
+    left: 265px; /* Move button with sidebar */
+}
+
+/* --- Main Content --- */
+#content {
+    padding: 2rem;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+#sidebar.open ~ #content {
+    margin-left: 250px;
+}
+
+.content-section {
+    display: none; /* Hidden by default */
+    padding-top: 50px; /* Offset for hamburger menu */
+}
+
+.content-section.active {
+    display: block; /* Shown by JS */
+}
+
+/* --- Forms (Military/Tech Style) --- */
+.admin-form {
+    background-color: var(--bg-dark-secondary);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #444;
+}
+
+.admin-form input[type="text"],
+.admin-form input[type="number"],
+.admin-form input[type="url"],
+.admin-form input[type="datetime-local"],
+.admin-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background-color: var(--bg-dark-tertiary);
+    border: 1px solid #555;
+    color: var(--text-light);
+    font-family: var(--font-body);
+}
+
+.admin-form .form-row {
+    display: flex;
+    gap: 1rem;
+}
+.form-row > * {
+    flex: 1;
+}
+
+.admin-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.admin-form input[type="file"] {
+    margin-bottom: 1rem;
+}
+
+button[type="submit"], .btn {
+    display: inline-block;
+    background-color: var(--accent);
+    color: var(--text-dark);
+    font-family: var(--font-heading);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 700;
+    transition: background-color 0.2s;
+}
+
+button[type="submit"]:hover, .btn:hover {
+    background-color: white;
+}
+
+.btn-danger {
+    background-color: var(--accent-danger);
+    color: white;
+}
+.btn-danger:hover {
+    background-color: #ff7070;
+}
+
+/* --- Item Lists (Products/Ads) --- */
+.item-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.item-card {
+    background-color: var(--bg-dark-secondary);
+    border: 1px solid #444;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.item-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background-color: #444;
+    margin-bottom: 1rem;
+}
+
+.item-card h4 {
+    font-family: var(--font-heading);
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.item-card p {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    flex-grow: 1;
+}
+
+.item-card .price-stock {
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 1rem;
+}
+
+.item-card .ad-stats {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-bottom: 1rem;
+}
+
+.item-card .card-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+/* --- Modals --- */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.visible {
+    display: flex;
+}
+
+.modal-content {
+    background-color: var(--bg-dark-secondary);
+    margin: auto;
+    padding: 2rem;
+    border: 1px solid var(--accent);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+}
+
+.modal-close {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-close:hover {
+    color: var(--accent-danger);
+}
+</style>
+<body>
+
+    <button id="menu-toggle" aria-label="Open Menu">&#9776;</button>
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <h3>YUKU [ADMIN]</h3>
+        </div>
+        <ul class="sidebar-links">
+            <li><a href="#products" class="nav-link active" data-target="products-section">Products</a></li>
+            <li><a href="#ads" class="nav-link" data-target="ads-section">Advertisements</a></li>
+            <li><a href="/logout">Logout</a></li> </ul>
+    </nav>
+
+    <main id="content">
+        <section id="products-section" class="content-section active">
+            <h2>Product Management</h2>
+            
+            <form id="add-product-form" class="admin-form">
+                <h3>Add New Product</h3>
+                <input type="text" name="name" placeholder="Product Name" required>
+                <textarea name="description" placeholder="Product Description" required></textarea>
+                <div class="form-row">
+                    <input type="number" name="price" placeholder="Price" step="0.01" required>
+                    <input type="number" name="stock" placeholder="Stock" step="1" required>
+                </div>
+                <input type="text" name="category" placeholder="Category (e.g., general)" value="general">
+                <label for="product-image">Product Image:</label>
+                <input type="file" name="image" id="product-image" accept="image/*">
+                <button type="submit">Add Product</button>
+            </form>
+
+            <h3>Current Products</h3>
+            <div id="product-list" class="item-list">
+                </div>
+        </section>
+
+        <section id="ads-section" class="content-section">
+            <h2>Advertisement Management</h2>
+
+            <form id="add-ad-form" class="admin-form">
+                <h3>Add New Ad</h3>
+                <input type="text" name="brand_name" placeholder="Brand Name" required>
+                <input type="url" name="target_url" placeholder="Target URL (e.g., https://...)" required>
+                <div class="form-row">
+                    <label for="ad-start-date">Start Date:</label>
+                    <input type="datetime-local" name="start_date" id="ad-start-date" required>
+                    <label for="ad-end-date">End Date:</label>
+                    <input type="datetime-local" name="end_date" id="ad-end-date" required>
+                </div>
+                <label for="ad-image">Ad Image:</label>
+                <input type="file" name="image" id="ad-image" accept="image/*">
+                <button type="submit">Add Ad</button>
+            </form>
+
+            <h3>Current Ads</h3>
+            <div id="ad-list" class="item-list">
+                </div>
+        </section>
+    </main>
+
+    <div id="edit-product-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" data-modal="edit-product-modal">&times;</span>
+            <h3>Edit Product</h3>
+            <form id="edit-product-form">
+                <input type="hidden" id="edit-product-id">
+                <input type="text" id="edit-product-name" placeholder="Product Name" required>
+                <textarea id="edit-product-description" placeholder="Product Description" required></textarea>
+                <input type="number" id="edit-product-price" placeholder="Price" step="0.01" required>
+                <input type="number" id="edit-product-stock" placeholder="Stock" step="1" required>
+                <input type="text" id="edit-product-category" placeholder="Category" required>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="edit-ad-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" data-modal="edit-ad-modal">&times;</span>
+            <h3>Edit Ad</h3>
+            <form id="edit-ad-form">
+                <input type="hidden" id="edit-ad-id">
+                <input type="text" id="edit-ad-brand" placeholder="Brand Name" required>
+                <input type="url" id="edit-ad-target" placeholder="Target URL" required>
+                <label for="edit-ad-start">Start Date:</label>
+                <input type="datetime-local" id="edit-ad-start" required>
+                <label for="edit-ad-end">End Date:</label>
+                <input type="datetime-local" id="edit-ad-end" required>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script >
+            
+            document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- Authentication ---
+    // You MUST set 'yuku_token' in localStorage after user login
+    const TOKEN = localStorage.getItem('yuku_token'); 
+    
+    if (!TOKEN) {
+        // If no token, redirect to login page
+        // window.location.href = '/login.html'; 
+        console.warn('No authentication token found. API calls will fail.');
+        // For testing, you might comment out the redirect
+    }
+
+    const authHeaders = {
+        'Authorization': `Bearer ${TOKEN}`
+    };
+
+    // --- Element Caching ---
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menu-toggle');
+    const content = document.getElementById('content');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    const productList = document.getElementById('product-list');
+    const adList = document.getElementById('ad-list');
+
+    // Forms
+    const addProductForm = document.getElementById('add-product-form');
+    const addAdForm = document.getElementById('add-ad-form');
+    const editProductForm = document.getElementById('edit-product-form');
+    const editAdForm = document.getElementById('edit-ad-form');
+
+    // Modals
+    const editProductModal = document.getElementById('edit-product-modal');
+    const editAdModal = document.getElementById('edit-ad-modal');
+    const modalCloses = document.querySelectorAll('.modal-close');
+
+    // --- API Base URL ---
+    // Assuming API is running on the same origin
+    const API_PREFIX = '/store'; 
+
+    // --- Sidebar & Navigation ---
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('data-target');
+
+            // Update active link
+            navLinks.forEach(nav => nav.classList.remove('active'));
+            link.classList.add('active');
+
+            // Show target section
+            contentSections.forEach(section => {
+                section.classList.toggle('active', section.id === targetId);
+            });
+        });
+    });
+
+    // --- Modal Controls ---
+    const openModal = (modal) => modal.classList.add('visible');
+    const closeModal = (modal) => modal.classList.remove('visible');
+
+    modalCloses.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modalId = btn.getAttribute('data-modal');
+            closeModal(document.getElementById(modalId));
+        });
+    });
+
+    // --- Data Fetching & Rendering ---
+
+    /**
+     * Fetches all admin data (products, ads) and renders them.
+     */
+    async function loadAdminData() {
+        try {
+            const response = await fetch(`${API_PREFIX}/admin`, {
+                headers: authHeaders
+            });
+            if (!response.ok) throw new Error(`Failed to fetch admin data: ${response.statusText}`);
+            
+            const data = await response.json();
+            
+            renderProducts(data.products || []);
+            renderAds(data.ads || []);
+
+        } catch (error) {
+            console.error('Error loading admin data:', error);
+            alert('Could not load store data. Are you logged in?');
+        }
+    }
+
+    /**
+     * Renders products to the product list.
+     */
+    function renderProducts(products) {
+        productList.innerHTML = ''; // Clear existing
+        if (products.length === 0) {
+            productList.innerHTML = '<p>No products found.</p>';
+            return;
+        }
+
+        products.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.innerHTML = `
+                <img src="${product.image_url || '/placeholder.jpg'}" alt="${product.name}">
+                <h4>${product.name}</h4>
+                <p>${product.description}</p>
+                <div class="price-stock">
+                    <span>Price: $${product.price.toFixed(2)}</span> | 
+                    <span>Stock: ${product.stock}</span>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-edit-product" data-id='${product.id}'>Edit</button>
+                    <button class="btn btn-danger btn-delete-product" data-id='${product.id}'>Delete</button>
+                </div>
+            `;
+            productList.appendChild(card);
+        });
+
+        // Add event listeners after rendering
+        document.querySelectorAll('.btn-edit-product').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.id;
+                const product = products.find(p => p.id === id);
+                openEditProductModal(product);
+            });
+        });
+        document.querySelectorAll('.btn-delete-product').forEach(btn => {
+            btn.addEventListener('click', () => deleteProduct(btn.dataset.id));
+        });
+    }
+
+    /**
+     * Renders ads to the ad list.
+     */
+    function renderAds(ads) {
+        adList.innerHTML = ''; // Clear existing
+        if (ads.length === 0) {
+            adList.innerHTML = '<p>No ads found.</p>';
+            return;
+        }
+
+        ads.forEach(ad => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.innerHTML = `
+                ${ad.image_url ? `<img src="${ad.image_url}" alt="${ad.brand_name}">` : ''}
+                <h4>${ad.brand_name}</h4>
+                <p>Target: <a href="${ad.target_url}" target="_blank">${ad.target_url}</a></p>
+                <p>Runs: ${new Date(ad.start_date).toLocaleString()} to ${new Date(ad.end_date).toLocaleString()}</p>
+                <div class="ad-stats">
+                    <span>Impressions: ${ad.impressions}</span> | 
+                    <span>Clicks: ${ad.clicks}</span>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-edit-ad" data-id='${ad.id}'>Edit</button>
+                    <button class="btn btn-danger btn-delete-ad" data-id='${ad.id}'>Delete</button>
+                </div>
+            `;
+            adList.appendChild(card);
+        });
+
+        // Add event listeners
+        document.querySelectorAll('.btn-edit-ad').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.id;
+                const ad = ads.find(a => a.id === id);
+                openEditAdModal(ad);
+            });
+        });
+        document.querySelectorAll('.btn-delete-ad').forEach(btn => {
+            btn.addEventListener('click', () => deleteAd(btn.dataset.id));
+        });
+    }
+
+    // --- Form Submissions (Create) ---
+
+    /**
+     * Handle Add Product (FormData for file upload)
+     */
+    addProductForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(addProductForm);
+
+        try {
+            const response = await fetch(`${API_PREFIX}/product/admin`, {
+                method: 'POST',
+                headers: authHeaders, // No Content-Type, browser sets it for FormData
+                body: formData
+            });
+
+            if (!response.ok) throw new Error(await response.text());
+            
+            alert('Product added!');
+            addProductForm.reset();
+            loadAdminData(); // Refresh list
+        } catch (error) {
+            console.error('Error adding product:', error);
+            alert(`Error: ${error.message}`);
+        }
+    });
+
+    /**
+     * Handle Add Ad (FormData for file upload)
+     */
+    addAdForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(addAdForm);
+
+        try {
+            const response = await fetch(`${API_PREFIX}/ad/admin`, {
+                method: 'POST',
+                headers: authHeaders,
+                body: formData
+            });
+
+            if (!response.ok) throw new Error(await response.text());
+
+            alert('Ad added!');
+            addAdForm.reset();
+            loadAdminData(); // Refresh list
+        } catch (error) {
+            console.error('Error adding ad:', error);
+            alert(`Error: ${error.message}`);
+        }
+    });
+
+    // --- Delete Operations ---
+
+    async function deleteProduct(productId) {
+        if (!confirm('Are you sure you want to delete this product?')) return;
+
+        try {
+            const response = await fetch(`${API_PREFIX}/product/admin/${productId}`, {
+                method: 'DELETE',
+                headers: authHeaders
+            });
+            if (!response.ok) throw new Error('Failed to delete');
+
+            alert('Product deleted.');
+            loadAdminData(); // Refresh
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            alert('Error deleting product.');
+        }
+    }
+
+    async function deleteAd(adId) {
+        if (!confirm('Are you sure you want to delete this ad?')) return;
+
+        try {
+            const response = await fetch(`${API_PREFIX}/ad/admin/${adId}`, {
+                method: 'DELETE',
+                headers: authHeaders
+            });
+            if (!response.ok) throw new Error('Failed to delete');
+
+            alert('Ad deleted.');
+            loadAdminData(); // Refresh
+        } catch (error) {
+            console.error('Error deleting ad:', error);
+            alert('Error deleting ad.');
+        }
+    }
+
+    // --- Update Operations (Modals) ---
+
+    // Format datetime for <input type="datetime-local">
+    const toLocalISOString = (date) => {
+        const dt = new Date(date);
+        dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+        return dt.toISOString().slice(0, 16);
+    };
+
+    function openEditProductModal(product) {
+        document.getElementById('edit-product-id').value = product.id;
+        document.getElementById('edit-product-name').value = product.name;
+        document.getElementById('edit-product-description').value = product.description;
+        document.getElementById('edit-product-price').value = product.price;
+        document.getElementById('edit-product-stock').value = product.stock;
+        document.getElementById('edit-product-category').value = product.category;
+        openModal(editProductModal);
+    }
+    
+    function openEditAdModal(ad) {
+        document.getElementById('edit-ad-id').value = ad.id;
+        document.getElementById('edit-ad-brand').value = ad.brand_name;
+        document.getElementById('edit-ad-target').value = ad.target_url;
+        document.getElementById('edit-ad-start').value = toLocalISOString(ad.start_date);
+        document.getElementById('edit-ad-end').value = toLocalISOString(ad.end_date);
+        openModal(editAdModal);
+    }
+
+    /**
+     * Handle Edit Product (JSON body)
+     */
+    editProductForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const productId = document.getElementById('edit-product-id').value;
+        const updatedProduct = {
+            id: productId, // The backend model expects the ID
+            name: document.getElementById('edit-product-name').value,
+            description: document.getElementById('edit-product-description').value,
+            price: parseFloat(document.getElementById('edit-product-price').value),
+            stock: parseInt(document.getElementById('edit-product-stock').value),
+            category: document.getElementById('edit-product-category').value,
+            // image_url is not updated here for simplicity.
+            // You'd need to handle this separately if image updates are needed.
+        };
+
+        try {
+            const response = await fetch(`${API_PREFIX}/product/admin/${productId}`, {
+                method: 'PUT',
+                headers: { ...authHeaders, 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedProduct)
+            });
+            if (!response.ok) throw new Error(await response.text());
+
+            alert('Product updated!');
+            closeModal(editProductModal);
+            loadAdminData();
+        } catch (error) {
+            console.error('Error updating product:', error);
+            alert(`Error: ${error.message}`);
+        }
+    });
+
+    /**
+     * Handle Edit Ad (JSON body)
+     */
+    editAdForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const adId = document.getElementById('edit-ad-id').value;
+        const updatedAd = {
+            id: adId,
+            brand_name: document.getElementById('edit-ad-brand').value,
+            target_url: document.getElementById('edit-ad-target').value,
+            start_date: new Date(document.getElementById('edit-ad-start').value).toISOString(),
+            end_date: new Date(document.getElementById('edit-ad-end').value).toISOString(),
+            // Clicks/impressions are not sent, Pydantic will use defaults
+        };
+
+        try {
+            const response = await fetch(`${API_PREFIX}/ad/admin/${adId}`, {
+                method: 'PUT',
+                headers: { ...authHeaders, 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedAd)
+            });
+            if (!response.ok) throw new Error(await response.text());
+
+            alert('Ad updated!');
+            closeModal(editAdModal);
+            loadAdminData();
+        } catch (error) {
+            console.error('Error updating ad:', error);
+            alert(`Error: ${error.message}`);
+        }
+    });
+
+
+    // --- Initial Load ---
+    loadAdminData();
+});
+            
+            
+    </script>
+</body>
+</html>
