@@ -1,20 +1,105 @@
-<style>
-.chat-bubble { max-width: 85%; word-break: break-word; } .user-bubble { background-color: var(--accent-green); color: var(--bg-dark); } .yuku-bubble { background-color: var(--bg-medium); }
-.CodeMirror { border: 1px solid var(--border-color); border-radius: 0.375rem; height: 350px; font-family: 'Roboto Mono', monospace; font-size: 14px; }
-.file-tab { cursor: pointer; padding: 8px 16px; border-bottom: 2px solid transparent; transition: all 0.2s; } .file-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); }
-.chip-btn { cursor: pointer; background-color: var(--bg-medium); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 9999px; font-size: 12px; transition: all 0.2s; white-space: nowrap; }
-.chip-btn:hover { background-color: var(--accent-green); color: var(--bg-dark); }
-#tool-modal{transition:opacity .3s ease-in-out} #tool-modal.hidden{pointer-events:none;opacity:0}
-.tool-card{transition:all .2s ease-in-out;border:1px solid var(--border-color)} .tool-card:hover{border-color:var(--accent-green);transform:translateY(-4px);box-shadow:0 10px 15px -3px rgba(0, 255, 127, .1),0 4px 6px -2px rgba(0, 255, 127, .05)}
-#chips-container::-webkit-scrollbar { display: none; } #chips-container { -ms-overflow-style: none; scrollbar-width: none; }
-</style>
+<head>
+    <style>
+        :root {
+            /* Aapke Dashboard ke colors yahan daalein */
+            --accent-green: #00ff7f; 
+            --bg-dark: #111;
+            --bg-medium: #222;
+            --border-color: #333;
+            --text-primary: #eee;
+            --text-secondary: #aaa;
+        }
 
-<div class="h-full flex flex-col max-w-7xl mx-auto">
-    <div id="chat-history" class="flex-grow overflow-y-auto p-4 space-y-6">
-        <div class="flex justify-start"><div class="chat-bubble yuku-bubble rounded-lg p-3"><p class="font-bold text-accent-green">YUKU MCP</p><p class="text-sm">Directive received. I will select the best tool automatically, or you can choose one with the '+' button.</p></div></div>
+        .chat-bubble { max-width: 85%; word-break: break-word; }
+        .user-bubble { background-color: var(--accent-green); color: var(--bg-dark); }
+        .yuku-bubble { background-color: var(--bg-medium); }
+
+        .CodeMirror { 
+            border: 1px solid var(--border-color); 
+            border-radius: 0.375rem; 
+            height: 350px; 
+            font-family: 'Roboto Mono', monospace; 
+            font-size: 14px; 
+            background: #1e1e1e; /* Dark background */
+        }
+        .cm-s-dracula { background: #1e1e1e !important; color: #f8f8f2 !important; }
+
+        .file-tab { cursor: pointer; padding: 8px 16px; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .file-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); }
+        .chip-btn { cursor: pointer; background-color: var(--bg-medium); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 9999px; font-size: 12px; transition: all 0.2s; white-space: nowrap; }
+        .chip-btn:hover { background-color: var(--accent-green); color: var(--bg-dark); }
+
+        /* Telegram UI Styles (Modified for YUKU) */
+        .no-scrollbar::-webkit-scrollbar { width: 8px; }
+        .no-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 999px; }
+        
+        /* drawer animations */
+        .drawer-hidden { transform: translateX(-100%); }
+        .drawer-shown { transform: translateX(0); }
+        .transition-transform { transition: transform .22s ease; }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<div class="h-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 text-text-primary">
+
+    <aside id="drawer"
+      class="absolute md:relative inset-y-0 left-0 w-80 bg-black/50 glass-panel rounded-2xl shadow-lg md:shadow-none md:w-full lg:w-auto z-30 transition-transform drawer-shown md:drawer-shown"
+      style="max-height: calc(100vh - 32px);">
+      <div class="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
+        <h1 class="font-semibold text-lg text-accent-green">AI Tools</h1>
+        <button id="close-drawer" class="md:hidden p-2 rounded-md hover:bg-[var(--bg-medium)]" title="Close tools">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav id="tool-list" class="px-3 pb-6 overflow-y-auto no-scrollbar" style="max-height: calc(100vh - 150px);">
+        </nav>
+    </aside>
+
+    <div id="backdrop" class="hidden md:hidden absolute inset-0 z-20 bg-black/60 backdrop-blur-sm"></div>
+
+    <div class="hidden md:block md:col-span-1 lg:col-span-1">
+      <div class="h-full bg-black/50 glass-panel rounded-2xl shadow p-4 flex flex-col">
+        <h2 class="font-semibold mb-3 text-accent-green">Quick Actions</h2>
+        <div id="chips-container" class="flex flex-wrap gap-2 overflow-auto no-scrollbar">
+          </div>
+      </div>
     </div>
 
-    <div id="code-section" class="hidden glass-panel rounded-lg m-4">
+    <main class="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col bg-black/50 glass-panel rounded-2xl shadow p-0 overflow-hidden" style="max-height: calc(100vh - 32px);">
+      <div class="flex items-center gap-3 p-4 border-b border-[var(--border-color)]">
+        <button id="menu-btn" class="md:hidden p-2 rounded-md hover:bg-[var(--bg-medium)]" title="Open tools">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+        <div id="chat-avatar" class="w-12 h-12 rounded-full bg-gradient-to-tr from-green-400 to-blue-500 flex items-center justify-center text-white font-bold">AI</div>
+        <div class="flex-1 min-w-0">
+          <div id="chat-name" class="font-semibold text-text-primary">YUKU MCP</div>
+          <div id="chat-status" class="text-xs text-text-secondary">Using: Gemini</div>
+        </div>
+      </div>
+
+      <div id="chat-history" class="flex-1 overflow-y-auto no-scrollbar px-6 py-6 space-y-4">
+        <div id="welcome" class="mx-auto max-w-xl text-center text-text-secondary">
+          <h2 class="text-2xl font-semibold mb-2 text-text-primary">Welcome to YUKU</h2>
+          <p class="mb-4">Select a tool from the left (Gemini, Mistral, or Image) and send a directive.</p>
+        </div>
+      </div>
+
+      <div id="code-section" class="hidden glass-panel rounded-lg m-4 border border-[var(--border-color)]">
         <div class="flex items-center justify-between bg-black/20 p-2 border-b border-[var(--border-color)]">
             <div id="file-tabs" class="flex items-center space-x-2 overflow-x-auto"></div>
             <button id="preview-btn" class="tactical-btn py-1 px-3 rounded-md text-xs flex-shrink-0">Preview</button>
@@ -23,24 +108,17 @@
         <div id="preview-container" class="p-4 border-t border-[var(--border-color)] hidden">
              <iframe id="preview-frame" class="w-full h-64 rounded-md border-2 border-[var(--border-color)]" sandbox="allow-scripts allow-same-origin"></iframe>
         </div>
-    </div>
-    
-    <div class="glass-panel p-4 border-t border-[var(--border-color)]">
-        <div id="chips-container" class="flex items-center space-x-2 pb-3 overflow-x-auto"></div>
-        <div id="file-preview-container" class="pb-2"></div>
-        <div class="flex items-center space-x-3">
-            <button id="tool-select-btn" class="p-2 hover:bg-gray-700 rounded-full flex-shrink-0"><svg class="h-6 w-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg></button>
-            <input type="file" id="file-input" class="hidden">
-            <button id="attach-file-btn" class="p-2 hover:bg-gray-700 rounded-full flex-shrink-0"><svg class="h-6 w-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg></button>
-            <textarea id="ai-prompt-input" rows="1" class="input-field w-full p-3 rounded-md resize-none" placeholder="Ask YUKU to create code, generate an image, or answer a question..."></textarea>
-            <button id="ai-execute-btn" class="p-3 tactical-btn rounded-full flex-shrink-0"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg></button>
-        </div>
-    </div>
+      </div>
 
-    <div id="tool-modal" class="hidden absolute inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-        <div class="glass-panel rounded-lg p-6 max-w-2xl w-full">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-orbitron text-accent-green text-xl">Manual Tool Override</h3><button id="close-modal-btn" class="text-2xl leading-none p-1 rounded-full hover:bg-gray-700">&times;</button></div>
-            <div id="tool-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-        </div>
-    </div>
+      <form id="composer" class="border-t border-[var(--border-color)] p-3 flex items-end gap-2">
+        <button type="button" id="attach-file-btn" class="p-2 rounded-lg hover:bg-[var(--bg-medium)] cursor-pointer hidden" title="Attach image (disabled)">
+          <input id="file-input" type="file" class="hidden" accept="image/*" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M8 7V5a4 4 0 118 0v2M7 11l3 3 4-4 5 5"/>
+          </svg>
+        </button>
+        <textarea id="ai-prompt-input" rows="1" placeholder="Ask YUKU..." class="flex-1 bg-[var(--bg-medium)] border border-[var(--border-color)] rounded-xl px-4 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-accent-green text-text-primary" aria-label="Message input"></textarea>
+        <button type="submit" id="ai-execute-btn" class="bg-accent-green text-bg-dark px-4 py-2 rounded-xl font-semibold">Send</button>
+      </form>
+    </main>
 </div>

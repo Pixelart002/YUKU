@@ -302,46 +302,26 @@ async handleApiRequest(endpoint, options = {}, button = null) {
         },
         
        
-// SNIPPET 1: Is function ko apne main.js mein REPLACE karein
-async handleAiQuery(formData) {
-        const executeBtn = document.getElementById("ai-execute-btn");
-        if (executeBtn) executeBtn.disabled = true;
-        try {
-            const response = await fetch(`${this.config.API_BASE_URL}/ai/ask`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${this.getAuthToken()}` },
-                body: formData
-            });
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ detail: 'An unknown error occurred.' }));
-                throw new Error(errorData.detail);
-            }
-            return await response.json();
-        } catch (error) {
-            this.showAuthError(error);
-            return null;
-        } finally {
-            if (executeBtn) executeBtn.disabled = false;
-        }
-    },
-    
-    // SNIPPET 2: Yeh do naye functions apne main.js mein ADD karein
-    async getTools() {
-            return await this.handleApiRequest('ai/tools', { method: 'GET' });
-        },
-        
-        async hostCodeForPreview(files) {
+// --- SNIPPET: Is function ko apne purane 'handleAiQuery' function se replace karein ---
+        async handleAiQuery(body) {
+            const executeBtn = document.getElementById("ai-execute-btn");
+            if (executeBtn) executeBtn.disabled = true;
+
             const options = {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json', // Set content type to JSON
                     'Authorization': `Bearer ${this.getAuthToken()}`
                 },
-                body: JSON.stringify({ files })
+                body: JSON.stringify(body) // Stringify the JSON body
             };
-            return await this.handleApiRequest('ai/sandbox/host', options);
-        },
- 
+
+            // /ai/ask endpoint par call karne ke liye handleApiRequest ka istemaal karein
+            const result = await this.handleApiRequest('ai/ask', options, executeBtn);
+            
+            if (executeBtn) executeBtn.disabled = false;
+            return result; // handleApiRequest error ko handle karega
+        }, 
         // Is poore function ko apne purane 'updateUserInfo' function se replace karein
 updateUserInfo(user) {
     const { fullname, username, email } = user;
