@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YUKU :: Mission Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #1a1a1a;
+            --bg-medium: #2a2a2a;
+            --border-color: #444;
+            --accent-green: #00ff7f;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+        }
+        
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow: hidden;
+        }
+
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .glass-panel {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { width: 8px; }
+        .no-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 999px; }
+        
+        .drawer {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
+        }
+        .drawer.open { transform: translateX(0); }
+        
+        #chat-history { scroll-behavior: smooth; }
+        .chat-bubble { max-width: 85%; word-break: break-word; }
+        .user-bubble { background-color: var(--accent-green); color: var(--bg-dark); }
+        .yuku-bubble { background-color: var(--bg-medium); }
+
+        /* === AI BUBBLE ACTIONS === */
+        .bubble-footer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 8px;
+        }
+        .bubble-action-btn {
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .bubble-action-btn:hover {
+            color: var(--text-primary);
+        }
+        .bubble-action-btn > svg { width: 16px; height: 16px; }
+
+        /* === WELCOME PROMPTS === */
+        .prompt-chip {
+            background-color: var(--bg-medium);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .prompt-chip:hover {
+            background-color: var(--border-color);
+        }
+
+        .tool-chip {
+            width: 40px; height: 40px;
+            background-color: var(--bg-medium);
+            border: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .tool-chip:hover {
+            background-color: var(--accent-green);
+            color: var(--bg-dark);
+        }
+        .tool-chip > svg { width: 20px; height: 20px; }
+
+        /* === CODE EDITOR (Height badha di) === */
+        .CodeMirror { 
+            border: 1px solid var(--border-color); 
+            border-radius: 0.375rem; 
+            height: 450px; /* Pehle 350px tha */
+            font-family: 'Roboto Mono', monospace; 
+            font-size: 14px; 
+            background: #1e1e1e;
+        }
+        .cm-s-dracula { background: #1e1e1e !important; color: #f8f8f2 !important; }
+        
+        .file-tab { cursor: pointer; padding: 8px 16px; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .file-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); }
+
+        .tactical-btn {
+            background-color: var(--accent-green);
+            color: var(--bg-dark);
+            font-weight: bold;
+            transition: all 0.2s ease;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .tactical-btn:hover { background-color: #fff; }
+        .tactical-btn.icon-only { padding: 8px; }
+        .tactical-btn.close {
+            background-color: #444;
+            color: #eee;
+        }
+        .tactical-btn.close:hover { background-color: #ef4444; }
+        .tactical-btn > svg { width: 16px; height: 16px; }
+        
+        /* === LOADER === */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+
+<body class="overflow-hidden">
+
+    <div class="h-screen w-screen flex overflow-hidden">
+
+        <aside id="sidebar-drawer" class="drawer absolute md:relative z-40 w-80 h-full glass-panel flex-shrink-0 flex flex-col">
+            
+            <div class="p-4 flex items-center justify-between border-b border-[var(--border-color)]">
+                <div class="flex items-center gap-2">
+                    <span class="font-orbitron text-lg text-accent-green">YUKU</span>
+                    <span id="agent-name" class="text-text-secondary"></span>
+                </div>
+                <button id="close-drawer-btn" class="md:hidden p-1 rounded-md hover:bg-[var(--bg-medium)]">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            <div class="p-3">
+                <button id="new-chat-btn" class="w-full tactical-btn py-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Create a New Chat
+                </button>
+            </div>
+
+            <div id="chat-list-container" class="flex-1 overflow-y-auto no-scrollbar p-3 space-y-2">
+                </div>
+
+        </aside>
+
+        <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-black/50 z-30 hidden"></div>
+
+
+        <main class="flex-1 flex flex-col h-screen bg-black/30 relative">
+
+            <header class="glass-panel p-3 flex items-center gap-3 border-b border-[var(--border-color)] z-20">
+                <button id="hamburger-btn" class="p-2 rounded-md hover:bg-[var(--bg-medium)]">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <div id="chat-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-green-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">AI</div>
+                <div class="flex-1 min-w-0">
+                    <div id="chat-title" class="font-semibold text-text-primary truncate">New Chat</div>
+                    <div id="chat-status" class="text-xs text-text-secondary">Select a tool to begin...</div>
+                </div>
+            </header>
+
+            <div id="chat-history" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
+                
+                <div id="welcome" class="mx-auto max-w-xl text-center text-text-secondary mt-10">
+                    <h2 class="text-2xl font-semibold mb-4 text-text-primary font-orbitron">YUKU MCP</h2>
+                    <div id="welcome-prompts" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-left">
+                        </div>
+                </div>
+                </div>
+
+            <div id="code-section" class="hidden absolute bottom-0 left-0 right-0 m-4 z-10 glass-panel rounded-lg border border-[var(--border-color)] flex flex-col">
+                <div class="flex items-center justify-between bg-black/20 p-2 border-b border-[var(--border-color)]">
+                    <div id="file-tabs" class="flex items-center space-x-2 overflow-x-auto">
+                        </div>
+                    <div class="flex gap-2">
+                        <button id="copy-code-btn" class="tactical-btn icon-only" title="Copy Active File">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        </button>
+                        <button id="preview-btn" class="tactical-btn icon-only" title="Preview">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        </button>
+                        <button id="download-code-btn" class="tactical-btn icon-only" title="Download Active File">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        </button>
+                        <button id="close-code-btn" class="tactical-btn close icon-only" title="Close Editor">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="code-editor-container" class="p-4"></div>
+                <div id="preview-container" class="p-4 border-t border-[var(--border-color)] hidden">
+                     <iframe id="preview-frame" class="w-full h-64 rounded-md border-2 border-[var(--border-color)]" sandbox="allow-scripts allow-same-origin"></iframe>
+                </div>
+                <form id="code-composer" class="border-t border-[var(--border-color)] p-3 flex items-center gap-2">
+                    <span id="code-ai-status" class="text-xs text-text-secondary">Mistral:</span>
+                    <input id="code-prompt-input" placeholder="e.g., 'Change background to blue'" class="flex-1 bg-[var(--bg-medium)] border border-[var(--border-color)] rounded-xl px-4 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-accent-green text-text-primary text-sm">
+                    <button type="submit" id="code-execute-btn" class="tactical-btn icon-only">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    </button>
+                </form>
+            </div>
+
+            <form id="composer" class="border-t border-[var(--border-color)] p-3 flex items-end gap-2 relative z-20 bg-[var(--bg-dark)]">
+                
+                <div id="tool-chip-popup" class="hidden absolute bottom-full left-3 mb-2 p-2 glass-panel rounded-lg shadow-lg z-10">
+                    <div class="flex flex-col gap-2">
+                        <button class="tool-chip" data-mode="gemini" title="Gemini">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 5V3m0 18v-2M8.6 8.6l-1.4-1.4M16.8 16.8l-1.4-1.4m-12 1.4l1.4-1.4m12-12l1.4 1.4M12 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </button>
+                        <button class="tool-chip" data-mode="mistral" title="Mistral">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        </button>
+                        <button class="tool-chip" data-mode="image" title="Flux Image">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l-1.586-1.586a2 2 0 00-2.828 0L6 14m6-6l.01.01M3 3h18a2 2 0 012 2v14a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2z" /></svg>
+                        </button>
+                        <button class="tool-chip" data-mode="codeeditor" title="Open Code Editor">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="button" id="tool-select-btn" class="p-2 rounded-lg hover:bg-[var(--bg-medium)] cursor-pointer">
+                    <svg class="h-6 w-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                </button>
+                
+                <textarea id="ai-prompt-input" rows="1" placeholder="Ask YUKU..." class="flex-1 bg-[var(--bg-medium)] border border-[var(--border-color)] rounded-xl px-4 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-accent-green text-text-primary"></textarea>
+                
+                <button type="submit" id="ai-execute-btn" class="bg-accent-green text-bg-dark p-2 rounded-xl font-semibold">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+                </button>
+            </form>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    </body>
+</html>
