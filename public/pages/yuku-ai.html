@@ -1,281 +1,146 @@
-<!DOCTYPE html>
-<html lang="en">
+<div class="h-full flex font-roboto-mono text-gray-100 bg-[#050a08] relative overflow-hidden">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YUKU :: Mission Control</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    
+    <!-- CODE MIRROR RESOURCES -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
     <style>
-        :root {
-            --bg-dark: #1a1a1a;
-            --bg-medium: #2a2a2a;
-            --border-color: #444;
-            --accent-green: #00ff7f;
-            --text-primary: #e0e0e0;
-            --text-secondary: #a0a0a0;
-        }
-        
-        body {
-            font-family: 'Roboto Mono', monospace;
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
-            background-size: 20px 20px;
-            overflow: hidden;
-        }
-
-        .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .glass-panel {
-            background: rgba(26, 26, 26, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
-        }
-
-        .no-scrollbar::-webkit-scrollbar { width: 8px; }
-        .no-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 999px; }
-        
-        .drawer {
-            transition: transform 0.3s ease-in-out;
-            transform: translateX(-100%);
-        }
-        .drawer.open { transform: translateX(0); }
-        
-        #chat-history { scroll-behavior: smooth; }
-        .chat-bubble { max-width: 85%; word-break: break-word; }
-        .user-bubble { background-color: var(--accent-green); color: var(--bg-dark); }
-        .yuku-bubble { background-color: var(--bg-medium); }
-
-        /* === AI BUBBLE ACTIONS === */
-        .bubble-footer {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 8px;
-        }
-        .bubble-action-btn {
-            color: var(--text-secondary);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .bubble-action-btn:hover {
-            color: var(--text-primary);
-        }
-        .bubble-action-btn > svg { width: 16px; height: 16px; }
-
-        /* === WELCOME PROMPTS === */
-        .prompt-chip {
-            background-color: var(--bg-medium);
-            border: 1px solid var(--border-color);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .prompt-chip:hover {
-            background-color: var(--border-color);
-        }
-
-        .tool-chip {
-            width: 40px; height: 40px;
-            background-color: var(--bg-medium);
-            border: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        .tool-chip:hover {
-            background-color: var(--accent-green);
-            color: var(--bg-dark);
-        }
-        .tool-chip > svg { width: 20px; height: 20px; }
-
-        /* === CODE EDITOR (Height badha di) === */
-        .CodeMirror { 
-            border: 1px solid var(--border-color); 
-            border-radius: 0.375rem; 
-            height: 450px; /* Pehle 350px tha */
-            font-family: 'Roboto Mono', monospace; 
-            font-size: 14px; 
-            background: #1e1e1e;
-        }
-        .cm-s-dracula { background: #1e1e1e !important; color: #f8f8f2 !important; }
-        
-        .file-tab { cursor: pointer; padding: 8px 16px; border-bottom: 2px solid transparent; transition: all 0.2s; }
-        .file-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); }
-
-        .tactical-btn {
-            background-color: var(--accent-green);
-            color: var(--bg-dark);
-            font-weight: bold;
-            transition: all 0.2s ease;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .tactical-btn:hover { background-color: #fff; }
-        .tactical-btn.icon-only { padding: 8px; }
-        .tactical-btn.close {
-            background-color: #444;
-            color: #eee;
-        }
-        .tactical-btn.close:hover { background-color: #ef4444; }
-        .tactical-btn > svg { width: 16px; height: 16px; }
-        
-        /* === LOADER === */
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
+        .CodeMirror { height: 100%; font-family: 'Fira Code', monospace; font-size: 14px; }
+        .tool-popover { bottom: 60px; left: 10px; transform-origin: bottom left; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tool-popover.hidden { transform: scale(0.9); opacity: 0; pointer-events: none; }
+        .glass-panel { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .ide-overlay { transition: transform 0.3s ease-in-out; }
+        .ide-overlay.closed { transform: translateY(100%); }
     </style>
-</head>
 
-<body class="overflow-hidden">
-
-    <div class="h-screen w-screen flex overflow-hidden">
-
-        <aside id="sidebar-drawer" class="drawer absolute md:relative z-40 w-80 h-full glass-panel flex-shrink-0 flex flex-col">
-            
-            <div class="p-4 flex items-center justify-between border-b border-[var(--border-color)]">
-                <div class="flex items-center gap-2">
-                    <span class="font-orbitron text-lg text-accent-green">YUKU</span>
-                    <span id="agent-name" class="text-text-secondary"></span>
-                </div>
-                <button id="close-drawer-btn" class="md:hidden p-1 rounded-md hover:bg-[var(--bg-medium)]">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-            </div>
-
-            <div class="p-3">
-                <button id="new-chat-btn" class="w-full tactical-btn py-2">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    Create a New Chat
-                </button>
-            </div>
-
-            <div id="chat-list-container" class="flex-1 overflow-y-auto no-scrollbar p-3 space-y-2">
-                </div>
-
-        </aside>
-
-        <div id="sidebar-backdrop" class="md:hidden fixed inset-0 bg-black/50 z-30 hidden"></div>
-
-
-        <main class="flex-1 flex flex-col h-screen bg-black/30 relative">
-
-            <header class="glass-panel p-3 flex items-center gap-3 border-b border-[var(--border-color)] z-20">
-                <button id="hamburger-btn" class="p-2 rounded-md hover:bg-[var(--bg-medium)]">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
-                </button>
-                <div id="chat-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-green-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">AI</div>
-                <div class="flex-1 min-w-0">
-                    <div id="chat-title" class="font-semibold text-text-primary truncate">New Chat</div>
-                    <div id="chat-status" class="text-xs text-text-secondary">Select a tool to begin...</div>
-                </div>
-            </header>
-
-            <div id="chat-history" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
-                
-                <div id="welcome" class="mx-auto max-w-xl text-center text-text-secondary mt-10">
-                    <h2 class="text-2xl font-semibold mb-4 text-text-primary font-orbitron">YUKU MCP</h2>
-                    <div id="welcome-prompts" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-left">
-                        </div>
-                </div>
-                </div>
-
-            <div id="code-section" class="hidden absolute bottom-0 left-0 right-0 m-4 z-10 glass-panel rounded-lg border border-[var(--border-color)] flex flex-col">
-                <div class="flex items-center justify-between bg-black/20 p-2 border-b border-[var(--border-color)]">
-                    <div id="file-tabs" class="flex items-center space-x-2 overflow-x-auto">
-                        </div>
-                    <div class="flex gap-2">
-                        <button id="copy-code-btn" class="tactical-btn icon-only" title="Copy Active File">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                        </button>
-                        <button id="preview-btn" class="tactical-btn icon-only" title="Preview">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                        </button>
-                        <button id="download-code-btn" class="tactical-btn icon-only" title="Download Active File">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        </button>
-                        <button id="close-code-btn" class="tactical-btn close icon-only" title="Close Editor">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                    </div>
-                </div>
-                <div id="code-editor-container" class="p-4"></div>
-                <div id="preview-container" class="p-4 border-t border-[var(--border-color)] hidden">
-                     <iframe id="preview-frame" class="w-full h-64 rounded-md border-2 border-[var(--border-color)]" sandbox="allow-scripts allow-same-origin"></iframe>
-                </div>
-                <form id="code-composer" class="border-t border-[var(--border-color)] p-3 flex items-center gap-2">
-                    <span id="code-ai-status" class="text-xs text-text-secondary">Mistral:</span>
-                    <input id="code-prompt-input" placeholder="e.g., 'Change background to blue'" class="flex-1 bg-[var(--bg-medium)] border border-[var(--border-color)] rounded-xl px-4 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-accent-green text-text-primary text-sm">
-                    <button type="submit" id="code-execute-btn" class="tactical-btn icon-only">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                    </button>
-                </form>
-            </div>
-
-            <form id="composer" class="border-t border-[var(--border-color)] p-3 flex items-end gap-2 relative z-20 bg-[var(--bg-dark)]">
-                
-                <div id="tool-chip-popup" class="hidden absolute bottom-full left-3 mb-2 p-2 glass-panel rounded-lg shadow-lg z-10">
-                    <div class="flex flex-col gap-2">
-                        <button class="tool-chip" data-mode="gemini" title="Gemini">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 5V3m0 18v-2M8.6 8.6l-1.4-1.4M16.8 16.8l-1.4-1.4m-12 1.4l1.4-1.4m12-12l1.4 1.4M12 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        </button>
-                        <button class="tool-chip" data-mode="mistral" title="Mistral">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                        </button>
-                        <button class="tool-chip" data-mode="image" title="Flux Image">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l-1.586-1.586a2 2 0 00-2.828 0L6 14m6-6l.01.01M3 3h18a2 2 0 012 2v14a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2z" /></svg>
-                        </button>
-                        <button class="tool-chip" data-mode="codeeditor" title="Open Code Editor">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="button" id="tool-select-btn" class="p-2 rounded-lg hover:bg-[var(--bg-medium)] cursor-pointer">
-                    <svg class="h-6 w-6 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                </button>
-                
-                <textarea id="ai-prompt-input" rows="1" placeholder="Ask YUKU..." class="flex-1 bg-[var(--bg-medium)] border border-[var(--border-color)] rounded-xl px-4 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-accent-green text-text-primary"></textarea>
-                
-                <button type="submit" id="ai-execute-btn" class="bg-accent-green text-bg-dark p-2 rounded-xl font-semibold">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-                </button>
-            </form>
-        </main>
+    <!-- 1. CHAT DRAWER (SIDEBAR) -->
+    <div id="chat-drawer" class="w-72 bg-black/80 backdrop-blur-xl border-r border-emerald-500/20 flex flex-col transition-transform duration-300 -translate-x-full md:translate-x-0 absolute md:relative z-40 h-full shadow-2xl">
+        <div class="p-4 border-b border-emerald-500/20 flex items-center justify-between bg-emerald-900/10">
+            <span class="text-emerald-400 font-orbitron text-xs tracking-widest">LEGACY ARCHIVES</span>
+            <button onclick="window.createNewChat()" class="text-[10px] bg-emerald-500 text-black px-3 py-1.5 rounded-full hover:bg-emerald-400 font-bold shadow-[0_0_10px_rgba(16,185,129,0.4)]">+ NEW</button>
+        </div>
+        <div id="history-list" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+            <!-- History items -->
+        </div>
+        <div class="p-3 border-t border-emerald-500/20 text-center">
+             <button onclick="window.openSettings()" class="text-xs text-gray-500 hover:text-emerald-400">⚙ SYSTEM SETTINGS</button>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    </body>
-</html>
+    <!-- 2. MAIN CONTENT -->
+    <div class="flex-1 flex flex-col relative bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+        
+        <!-- HEADER -->
+        <div class="h-14 border-b border-emerald-500/20 bg-black/40 backdrop-blur-md flex items-center justify-between px-4 z-20">
+            <div class="flex items-center gap-3">
+                <button onclick="document.getElementById('chat-drawer').classList.toggle('-translate-x-full')" class="md:hidden text-emerald-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div class="flex flex-col">
+                    <h2 class="font-orbitron text-lg text-white tracking-widest leading-none">YUKU <span class="text-emerald-500">CORE</span></h2>
+                    <span class="text-[10px] text-gray-500" id="current-chat-title">Legacy Mode Active</span>
+                </div>
+            </div>
+            
+            <!-- TOP ACTIONS -->
+            <div class="flex gap-2">
+                <button onclick="window.toggleIDE()" class="px-3 py-1 text-xs border border-emerald-500/30 rounded hover:bg-emerald-500/10 text-emerald-300 hidden" id="ide-toggle-btn">OPEN IDE</button>
+                <button onclick="window.shareChat()" class="text-gray-400 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg></button>
+            </div>
+        </div>
+
+        <!-- CHAT STREAM -->
+        <div id="chat-container" class="flex-1 overflow-y-auto p-4 pb-32 space-y-6 custom-scrollbar relative">
+            <div class="text-center mt-20 opacity-30">
+                <div class="w-16 h-16 border-2 border-emerald-500 rounded-full mx-auto mb-4 animate-pulse flex items-center justify-center">
+                    <div class="w-12 h-12 bg-emerald-500 rounded-full"></div>
+                </div>
+                <p class="font-orbitron text-emerald-500 text-xl">SYSTEM READY</p>
+            </div>
+        </div>
+
+        <!-- INPUT AREA -->
+        <div class="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black via-black/90 to-transparent z-30">
+            
+            <!-- TOOL POPOVER (Vertical List) -->
+            <div id="tool-popover" class="absolute bottom-20 left-4 w-56 glass-panel rounded-xl p-2 hidden tool-popover flex flex-col gap-1 z-50">
+                <div class="text-[10px] font-bold text-gray-500 px-2 py-1">AVAILABLE MODULES</div>
+                <button onclick="window.selectTool('mistral_default')" class="text-left px-3 py-2 text-xs rounded hover:bg-emerald-500/20 text-gray-200 hover:text-emerald-300 flex flex-col">
+                    <span class="font-bold">💬 Mistral / Chat</span>
+                    <span class="text-[9px] text-gray-500">Standard reasoning engine</span>
+                </button>
+                <button onclick="window.selectTool('code_editor')" class="text-left px-3 py-2 text-xs rounded hover:bg-emerald-500/20 text-gray-200 hover:text-emerald-300 flex flex-col">
+                    <span class="font-bold">💻 Yuku IDE</span>
+                    <span class="text-[9px] text-gray-500">VFS & Web generation</span>
+                </button>
+                <button onclick="window.selectTool('image')" class="text-left px-3 py-2 text-xs rounded hover:bg-emerald-500/20 text-gray-200 hover:text-emerald-300 flex flex-col">
+                    <span class="font-bold">🎨 Flux Image</span>
+                    <span class="text-[9px] text-gray-500">Photorealistic generation</span>
+                </button>
+            </div>
+
+            <div id="file-tags" class="flex flex-wrap gap-2 mb-2 pl-12"></div>
+
+            <form id="ai-form" class="relative flex items-end gap-2 bg-[#0a0f0d] border border-emerald-500/30 rounded-2xl p-2 focus-within:border-emerald-500/80 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all">
+                
+                <!-- PLUS BUTTON -->
+                <button type="button" onclick="document.getElementById('tool-popover').classList.toggle('hidden')" class="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-500 hover:bg-emerald-500 hover:text-black transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                </button>
+
+                <input type="file" id="file-input" hidden multiple onchange="window.handleFiles(this)">
+                <button type="button" onclick="document.getElementById('file-input').click()" class="text-gray-500 hover:text-emerald-400 p-2" title="Upload Context">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                </button>
+
+                <textarea id="prompt-input" rows="1" placeholder="Send a message..." class="flex-1 bg-transparent border-none text-sm text-gray-200 focus:ring-0 resize-none custom-scrollbar py-2.5 max-h-32"></textarea>
+                
+                <button type="submit" id="send-btn" class="p-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 shadow-lg disabled:opacity-50 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 12h14"></path></svg>
+                </button>
+            </form>
+            <div class="text-[10px] text-gray-600 text-center mt-1" id="active-tool-display">Using: Chat Mode</div>
+        </div>
+
+        <!-- 3. POPUP IDE OVERLAY (GOD MODE) -->
+        <div id="ide-overlay" class="absolute inset-0 bg-[#0a0f0d] z-50 flex flex-col ide-overlay closed shadow-2xl">
+            <!-- IDE HEADER -->
+            <div class="h-10 bg-[#1e1e1e] border-b border-black flex items-center justify-between px-3">
+                <div class="flex items-center gap-2 text-xs text-gray-400">
+                    <span class="text-emerald-500 font-bold">YUKU IDE</span>
+                    <span class="text-gray-600">|</span>
+                    <span id="ide-filename">index.html</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="window.refreshPreview()" class="hover:text-white text-gray-400">Run ▶</button>
+                    <button onclick="window.toggleIDE()" class="hover:text-red-400 text-gray-400">✖ Close</button>
+                </div>
+            </div>
+            
+            <!-- IDE BODY -->
+            <div class="flex-1 flex overflow-hidden">
+                <!-- FILES -->
+                <div class="w-48 bg-[#181818] border-r border-black flex flex-col">
+                    <div class="p-2 text-[10px] font-bold text-gray-500 tracking-wider">EXPLORER</div>
+                    <div id="file-tree" class="flex-1 p-2 space-y-1 overflow-y-auto text-xs"></div>
+                </div>
+                <!-- EDITOR -->
+                <div class="flex-1 relative">
+                    <textarea id="code-editor-area"></textarea>
+                </div>
+                <!-- PREVIEW -->
+                <div class="w-1/2 border-l border-black bg-white flex flex-col">
+                    <div class="h-6 bg-gray-100 border-b flex items-center px-2 text-[10px] text-gray-500">Localhost Preview</div>
+                    <iframe id="ide-preview" class="flex-1 w-full h-full border-none"></iframe>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- SCRIPTS FOR IDE -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
