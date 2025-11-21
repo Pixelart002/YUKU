@@ -1,300 +1,443 @@
-function initYukuAiPage() {
-    // --- STATE & CONFIG ---
+async function initYukuAiPage() {
+    
+    // --- 0. CRITICAL DEPENDENCY LOADER ---
+    const loadScript = (src) => {
+        return new Promise((resolve, reject) => {
+            if (document.querySelector(`script[src="${src}"]`)) {
+                return resolve(); // Already loaded
+            }
+            const s = document.createElement('script');
+            s.src = src;
+            s.async = false; // Force sequential loading
+            s.onload = () => resolve();
+            s.onerror = () => reject(new Error(`Failed to load ${src}`));
+            document.body.appendChild(s);
+        });
+    };
+
+    const loadStyle = (href) => {
+        if (document.querySelector(`link[href="${href}"]`)) return;
+        const l = document.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = href;
+        document.head.appendChild(l);
+    };
+
+    // Initial Loader UI
+    const chatStream = document.getElementById('chat-stream');
+    if(chatStream) chatStream.innerHTML = '<div class="flex h-full items-center justify-center text-emerald-500 animate-pulse text-xs">Initializing AI Neural Core...</div>';
+
+    try {
+        // 1. Load Styles
+        loadStyle('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css');
+        loadStyle('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css');
+
+        // 2. Load Libraries Sequentially (Guarantees Order)
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js');
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js');
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js');
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js');
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js');
+        
+        // Load Mermaid & Tesseract
+        await loadScript('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+
+        // 3. Initialize Mermaid (Safe Check)
+        if (window.mermaid) {
+            mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
+        } else {
+            console.warn("Mermaid failed to load globally.");
+        }
+
+    } catch (e) {
+        console.error("Dependency Error:", e);
+        if(chatStream) chatStream.innerHTML = `<div class="text-red-500 text-center mt-20 text-xs">System Error: Failed to load AI Core.<br>${e.message}</div>`;
+        return; 
+    }
+
+    // --- 1. STATE & DOM ELEMENTS ---
     const state = {
-        activeTool: 'mistral_default',
+        agent: 'mistral_default',
         chatId: null,
-        vfs: {}, // { "file.txt": "content" }
-        filesToUpload: [],
-        editorInstance: null
+        vfs: {},
+        history: [],
+        files: [],
+        ocrText: "",
+        cm: null
     };
 
     const els = {
-        chat: document.getElementById('chat-container'),
-        prompt: document.getElementById('prompt-input'),
+        chat: document.getElementById('chat-stream'),
         form: document.getElementById('ai-form'),
-        filePreview: document.getElementById('file-tags'),
-        historyList: document.getElementById('history-list'),
+        prompt: document.getElementById('prompt'),
+        fileTags: document.getElementById('file-tags'),
         ideOverlay: document.getElementById('ide-overlay'),
-        ideToggle: document.getElementById('ide-toggle-btn'),
-        toolPopover: document.getElementById('tool-popover'),
-        toolDisplay: document.getElementById('active-tool-display')
+        ideBtn: document.getElementById('ide-btn'),
+        ideFile: document.getElementById('ide-file'),
+        tree: document.getElementById('file-tree'),
+        preview: document.getElementById('preview'),
+        editor: document.getElementById('editor'),
+        slider: document.getElementById('history-slider'),
+        timeline: document.getElementById('timeline'),
+        historyList: document.getElementById('history-list'),
+        activeAgent: document.getElementById('active-agent'),
+        toolsPopup: document.getElementById('tools-popup'),
+        fileInput: document.getElementById('file-upload'),
+        drawer: document.getElementById('chat-drawer')
     };
 
-    // --- INITIALIZATION ---
+    // --- 2. SYSTEM READY UI ---
+    if(els.chat) els.chat.innerHTML = `
+        <div class="flex flex-col items-center justify-center h-full opacity-30 select-none">
+            <div class="w-20 h-20 border-2 border-emerald-500 rounded-full flex items-center justify-center mb-4 animate-pulse shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                <div class="w-14 h-14 bg-emerald-500 rounded-full"></div>
+            </div>
+            <p class="font-orbitron text-emerald-500 text-xl tracking-[0.2em]">SYSTEM READY</p>
+            <p class="text-xs text-emerald-700 mt-2 font-mono">Pollinations AI • VFS Engine • Flux Vision</p>
+        </div>`;
+
+    // Initialize Components
     initCodeMirror();
-    loadChatHistory();
+    loadHistory();
 
-    // --- CHAT LOGIC ---
-    window.createNewChat = async () => {
-        const token = window.app.getAuthToken();
-        const res = await fetch(`${window.app.config.API_BASE_URL}/ai/chats/new`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        state.chatId = data.chat_id;
-        state.vfs = {};
-        els.chat.innerHTML = ''; 
-        appendSystemMsg("New Session Started");
-        loadChatHistory();
-        // Close drawer on mobile
-        if(window.innerWidth < 768) document.getElementById('chat-drawer').classList.add('-translate-x-full');
+    // --- 3. CORE LOGIC ---
+
+    window.newChat = async () => {
+        try {
+            const res = await apiCall('/ai/chats/new', 'POST');
+            state.chatId = res.chat_id;
+            state.vfs = {};
+            state.history = [];
+            state.files = [];
+            els.chat.innerHTML = '';
+            els.ideBtn.classList.add('hidden');
+            renderFileTags();
+            appendMsg("system", "New secure session initialized.");
+            loadHistory();
+            if(window.innerWidth < 768 && els.drawer) els.drawer.classList.add('-translate-x-full');
+        } catch(e) { alert("Error creating chat: " + e.message); }
     };
 
-    els.form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const text = els.prompt.value.trim();
-        if (!text && state.filesToUpload.length === 0) return;
+    if (els.form) {
+        els.form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = els.prompt.value.trim();
+            if (!text && state.files.length === 0) return;
 
-        appendUserBubble(text, state.filesToUpload.map(f=>f.name));
-        els.prompt.value = '';
-        const filesToSend = [...state.filesToUpload];
-        state.filesToUpload = [];
-        renderFileTags();
-        
-        const loaderId = appendLoader();
+            // Inject OCR Data into Prompt
+            let finalPrompt = text;
+            if (state.ocrText) finalPrompt += `\n\n[VISION CONTEXT]:\n${state.ocrText}`;
 
-        try {
+            // UI Updates
+            appendMsg("user", text, state.files.map(f=>f.name));
+            els.prompt.value = '';
+            
+            // Prepare FormData
             const formData = new FormData();
-            formData.append('prompt', text || "Process attachment.");
-            formData.append('tool_id', state.activeTool);
+            formData.append('prompt', finalPrompt);
+            formData.append('tool_id', state.agent);
             if (state.chatId) formData.append('chat_id', state.chatId);
-            filesToSend.forEach(f => formData.append('files', f));
+            state.files.forEach(f => formData.append('files', f));
 
-            const endpoint = state.activeTool === 'image' ? 'generate-image' : 'ask';
-            const token = window.app.getAuthToken();
+            // Reset Files
+            state.files = []; state.ocrText = ""; renderFileTags();
+            const loader = appendLoader();
 
-            const res = await fetch(`${window.app.config.API_BASE_URL}/ai/${endpoint}`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-            const data = await res.json();
-            document.getElementById(loaderId).remove();
-
-            if (data.status === 'success') {
-                state.chatId = data.chat_id;
+            try {
+                const endpoint = state.agent === 'flux_image' ? '/ai/generate-image' : '/ai/ask';
+                const token = window.app.getAuthToken();
                 
-                // Image Response
-                if (data.image_url) {
-                    appendImageBubble(data.image_url, data.download_filename);
-                }
-                // Text/Code Response
-                else if (data.data) {
-                    appendAiBubble(data.data.response);
-                }
+                const res = await fetch(`${window.app.config.API_BASE_URL}${endpoint}`, {
+                    method: 'POST', 
+                    headers: { 'Authorization': `Bearer ${token}` }, 
+                    body: formData
+                });
+                
+                const data = await res.json();
+                document.getElementById(loader).remove();
 
-                // VFS Update (Auto-Open IDE if needed)
-                if (data.vfs && Object.keys(data.vfs).length > 0) {
-                    state.vfs = data.vfs;
-                    updateFileTree();
-                    // If files were updated, show IDE toggle or open it
-                    els.ideToggle.classList.remove('hidden');
-                    if (data.data.is_vfs_update) {
-                        window.toggleIDE(true); 
-                        if(state.vfs['index.html']) openFile('index.html');
+                if(data.status !== 'success') throw new Error(data.detail || "Request failed");
+
+                state.chatId = data.chat_id;
+
+                // Handle Response
+                if (data.image_url) {
+                    appendImage(data.image_url, data.download_filename);
+                } else {
+                    appendMsg("ai", data.response || data.data?.response);
+                    
+                    // VFS Logic
+                    if (data.vfs && Object.keys(data.vfs).length > 0) {
+                        state.vfs = data.vfs;
+                        state.history.push(JSON.parse(JSON.stringify(state.vfs))); // Snapshot
+                        updateIDE();
+                        els.ideBtn.classList.remove('hidden', 'opacity-0');
+                        
+                        if(data.data?.is_vfs_update) {
+                            window.toggleIDE(true);
+                            appendMsg("system", "VFS Updated. Opening IDE Environment...");
+                        }
                     }
                 }
-                
-                loadChatHistory();
+                loadHistory();
+            } catch (err) {
+                document.getElementById(loader)?.remove();
+                appendMsg("system", `Error: ${err.message}`);
             }
-        } catch (err) {
-            document.getElementById(loaderId).remove();
-            appendSystemMsg("Error: " + err.message);
-        }
-    });
-
-    // --- IDE & VFS LOGIC ---
-    function initCodeMirror() {
-        state.editorInstance = CodeMirror.fromTextArea(document.getElementById('code-editor-area'), {
-            mode: 'htmlmixed',
-            theme: 'dracula',
-            lineNumbers: true,
-            lineWrapping: true
-        });
-        state.editorInstance.on('change', () => {
-            // Simple debounce or save logic could go here
         });
     }
 
-    window.toggleIDE = (forceOpen = false) => {
-        if (forceOpen || els.ideOverlay.classList.contains('closed')) {
-            els.ideOverlay.classList.remove('closed');
-        } else {
-            els.ideOverlay.classList.add('closed');
-        }
-    };
-
-    function updateFileTree() {
-        const tree = document.getElementById('file-tree');
-        tree.innerHTML = '';
-        Object.keys(state.vfs).forEach(filename => {
-            const div = document.createElement('div');
-            div.className = "cursor-pointer hover:text-emerald-300 text-gray-400 p-1 flex items-center gap-2";
-            div.innerHTML = `<span>📄</span> ${filename}`;
-            div.onclick = () => openFile(filename);
-            tree.appendChild(div);
-        });
-    }
-
-    function openFile(filename) {
-        const content = state.vfs[filename];
-        state.editorInstance.setValue(content);
-        document.getElementById('ide-filename').textContent = filename;
-        
-        // Mode detection
-        if (filename.endsWith('.css')) state.editorInstance.setOption('mode', 'css');
-        else if (filename.endsWith('.js')) state.editorInstance.setOption('mode', 'javascript');
-        else state.editorInstance.setOption('mode', 'htmlmixed');
-
-        if (filename.endsWith('.html')) window.refreshPreview();
-    }
-
-    window.refreshPreview = () => {
-        const frame = document.getElementById('ide-preview');
-        let html = state.vfs['index.html'] || "<h1>No index.html</h1>";
-        // Inject CSS/JS
-        if (state.vfs['style.css']) html = html.replace('</head>', `<style>${state.vfs['style.css']}</style></head>`);
-        if (state.vfs['script.js']) html = html.replace('</body>', `<script>${state.vfs['script.js']}</script></body>`);
-        frame.srcdoc = html;
-    };
-
-    // --- UTILS ---
-    window.selectTool = (tool) => {
-        state.activeTool = tool;
-        els.toolDisplay.textContent = `Using: ${tool === 'code_editor' ? 'Yuku IDE' : (tool === 'image' ? 'Flux Image' : 'Mistral Chat')}`;
-        els.toolPopover.classList.add('hidden');
-    };
-
-    window.handleFiles = (input) => {
-        state.filesToUpload = Array.from(input.files);
+    // --- 4. VISION ENGINE (Tesseract) ---
+    window.handleFiles = async (input) => {
+        state.files = Array.from(input.files);
+        state.ocrText = "";
         renderFileTags();
+        
+        const imgs = state.files.filter(f => f.type.startsWith('image/'));
+        if (imgs.length > 0) {
+            const originalText = els.activeAgent.textContent;
+            els.activeAgent.textContent = "👁️ Vision Processing...";
+            els.activeAgent.classList.add("animate-pulse", "text-emerald-400");
+            
+            try {
+                if (!window.Tesseract) await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+                const worker = await Tesseract.createWorker('eng');
+                for (const img of imgs) {
+                    const ret = await worker.recognize(img);
+                    state.ocrText += `\nFile: ${img.name}\nText: ${ret.data.text}\n`;
+                }
+                await worker.terminate();
+                els.activeAgent.textContent = "👁️ Vision Data Ready";
+            } catch(e) {
+                console.error(e);
+                els.activeAgent.textContent = "Vision Error (Using Metadata)";
+            } finally {
+                setTimeout(() => {
+                    els.activeAgent.textContent = originalText;
+                    els.activeAgent.classList.remove("animate-pulse", "text-emerald-400");
+                }, 2000);
+            }
+        }
     };
 
-    function renderFileTags() {
-        els.filePreview.innerHTML = state.filesToUpload.map(f => `<span class="text-[10px] bg-emerald-900 text-emerald-300 px-2 rounded border border-emerald-500/30">${f.name}</span>`).join('');
+    // --- 5. IDE ENGINE ---
+    function initCodeMirror() {
+        if (!els.editor) return;
+        // Safety check for CodeMirror loaded
+        if (typeof CodeMirror === 'undefined') return;
+
+        state.cm = CodeMirror.fromTextArea(els.editor, {
+            mode: 'htmlmixed', theme: 'dracula', lineNumbers: true, lineWrapping: true
+        });
+        state.cm.on('change', () => {
+            const file = document.getElementById('ide-file').textContent;
+            if(state.vfs[file]) state.vfs[file] = state.cm.getValue();
+        });
     }
 
-    async function loadChatHistory() {
-        const token = window.app.getAuthToken();
-        const res = await fetch(`${window.app.config.API_BASE_URL}/ai/chats`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const chats = await res.json();
-        els.historyList.innerHTML = chats.map(c => `
-            <div onclick="loadChat('${c.id}')" class="p-2 rounded hover:bg-white/5 cursor-pointer text-xs text-gray-400 hover:text-white truncate border-b border-emerald-500/10">
-                ${c.title}
-            </div>
-        `).join('');
-    }
+    window.runCode = async () => {
+        const code = state.cm.getValue();
+        const file = document.getElementById('ide-file').textContent;
+        const lang = file.endsWith('.js') ? 'javascript' : (file.endsWith('.py') ? 'python' : null);
+        
+        if(!lang) return alert("Only Python/JS Execution Supported");
 
-    window.loadChat = async (id) => {
-        const token = window.app.getAuthToken();
-        const res = await fetch(`${window.app.config.API_BASE_URL}/ai/chats/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const data = await res.json();
+        appendMsg("system", "🚀 Sending Code to Piston Sandbox...");
+        const res = await apiCall('/ai/run-code', 'POST', { language: lang, code: code });
         
-        state.chatId = data.id;
-        state.vfs = data.vfs_state || {};
-        els.chat.innerHTML = '';
-        
-        data.messages.forEach(msg => {
-            if(msg.tool === 'flux_image') appendImageBubble(msg.image_data, "generated.jpg");
-            else appendAiBubble(msg.response);
+        if (res.run && res.run.stderr) {
+            // Auto-Healing Hook
+            if(confirm(`Execution Error:\n${res.run.stderr}\n\nAuto-fix with AI?`)) {
+                els.prompt.value = `Fix this error in ${file}:\n${res.run.stderr}`;
+                els.form.dispatchEvent(new Event('submit'));
+            }
+        } else {
+            alert(`OUTPUT:\n${res.run?.output || 'No output'}`);
+        }
+    };
+
+    window.goLive = () => window.open(`${window.app.config.API_BASE_URL}/ai/live/${state.chatId}`, '_blank');
+    window.downloadZip = () => window.open(`${window.app.config.API_BASE_URL}/ai/download-project/${state.chatId}`, '_blank');
+
+    function updateIDE() {
+        if(!els.tree) return;
+        els.tree.innerHTML = '';
+        Object.keys(state.vfs).forEach(f => {
+            const div = document.createElement('div');
+            div.className = "cursor-pointer hover:bg-emerald-900/30 text-gray-400 hover:text-emerald-300 p-1.5 rounded flex items-center gap-2 text-[11px]";
+            div.innerHTML = `<span>📄</span> ${f}`;
+            div.onclick = () => openFile(f);
+            els.tree.appendChild(div);
         });
         
-        if(Object.keys(state.vfs).length > 0) {
-            updateFileTree();
-            els.ideToggle.classList.remove('hidden');
+        // Time Travel Logic
+        if (state.history.length > 1 && els.slider) {
+            els.timeline.classList.remove('hidden');
+            els.slider.max = state.history.length - 1;
+            els.slider.value = state.history.length - 1;
+            els.slider.oninput = (e) => {
+                state.vfs = JSON.parse(JSON.stringify(state.history[e.target.value]));
+                updateIDE();
+                openFile(document.getElementById('ide-file').textContent);
+            };
         }
+    }
+
+    function openFile(f) {
+        if(!state.vfs[f]) return;
+        state.cm.setValue(state.vfs[f]);
+        document.getElementById('ide-file').textContent = f;
+        
+        if(f.endsWith('.css')) state.cm.setOption('mode', 'css');
+        else if(f.endsWith('.js')) state.cm.setOption('mode', 'javascript');
+        else state.cm.setOption('mode', 'htmlmixed');
+
+        if(f.endsWith('.html')) {
+            let html = state.vfs[f];
+            if(state.vfs['style.css']) html = html.replace('</head>', `<style>${state.vfs['style.css']}</style></head>`);
+            if(state.vfs['script.js']) html = html.replace('</body>', `<script>${state.vfs['script.js']}</script></body>`);
+            els.preview.srcdoc = html;
+        }
+    }
+
+    window.toggleIDE = (force) => {
+        const overlay = els.ideOverlay;
+        if(!overlay) return;
+        if (force === true) overlay.classList.remove('closed');
+        else if (force === false) overlay.classList.add('closed');
+        else overlay.classList.toggle('closed');
+        
+        if (!overlay.classList.contains('closed')) {
+            if (state.vfs['index.html']) openFile('index.html');
+            else if (Object.keys(state.vfs).length > 0) openFile(Object.keys(state.vfs)[0]);
+        }
+    };
+
+    // --- 6. UTILS & UI ---
+    window.setAgent = (a) => {
+        state.agent = a;
+        els.activeAgent.textContent = `Module: ${a}`;
+        els.toolsPopup.classList.add('hidden');
     };
 
     window.shareChat = async () => {
-        if(!state.chatId) return alert("Start a chat first");
-        const token = window.app.getAuthToken();
-        const res = await fetch(`${window.app.config.API_BASE_URL}/ai/share/${state.chatId}`, { 
-            method: 'POST', headers: { 'Authorization': `Bearer ${token}` } 
-        });
-        const d = await res.json();
-        prompt("Copy Share Link:", d.share_url);
+        if(!state.chatId) return alert("Start chat first");
+        const res = await apiCall(`/ai/share-link/${state.chatId}`, 'POST');
+        prompt("Copy Link:", res.link);
     };
 
-    // --- BUBBLE RENDERERS ---
-    function appendUserBubble(text, files) {
-        const div = document.createElement('div');
-        div.className = "flex justify-end w-full animate-fade-in-up";
-        div.innerHTML = `
-            <div class="bg-emerald-900/30 border border-emerald-500/40 rounded-2xl rounded-tr-none p-4 max-w-[80%] text-sm text-emerald-100 shadow-lg">
-                ${files.length ? `<div class="text-[10px] text-emerald-500 mb-1">📎 ${files.join(', ')}</div>` : ''}
-                ${text.replace(/\n/g, '<br>')}
-            </div>
-        `;
-        els.chat.appendChild(div);
-        scrollToBottom();
+    window.copyCode = (b64) => {
+        navigator.clipboard.writeText(decodeURIComponent(escape(atob(b64))));
+        alert("Copied!");
+    };
+
+    window.openSettings = () => alert("System Settings: Active");
+
+    async function apiCall(url, method, body) {
+        const token = window.app.getAuthToken();
+        const opts = { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } };
+        if(body) opts.body = JSON.stringify(body);
+        const r = await fetch(window.app.config.API_BASE_URL + url, opts);
+        return await r.json();
     }
 
-    function appendAiBubble(text) {
+    function appendMsg(role, text, files = []) {
         const div = document.createElement('div');
-        div.className = "flex justify-start w-full animate-fade-in-up";
+        div.className = `flex w-full mb-4 ${role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`;
         
-        // Parse Code Blocks for Copy Button
-        const formattedText = text.replace(/```(\w+)?([\s\S]*?)```/g, (match, lang, code) => {
-            const b64 = btoa(unescape(encodeURIComponent(code))); // Safe encode
-            return `<div class="bg-black/50 rounded-lg border border-white/10 mt-2 overflow-hidden">
-                <div class="bg-white/5 px-2 py-1 flex justify-between items-center">
-                    <span class="text-[10px] text-gray-500 uppercase">${lang || 'CODE'}</span>
-                    <button onclick="copyToClip('${b64}')" class="text-[10px] text-emerald-500 hover:text-white">COPY</button>
-                </div>
-                <pre class="p-2 text-xs overflow-x-auto text-gray-300 custom-scrollbar">${code.replace(/</g,'&lt;')}</pre>
-            </div>`;
-        });
+        // Mermaid
+        if (text && text.includes('```mermaid') && window.mermaid) {
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid-chart').forEach(el => {
+                    if(!el.dataset.processed) {
+                        try {
+                            mermaid.render('m'+Date.now(), el.textContent).then(r => el.innerHTML = r.svg);
+                        } catch(e){ el.innerHTML = "Diagram Error"; }
+                        el.dataset.processed = true;
+                    }
+                });
+            }, 500);
+            text = text.replace(/```mermaid([\s\S]*?)```/g, '<div class="mermaid-chart bg-black/40 p-4 rounded overflow-x-auto">$1</div>');
+        }
+        
+        // Code Blocks
+        text = text ? text.replace(/```(\w+)?([\s\S]*?)```/g, (m, l, c) => {
+            const b64 = btoa(unescape(encodeURIComponent(c)));
+            return `<div class="bg-[#111] rounded-lg border border-white/10 mt-2 mb-2 overflow-hidden"><div class="bg-white/5 px-3 py-1.5 flex justify-between items-center border-b border-white/5"><span class="text-[10px] uppercase text-gray-500 font-bold">${l||'CODE'}</span><button onclick="window.copyCode('${b64}')" class="text-[10px] text-emerald-500 hover:text-white transition-colors">COPY</button></div><pre class="p-3 text-xs overflow-x-auto text-gray-300 custom-scrollbar font-mono leading-relaxed">${c.replace(/</g,'&lt;')}</pre></div>`;
+        }) : "";
 
         div.innerHTML = `
-            <div class="bg-black/40 backdrop-blur-md border border-white/5 rounded-2xl rounded-tl-none p-4 max-w-[85%] text-sm text-gray-300 shadow-lg">
-                <div class="text-[10px] text-emerald-500 font-bold mb-1">YUKU AI</div>
-                ${formattedText.replace(/\n/g, '<br>')}
-            </div>
-        `;
+            <div class="max-w-[85%] md:max-w-[75%] ${role === 'user' ? 'bg-emerald-900/20 border-emerald-500/40' : 'bg-black/40 border-white/10'} border p-4 rounded-2xl ${role==='user'?'rounded-tr-none':'rounded-tl-none'} backdrop-blur-md shadow-lg">
+                ${role === 'user' && files.length ? `<div class="text-[10px] text-emerald-500 mb-2 flex flex-wrap gap-2">${files.map(n=>`<span class="bg-black/30 px-2 py-1 rounded">📎 ${n}</span>`).join('')}</div>` : ''}
+                <div class="text-sm text-gray-200 leading-relaxed font-light whitespace-pre-wrap">${text}</div>
+            </div>`;
         els.chat.appendChild(div);
-        scrollToBottom();
+        els.chat.scrollTop = els.chat.scrollHeight;
     }
 
-    function appendImageBubble(url, filename) {
+    function appendImage(url, name) {
         const div = document.createElement('div');
-        div.className = "flex justify-start w-full animate-fade-in-up";
+        div.className = "flex w-full mb-4 justify-start animate-fade-in-up";
         div.innerHTML = `
-            <div class="bg-black/40 border border-emerald-500/30 p-2 rounded-xl rounded-tl-none max-w-[70%]">
-                <img src="${url}" class="rounded-lg w-full">
-                <a href="${url}" download="${filename}" class="block text-center bg-emerald-600/20 text-emerald-400 text-xs py-1 mt-2 rounded hover:bg-emerald-500 hover:text-black">DOWNLOAD</a>
-            </div>
-        `;
+            <div class="bg-black/40 border border-emerald-500/30 p-2 rounded-xl rounded-tl-none max-w-[70%] shadow-[0_0_20px_rgba(16,185,129,0.1)] group">
+                <img src="${url}" class="rounded-lg w-full hover:scale-105 transition-transform duration-500 cursor-pointer" onclick="window.open('${url}')">
+                <a href="${url}" download="${name}" class="block text-center bg-emerald-500/10 text-emerald-400 text-[10px] py-1.5 mt-2 rounded hover:bg-emerald-500 hover:text-black transition-all">DOWNLOAD</a>
+            </div>`;
         els.chat.appendChild(div);
-        scrollToBottom();
+        els.chat.scrollTop = els.chat.scrollHeight;
     }
 
     function appendLoader() {
         const id = 'load-' + Date.now();
         const div = document.createElement('div');
-        div.id = id;
-        div.className = "flex items-center gap-2 text-xs text-gray-500 ml-2 animate-pulse";
-        div.innerHTML = `<div class="w-2 h-2 bg-emerald-500 rounded-full"></div> Processing...`;
+        div.id = id; 
+        div.className = "flex items-center gap-2 text-xs text-emerald-500/70 ml-2 animate-pulse my-2";
+        div.innerHTML = `<div class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Processing...`;
         els.chat.appendChild(div);
-        scrollToBottom();
+        els.chat.scrollTop = els.chat.scrollHeight;
         return id;
     }
 
-    function appendSystemMsg(text) {
-        const div = document.createElement('div');
-        div.className = "text-center text-[10px] text-gray-600 my-2";
-        div.innerText = text;
-        els.chat.appendChild(div);
+    function renderFileTags() {
+        els.fileTags.innerHTML = state.files.map(f => `<span class="text-[9px] bg-emerald-900/40 text-emerald-300 px-2 py-1 rounded border border-emerald-500/20 whitespace-nowrap flex items-center gap-1">📎 ${f.name}</span>`).join('');
     }
 
-    function scrollToBottom() { els.chat.scrollTop = els.chat.scrollHeight; }
+    async function loadHistory() {
+        try {
+            const chats = await apiCall('/ai/chats', 'GET');
+            els.historyList.innerHTML = chats.map(c => `
+                <div onclick="window.loadChat('${c.id}')" class="p-2 text-xs text-gray-400 hover:text-white cursor-pointer hover:bg-white/5 truncate border-b border-emerald-500/5 transition-colors flex justify-between items-center group">
+                    <span class="truncate w-40">${c.title}</span>
+                    <span class="opacity-0 group-hover:opacity-100 text-[10px] text-emerald-500">➜</span>
+                </div>
+            `).join('');
+        } catch(e) { console.log("History offline"); }
+    }
 
-    // Global helper for copy button
-    window.copyToClip = (b64) => {
-        const code = decodeURIComponent(escape(atob(b64)));
-        navigator.clipboard.writeText(code);
-        alert("Code copied!");
+    window.loadChat = async (id) => {
+        try {
+            const data = await apiCall(`/ai/chats/${id}`, 'GET');
+            state.chatId = data.id;
+            state.vfs = data.vfs_state || {};
+            state.history = [state.vfs];
+            els.chat.innerHTML = '';
+            
+            data.messages.forEach(m => {
+                if(m.image_data || m.image) appendImage(m.image_data || m.image, "gen.jpg");
+                else appendMsg(m.role || 'ai', m.content || m.response);
+            });
+            
+            if(Object.keys(state.vfs).length > 0) {
+                updateIDE();
+                els.ideBtn.classList.remove('hidden', 'opacity-0');
+            } else {
+                els.ideBtn.classList.add('hidden');
+            }
+            if(window.innerWidth < 768 && els.drawer) els.drawer.classList.add('-translate-x-full');
+        } catch(e) { alert("Load failed"); }
     };
 }
 
+// Expose Global
 window.initYukuAiPage = initYukuAiPage;
