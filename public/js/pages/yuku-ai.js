@@ -1,443 +1,482 @@
 async function initYukuAiPage() {
+
+    // --- 0. SAFE ELEMENT HELPER (Prevents Null Errors) ---
+    const getEl = (id) => document.getElementById(id);
     
-    // --- 0. CRITICAL DEPENDENCY LOADER ---
-    const loadScript = (src) => {
-        return new Promise((resolve, reject) => {
-            if (document.querySelector(`script[src="${src}"]`)) {
-                return resolve(); // Already loaded
-            }
-            const s = document.createElement('script');
-            s.src = src;
-            s.async = false; // Force sequential loading
-            s.onload = () => resolve();
-            s.onerror = () => reject(new Error(`Failed to load ${src}`));
-            document.body.appendChild(s);
-        });
+    const setHTML = (id, html) => {
+        const el = getEl(id);
+        if (el) el.innerHTML = html;
     };
 
-    const loadStyle = (href) => {
-        if (document.querySelector(`link[href="${href}"]`)) return;
-        const l = document.createElement('link');
-        l.rel = 'stylesheet';
-        l.href = href;
-        document.head.appendChild(l);
+    const setVal = (id, val) => {
+        const el = getEl(id);
+        if (el) el.value = val;
     };
 
-    // Initial Loader UI
-    const chatStream = document.getElementById('chat-stream');
-    if(chatStream) chatStream.innerHTML = '<div class="flex h-full items-center justify-center text-emerald-500 animate-pulse text-xs">Initializing AI Neural Core...</div>';
-
-    try {
-        // 1. Load Styles
-        loadStyle('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css');
-        loadStyle('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css');
-
-        // 2. Load Libraries Sequentially (Guarantees Order)
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js');
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js');
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js');
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js');
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js');
+    // --- 1. SYSTEM CORE ---
+    const System = {
+        config: { agent: 'mistral_default', chatId: null, files: [], ocrText: "" },
         
-        // Load Mermaid & Tesseract
-        await loadScript('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js');
-        await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
-
-        // 3. Initialize Mermaid (Safe Check)
-        if (window.mermaid) {
-            mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
-        } else {
-            console.warn("Mermaid failed to load globally.");
-        }
-
-    } catch (e) {
-        console.error("Dependency Error:", e);
-        if(chatStream) chatStream.innerHTML = `<div class="text-red-500 text-center mt-20 text-xs">System Error: Failed to load AI Core.<br>${e.message}</div>`;
-        return; 
-    }
-
-    // --- 1. STATE & DOM ELEMENTS ---
-    const state = {
-        agent: 'mistral_default',
-        chatId: null,
-        vfs: {},
-        history: [],
-        files: [],
-        ocrText: "",
-        cm: null
-    };
-
-    const els = {
-        chat: document.getElementById('chat-stream'),
-        form: document.getElementById('ai-form'),
-        prompt: document.getElementById('prompt'),
-        fileTags: document.getElementById('file-tags'),
-        ideOverlay: document.getElementById('ide-overlay'),
-        ideBtn: document.getElementById('ide-btn'),
-        ideFile: document.getElementById('ide-file'),
-        tree: document.getElementById('file-tree'),
-        preview: document.getElementById('preview'),
-        editor: document.getElementById('editor'),
-        slider: document.getElementById('history-slider'),
-        timeline: document.getElementById('timeline'),
-        historyList: document.getElementById('history-list'),
-        activeAgent: document.getElementById('active-agent'),
-        toolsPopup: document.getElementById('tools-popup'),
-        fileInput: document.getElementById('file-upload'),
-        drawer: document.getElementById('chat-drawer')
-    };
-
-    // --- 2. SYSTEM READY UI ---
-    if(els.chat) els.chat.innerHTML = `
-        <div class="flex flex-col items-center justify-center h-full opacity-30 select-none">
-            <div class="w-20 h-20 border-2 border-emerald-500 rounded-full flex items-center justify-center mb-4 animate-pulse shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                <div class="w-14 h-14 bg-emerald-500 rounded-full"></div>
-            </div>
-            <p class="font-orbitron text-emerald-500 text-xl tracking-[0.2em]">SYSTEM READY</p>
-            <p class="text-xs text-emerald-700 mt-2 font-mono">Pollinations AI • VFS Engine • Flux Vision</p>
-        </div>`;
-
-    // Initialize Components
-    initCodeMirror();
-    loadHistory();
-
-    // --- 3. CORE LOGIC ---
-
-    window.newChat = async () => {
-        try {
-            const res = await apiCall('/ai/chats/new', 'POST');
-            state.chatId = res.chat_id;
-            state.vfs = {};
-            state.history = [];
-            state.files = [];
-            els.chat.innerHTML = '';
-            els.ideBtn.classList.add('hidden');
-            renderFileTags();
-            appendMsg("system", "New secure session initialized.");
-            loadHistory();
-            if(window.innerWidth < 768 && els.drawer) els.drawer.classList.add('-translate-x-full');
-        } catch(e) { alert("Error creating chat: " + e.message); }
-    };
-
-    if (els.form) {
-        els.form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const text = els.prompt.value.trim();
-            if (!text && state.files.length === 0) return;
-
-            // Inject OCR Data into Prompt
-            let finalPrompt = text;
-            if (state.ocrText) finalPrompt += `\n\n[VISION CONTEXT]:\n${state.ocrText}`;
-
-            // UI Updates
-            appendMsg("user", text, state.files.map(f=>f.name));
-            els.prompt.value = '';
+        init: async function() {
+            console.log("Booting Yuku Core v3.0 (Safe Mode)...");
             
-            // Prepare FormData
-            const formData = new FormData();
-            formData.append('prompt', finalPrompt);
-            formData.append('tool_id', state.agent);
-            if (state.chatId) formData.append('chat_id', state.chatId);
-            state.files.forEach(f => formData.append('files', f));
+            // Init Visual Engines if available
+            if (window.mermaid) mermaid.initialize({startOnLoad:false, theme:'dark'});
+            
+            // Init Sub-systems
+            IDE.init();
+            Chat.loadHistory();
+            
+            // Console Stream Listener
+            window.addEventListener('message', (e) => {
+                if (e.data.type === 'log') IDE.log('LOG', e.data.args.join(' '));
+                if (e.data.type === 'error') IDE.log('ERR', e.data.args.join(' '), 'text-red-400');
+            });
 
-            // Reset Files
-            state.files = []; state.ocrText = ""; renderFileTags();
-            const loader = appendLoader();
+            UI.showToast("System Online", "success");
+        },
+
+        api: async function(url, method, body) {
+            const token = window.app.getAuthToken();
+            const opts = { method, headers: { 'Authorization': `Bearer ${token}` } };
+            
+            if (body instanceof FormData) {
+                opts.body = body;
+            } else {
+                opts.headers['Content-Type'] = 'application/json';
+                if (body) opts.body = JSON.stringify(body);
+            }
+
+            const r = await fetch(window.app.config.API_BASE_URL + url, opts);
+            return await r.json();
+        },
+
+        handleFiles: async function(inp) {
+            this.config.files = Array.from(inp.files);
+            
+            // Render Tags Safely
+            const tags = this.config.files.map(f => 
+                `<span class="text-[9px] bg-emerald-900/40 text-emerald-300 px-2 py-1 rounded border border-emerald-500/20 flex-shrink-0">📎 ${f.name}</span>`
+            ).join('');
+            setHTML('file-tags', tags);
+            
+            // OCR Logic
+            const imgs = this.config.files.filter(f => f.type.startsWith('image'));
+            if (imgs.length > 0 && window.Tesseract) {
+                UI.showToast("Scanning Visuals...", "info");
+                const w = await Tesseract.createWorker('eng');
+                for (const f of imgs) {
+                    const r = await w.recognize(f);
+                    this.config.ocrText += `\nFILE: ${f.name}\n${r.data.text}`;
+                }
+                await w.terminate();
+                UI.showToast("Vision Data Ready", "success");
+            }
+        },
+
+        setAgent: function(a) {
+            this.config.agent = a;
+            const labels = { 'mistral_default': 'Chat', 'code_editor': 'DevOps IDE', 'flux_image': 'Flux Vision' };
+            const labelEl = getEl('active-module-label');
+            if(labelEl) labelEl.innerText = `MODULE: ${labels[a] || a}`.toUpperCase();
+            
+            const menu = getEl('module-menu');
+            if(menu) menu.classList.add('hidden');
+        }
+    };
+
+    // --- 2. POPUP & MODAL MANAGER ---
+    const Popup = {
+        // IDE Modal
+        openIDE: function() {
+            const modal = getEl('ide-modal');
+            if(modal) modal.classList.add('active');
+            
+            // Auto-open index
+            if (IDE.vfs['index.html']) IDE.openFile('index.html');
+            else if (Object.keys(IDE.vfs).length > 0) IDE.openFile(Object.keys(IDE.vfs)[0]);
+        },
+        
+        closeIDE: function() {
+            const modal = getEl('ide-modal');
+            if(modal) modal.classList.remove('active');
+        },
+
+        // SDK Modal
+        openSDK: async function() {
+            UI.toggleDrawer(); // Close sidebar
+            const modal = getEl('sdk-modal');
+            if(modal) modal.classList.add('active');
+            await SDK.fetch();
+        },
+        
+        closeSDK: function() {
+            const modal = getEl('sdk-modal');
+            if(modal) modal.classList.remove('active');
+        }
+    };
+
+    // --- 3. SDK CONTROLLER ---
+    const SDK = {
+        fetch: async function() {
+            try {
+                const res = await System.api('/ai/api-key', 'GET');
+                setVal('api-key-display', res.api_key || "No Key Generated");
+            } catch(e) {}
+        },
+        generate: async function() {
+            try {
+                const res = await System.api('/ai/api-key/generate', 'POST');
+                setVal('api-key-display', res.api_key);
+                UI.showToast("New API Key Generated", "success");
+            } catch(e) { UI.showToast("Generation Failed", "error"); }
+        },
+        copy: function() {
+            const el = getEl('api-key-display');
+            if(el) {
+                navigator.clipboard.writeText(el.value);
+                UI.showToast("Copied to Clipboard", "success");
+            }
+        }
+    };
+
+    // --- 4. IDE ENGINE (VFS + Editor) ---
+    const IDE = {
+        vfs: {},
+        cm: null,
+
+        init: function() {
+            const area = getEl('code-editor');
+            if (!area) return; // Safety check
+
+            if (typeof CodeMirror !== 'undefined') {
+                this.cm = CodeMirror.fromTextArea(area, {
+                    mode: 'htmlmixed', theme: 'dracula', lineNumbers: true, lineWrapping: true, scrollbarStyle: 'null'
+                });
+                this.cm.on('change', () => {
+                    const pEl = getEl('current-filename');
+                    if(pEl) {
+                        const p = pEl.innerText;
+                        if (this.vfs[p] !== undefined) this.vfs[p] = this.cm.getValue();
+                    }
+                });
+            }
+        },
+
+        refreshTree: function() {
+            const container = getEl('file-tree-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            const tree = {};
+            Object.keys(this.vfs).sort().forEach(path => {
+                path.split('/').reduce((r, k, i, a) => r[k] = r[k] || (i === a.length - 1 ? { type: 'FILE', path } : { type: 'FOLDER', children: {} }), tree);
+            });
+
+            const render = (node, parent) => {
+                Object.keys(node).sort((a,b) => node[a].type==='FOLDER'?-1:1).forEach(key => {
+                    const item = node[key];
+                    const div = document.createElement('div');
+                    div.className = "flex flex-col";
+                    
+                    const row = document.createElement('div');
+                    row.className = "flex items-center gap-2 cursor-pointer hover:bg-white/5 text-gray-400 hover:text-white py-1 px-2 rounded text-[11px] select-none transition-colors group";
+                    
+                    if(item.type === 'FOLDER') {
+                        row.innerHTML = `<span class="text-emerald-500/50 group-hover:text-emerald-400 transition-colors text-[9px]">▶</span> <span class="text-emerald-600/80 group-hover:text-emerald-400">📁</span> ${key}`;
+                        const children = document.createElement('div');
+                        children.className = "folder-node hidden"; // CSS class handles indentation
+                        row.onclick = () => { 
+                            children.classList.toggle('hidden'); 
+                            const arrow = row.querySelector('span');
+                            if(arrow) arrow.style.transform = children.classList.contains('hidden') ? '' : 'rotate(90deg)';
+                        };
+                        div.append(row, children);
+                        render(item.children, children);
+                    } else {
+                        let icon = key.endsWith('.js')?'⚡':(key.endsWith('.css')?'🎨':(key.endsWith('.html')?'🌐':'📄'));
+                        row.innerHTML = `<span class="opacity-50">${icon}</span> ${key}`;
+                        row.onclick = () => this.openFile(item.path);
+                        div.appendChild(row);
+                    }
+                    parent.appendChild(div);
+                });
+            };
+            render(tree, container);
+        },
+
+        openFile: function(path) {
+            if (!this.vfs[path] || !this.cm) return;
+            this.cm.setValue(this.vfs[path]);
+            
+            const fnEl = getEl('current-filename');
+            if(fnEl) fnEl.innerText = path;
+            
+            let m = 'htmlmixed';
+            if (path.endsWith('.js')) m = 'javascript';
+            if (path.endsWith('.css')) m = 'css';
+            if (path.endsWith('.py')) m = 'python';
+            this.cm.setOption('mode', m);
+
+            if (path.endsWith('.html')) this.refreshPreview();
+        },
+
+        refreshPreview: function() {
+            if (!System.config.chatId) return;
+            const frame = getEl('preview-frame');
+            if(frame) {
+                frame.src = `${window.app.config.API_BASE_URL}/ai/live/${System.config.chatId}?t=${Date.now()}`;
+                this.log('SYS', 'Preview Refreshed', 'text-emerald-500');
+            }
+        },
+
+        runCode: async function() {
+            const code = this.cm.getValue();
+            const pathEl = getEl('current-filename');
+            const path = pathEl ? pathEl.innerText : "";
+            
+            let lang = path.endsWith('.js')?'javascript':(path.endsWith('.py')?'python':null);
+            if (!lang) return UI.showToast("Sandbox: JS/Python Only", "error");
+            
+            this.log("SYS", "Running in Piston...", "text-blue-400");
+            try {
+                const res = await System.api('/ai/run-code', 'POST', { language: lang, code });
+                if (res.run) {
+                    if (res.run.stdout) this.log("OUT", res.run.stdout, "text-green-300");
+                    if (res.run.stderr) this.log("ERR", res.run.stderr, "text-red-400");
+                }
+            } catch (e) { this.log("SYS", "Exec Failed", "text-red-500"); }
+        },
+
+        deploy: async function() {
+            UI.showToast("Publishing...", "info");
+            try {
+                const res = await System.api(`/ai/publish/${System.config.chatId}`, 'POST');
+                // Using native prompt for copy
+                prompt("Live URL:", res.url);
+                UI.showToast("Deployed!", "success");
+            } catch (e) { UI.showToast("Failed", "error"); }
+        },
+
+        download: function() {
+            window.open(`${window.app.config.API_BASE_URL}/ai/download-project/${System.config.chatId}`, '_blank');
+        },
+
+        log: function(src, msg, color="text-gray-400") {
+            const box = getEl('console-out');
+            if(!box) return;
+            const l = document.createElement('div');
+            l.className = `border-b border-white/5 py-1 ${color}`;
+            l.innerHTML = `<span class="opacity-50 mr-2 text-[9px]">[${src}]</span>${msg.replace(/\n/g,'<br>')}`;
+            box.appendChild(l);
+            box.scrollTop = box.scrollHeight;
+        }
+    };
+
+    // --- 5. CHAT CONTROLLER ---
+    const Chat = {
+        new: async function() {
+            try {
+                const res = await System.api('/ai/chats/new', 'POST');
+                System.config.chatId = res.chat_id;
+                System.config.vfs = {};
+                setHTML('chat-stream', '');
+                Popup.closeIDE();
+                
+                const ideBtn = getEl('ide-trigger-btn');
+                if(ideBtn) ideBtn.classList.add('hidden');
+
+                UI.showToast("New Session", "success");
+            } catch (e) { UI.showToast("Failed", "error"); }
+        },
+
+        send: async function(e) {
+            e.preventDefault();
+            const input = getEl('prompt');
+            const text = input.value.trim();
+            if(!text && System.config.files.length===0) return;
+
+            let prompt = text;
+            if(System.config.ocrText) prompt += `\n\n[VISION DATA]:\n${System.config.ocrText}`;
+
+            this.appendMsg("user", text, System.config.files.map(f=>f.name));
+            input.value = '';
+            
+            const form = new FormData();
+            form.append('prompt', prompt);
+            form.append('tool_id', System.config.agent);
+            if(System.config.chatId) form.append('chat_id', System.config.chatId);
+            System.config.files.forEach(f => form.append('files', f));
+            
+            System.config.files = []; System.config.ocrText = ""; 
+            setHTML('file-tags', '');
+            
+            const loadId = this.appendLoader();
 
             try {
-                const endpoint = state.agent === 'flux_image' ? '/ai/generate-image' : '/ai/ask';
+                const ep = System.config.agent === 'flux_image' ? '/ai/generate-image' : '/ai/ask';
                 const token = window.app.getAuthToken();
                 
-                const res = await fetch(`${window.app.config.API_BASE_URL}${endpoint}`, {
-                    method: 'POST', 
-                    headers: { 'Authorization': `Bearer ${token}` }, 
-                    body: formData
+                const res = await fetch(`${window.app.config.API_BASE_URL}${ep}`, {
+                    method: 'POST', headers: {'Authorization': `Bearer ${token}`}, body: form
                 });
-                
                 const data = await res.json();
-                document.getElementById(loader).remove();
+                
+                const loaderEl = getEl(loadId);
+                if(loaderEl) loaderEl.remove();
+                
+                System.config.chatId = data.chat_id;
 
-                if(data.status !== 'success') throw new Error(data.detail || "Request failed");
-
-                state.chatId = data.chat_id;
-
-                // Handle Response
                 if (data.image_url) {
-                    appendImage(data.image_url, data.download_filename);
+                    this.appendImg(data.image_url);
                 } else {
-                    appendMsg("ai", data.response || data.data?.response);
+                    this.appendMsg("ai", data.response);
                     
-                    // VFS Logic
-                    if (data.vfs && Object.keys(data.vfs).length > 0) {
-                        state.vfs = data.vfs;
-                        state.history.push(JSON.parse(JSON.stringify(state.vfs))); // Snapshot
-                        updateIDE();
-                        els.ideBtn.classList.remove('hidden', 'opacity-0');
+                    if(data.vfs && Object.keys(data.vfs).length > 0) {
+                        IDE.vfs = data.vfs;
+                        IDE.refreshTree();
+                        
+                        const ideBtn = getEl('ide-trigger-btn');
+                        if(ideBtn) ideBtn.classList.remove('hidden');
                         
                         if(data.data?.is_vfs_update) {
-                            window.toggleIDE(true);
-                            appendMsg("system", "VFS Updated. Opening IDE Environment...");
+                            Popup.openIDE();
+                            IDE.refreshPreview();
+                            UI.showToast("VFS Updated", "success");
                         }
                     }
                 }
-                loadHistory();
-            } catch (err) {
-                document.getElementById(loader)?.remove();
-                appendMsg("system", `Error: ${err.message}`);
-            }
-        });
-    }
-
-    // --- 4. VISION ENGINE (Tesseract) ---
-    window.handleFiles = async (input) => {
-        state.files = Array.from(input.files);
-        state.ocrText = "";
-        renderFileTags();
-        
-        const imgs = state.files.filter(f => f.type.startsWith('image/'));
-        if (imgs.length > 0) {
-            const originalText = els.activeAgent.textContent;
-            els.activeAgent.textContent = "👁️ Vision Processing...";
-            els.activeAgent.classList.add("animate-pulse", "text-emerald-400");
-            
-            try {
-                if (!window.Tesseract) await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
-                const worker = await Tesseract.createWorker('eng');
-                for (const img of imgs) {
-                    const ret = await worker.recognize(img);
-                    state.ocrText += `\nFile: ${img.name}\nText: ${ret.data.text}\n`;
-                }
-                await worker.terminate();
-                els.activeAgent.textContent = "👁️ Vision Data Ready";
+                this.loadHistory();
             } catch(e) {
-                console.error(e);
-                els.activeAgent.textContent = "Vision Error (Using Metadata)";
-            } finally {
-                setTimeout(() => {
-                    els.activeAgent.textContent = originalText;
-                    els.activeAgent.classList.remove("animate-pulse", "text-emerald-400");
-                }, 2000);
+                const loaderEl = getEl(loadId);
+                if(loaderEl) loaderEl.remove();
+                this.appendMsg("system", "Error: "+e.message);
             }
-        }
-    };
+        },
 
-    // --- 5. IDE ENGINE ---
-    function initCodeMirror() {
-        if (!els.editor) return;
-        // Safety check for CodeMirror loaded
-        if (typeof CodeMirror === 'undefined') return;
-
-        state.cm = CodeMirror.fromTextArea(els.editor, {
-            mode: 'htmlmixed', theme: 'dracula', lineNumbers: true, lineWrapping: true
-        });
-        state.cm.on('change', () => {
-            const file = document.getElementById('ide-file').textContent;
-            if(state.vfs[file]) state.vfs[file] = state.cm.getValue();
-        });
-    }
-
-    window.runCode = async () => {
-        const code = state.cm.getValue();
-        const file = document.getElementById('ide-file').textContent;
-        const lang = file.endsWith('.js') ? 'javascript' : (file.endsWith('.py') ? 'python' : null);
-        
-        if(!lang) return alert("Only Python/JS Execution Supported");
-
-        appendMsg("system", "🚀 Sending Code to Piston Sandbox...");
-        const res = await apiCall('/ai/run-code', 'POST', { language: lang, code: code });
-        
-        if (res.run && res.run.stderr) {
-            // Auto-Healing Hook
-            if(confirm(`Execution Error:\n${res.run.stderr}\n\nAuto-fix with AI?`)) {
-                els.prompt.value = `Fix this error in ${file}:\n${res.run.stderr}`;
-                els.form.dispatchEvent(new Event('submit'));
-            }
-        } else {
-            alert(`OUTPUT:\n${res.run?.output || 'No output'}`);
-        }
-    };
-
-    window.goLive = () => window.open(`${window.app.config.API_BASE_URL}/ai/live/${state.chatId}`, '_blank');
-    window.downloadZip = () => window.open(`${window.app.config.API_BASE_URL}/ai/download-project/${state.chatId}`, '_blank');
-
-    function updateIDE() {
-        if(!els.tree) return;
-        els.tree.innerHTML = '';
-        Object.keys(state.vfs).forEach(f => {
+        appendMsg: function(role, text, files=[]) {
+            const box = getEl('chat-stream');
+            if(!box) return;
+            
             const div = document.createElement('div');
-            div.className = "cursor-pointer hover:bg-emerald-900/30 text-gray-400 hover:text-emerald-300 p-1.5 rounded flex items-center gap-2 text-[11px]";
-            div.innerHTML = `<span>📄</span> ${f}`;
-            div.onclick = () => openFile(f);
-            els.tree.appendChild(div);
-        });
-        
-        // Time Travel Logic
-        if (state.history.length > 1 && els.slider) {
-            els.timeline.classList.remove('hidden');
-            els.slider.max = state.history.length - 1;
-            els.slider.value = state.history.length - 1;
-            els.slider.oninput = (e) => {
-                state.vfs = JSON.parse(JSON.stringify(state.history[e.target.value]));
-                updateIDE();
-                openFile(document.getElementById('ide-file').textContent);
-            };
-        }
-    }
+            div.className = `flex w-full mb-6 ${role === 'user' ? 'justify-end' : 'justify-start'} animate-pop-in`;
+            
+            // Render Mermaid
+            if(text.includes('```mermaid') && window.mermaid) {
+                setTimeout(()=> document.querySelectorAll('.mermaid-chart').forEach(el=>{ 
+                    if(!el.dataset.d){ mermaid.init(undefined, el); el.dataset.d=true; } 
+                }), 200);
+                text = text.replace(/```mermaid([\s\S]*?)```/g, '<div class="mermaid-chart bg-black/20 p-4 rounded border border-emerald-500/20 overflow-x-auto">$1</div>');
+            }
 
-    function openFile(f) {
-        if(!state.vfs[f]) return;
-        state.cm.setValue(state.vfs[f]);
-        document.getElementById('ide-file').textContent = f;
-        
-        if(f.endsWith('.css')) state.cm.setOption('mode', 'css');
-        else if(f.endsWith('.js')) state.cm.setOption('mode', 'javascript');
-        else state.cm.setOption('mode', 'htmlmixed');
+            const html = window.marked ? marked.parse(text) : text.replace(/\n/g, '<br>');
+            div.innerHTML = `
+                <div class="${role==='user'?'bg-emerald-900/20 border-emerald-500/40':'bg-[#18181b] border-white/10'} border p-4 rounded-xl max-w-[85%] shadow-lg backdrop-blur-md">
+                    ${role==='user' && files.length ? `<div class="text-[10px] text-emerald-400 mb-2 font-mono border-b border-emerald-500/20 pb-1">📎 ${files.join(', ')}</div>` : ''}
+                    <div class="prose prose-invert prose-sm text-sm leading-relaxed font-light">${html}</div>
+                </div>`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        },
 
-        if(f.endsWith('.html')) {
-            let html = state.vfs[f];
-            if(state.vfs['style.css']) html = html.replace('</head>', `<style>${state.vfs['style.css']}</style></head>`);
-            if(state.vfs['script.js']) html = html.replace('</body>', `<script>${state.vfs['script.js']}</script></body>`);
-            els.preview.srcdoc = html;
-        }
-    }
+        appendImg: function(url) {
+            const box = getEl('chat-stream');
+            if(!box) return;
+            const div = document.createElement('div');
+            div.className = "flex w-full mb-6 justify-start animate-pop-in";
+            div.innerHTML = `<div class="bg-[#18181b] border border-white/10 p-2 rounded-xl max-w-[70%] shadow-lg"><img src="${url}" class="rounded-lg w-full mb-2"><a href="${url}" download="gen.jpg" class="block text-center bg-white/5 text-xs py-1.5 rounded hover:bg-emerald-500 hover:text-black transition-colors font-bold">DOWNLOAD</a></div>`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        },
 
-    window.toggleIDE = (force) => {
-        const overlay = els.ideOverlay;
-        if(!overlay) return;
-        if (force === true) overlay.classList.remove('closed');
-        else if (force === false) overlay.classList.add('closed');
-        else overlay.classList.toggle('closed');
-        
-        if (!overlay.classList.contains('closed')) {
-            if (state.vfs['index.html']) openFile('index.html');
-            else if (Object.keys(state.vfs).length > 0) openFile(Object.keys(state.vfs)[0]);
-        }
-    };
+        appendLoader: function() {
+            const id = 'l-' + Date.now();
+            const box = getEl('chat-stream');
+            if(box) {
+                box.insertAdjacentHTML('beforeend', `<div id="${id}" class="text-xs text-emerald-500 animate-pulse ml-2 mb-4">Thinking...</div>`);
+                box.scrollTop = box.scrollHeight;
+            }
+            return id;
+        },
 
-    // --- 6. UTILS & UI ---
-    window.setAgent = (a) => {
-        state.agent = a;
-        els.activeAgent.textContent = `Module: ${a}`;
-        els.toolsPopup.classList.add('hidden');
-    };
+        loadHistory: async function() {
+            try {
+                const chats = await System.api('/ai/chats', 'GET');
+                setHTML('history-list', chats.map(c => `
+                    <div onclick="window.Chat.load('${c.id}')" class="p-3 text-xs text-gray-400 hover:text-white cursor-pointer hover:bg-white/5 truncate border-b border-white/5 flex justify-between group transition-colors">
+                        <span class="font-mono">${c.title}</span><span class="opacity-0 group-hover:opacity-100 text-emerald-500">➜</span>
+                    </div>`).join(''));
+            } catch (e) {}
+        },
 
-    window.shareChat = async () => {
-        if(!state.chatId) return alert("Start chat first");
-        const res = await apiCall(`/ai/share-link/${state.chatId}`, 'POST');
-        prompt("Copy Link:", res.link);
-    };
-
-    window.copyCode = (b64) => {
-        navigator.clipboard.writeText(decodeURIComponent(escape(atob(b64))));
-        alert("Copied!");
-    };
-
-    window.openSettings = () => alert("System Settings: Active");
-
-    async function apiCall(url, method, body) {
-        const token = window.app.getAuthToken();
-        const opts = { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } };
-        if(body) opts.body = JSON.stringify(body);
-        const r = await fetch(window.app.config.API_BASE_URL + url, opts);
-        return await r.json();
-    }
-
-    function appendMsg(role, text, files = []) {
-        const div = document.createElement('div');
-        div.className = `flex w-full mb-4 ${role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`;
-        
-        // Mermaid
-        if (text && text.includes('```mermaid') && window.mermaid) {
-            setTimeout(() => {
-                document.querySelectorAll('.mermaid-chart').forEach(el => {
-                    if(!el.dataset.processed) {
-                        try {
-                            mermaid.render('m'+Date.now(), el.textContent).then(r => el.innerHTML = r.svg);
-                        } catch(e){ el.innerHTML = "Diagram Error"; }
-                        el.dataset.processed = true;
-                    }
-                });
-            }, 500);
-            text = text.replace(/```mermaid([\s\S]*?)```/g, '<div class="mermaid-chart bg-black/40 p-4 rounded overflow-x-auto">$1</div>');
-        }
-        
-        // Code Blocks
-        text = text ? text.replace(/```(\w+)?([\s\S]*?)```/g, (m, l, c) => {
-            const b64 = btoa(unescape(encodeURIComponent(c)));
-            return `<div class="bg-[#111] rounded-lg border border-white/10 mt-2 mb-2 overflow-hidden"><div class="bg-white/5 px-3 py-1.5 flex justify-between items-center border-b border-white/5"><span class="text-[10px] uppercase text-gray-500 font-bold">${l||'CODE'}</span><button onclick="window.copyCode('${b64}')" class="text-[10px] text-emerald-500 hover:text-white transition-colors">COPY</button></div><pre class="p-3 text-xs overflow-x-auto text-gray-300 custom-scrollbar font-mono leading-relaxed">${c.replace(/</g,'&lt;')}</pre></div>`;
-        }) : "";
-
-        div.innerHTML = `
-            <div class="max-w-[85%] md:max-w-[75%] ${role === 'user' ? 'bg-emerald-900/20 border-emerald-500/40' : 'bg-black/40 border-white/10'} border p-4 rounded-2xl ${role==='user'?'rounded-tr-none':'rounded-tl-none'} backdrop-blur-md shadow-lg">
-                ${role === 'user' && files.length ? `<div class="text-[10px] text-emerald-500 mb-2 flex flex-wrap gap-2">${files.map(n=>`<span class="bg-black/30 px-2 py-1 rounded">📎 ${n}</span>`).join('')}</div>` : ''}
-                <div class="text-sm text-gray-200 leading-relaxed font-light whitespace-pre-wrap">${text}</div>
-            </div>`;
-        els.chat.appendChild(div);
-        els.chat.scrollTop = els.chat.scrollHeight;
-    }
-
-    function appendImage(url, name) {
-        const div = document.createElement('div');
-        div.className = "flex w-full mb-4 justify-start animate-fade-in-up";
-        div.innerHTML = `
-            <div class="bg-black/40 border border-emerald-500/30 p-2 rounded-xl rounded-tl-none max-w-[70%] shadow-[0_0_20px_rgba(16,185,129,0.1)] group">
-                <img src="${url}" class="rounded-lg w-full hover:scale-105 transition-transform duration-500 cursor-pointer" onclick="window.open('${url}')">
-                <a href="${url}" download="${name}" class="block text-center bg-emerald-500/10 text-emerald-400 text-[10px] py-1.5 mt-2 rounded hover:bg-emerald-500 hover:text-black transition-all">DOWNLOAD</a>
-            </div>`;
-        els.chat.appendChild(div);
-        els.chat.scrollTop = els.chat.scrollHeight;
-    }
-
-    function appendLoader() {
-        const id = 'load-' + Date.now();
-        const div = document.createElement('div');
-        div.id = id; 
-        div.className = "flex items-center gap-2 text-xs text-emerald-500/70 ml-2 animate-pulse my-2";
-        div.innerHTML = `<div class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Processing...`;
-        els.chat.appendChild(div);
-        els.chat.scrollTop = els.chat.scrollHeight;
-        return id;
-    }
-
-    function renderFileTags() {
-        els.fileTags.innerHTML = state.files.map(f => `<span class="text-[9px] bg-emerald-900/40 text-emerald-300 px-2 py-1 rounded border border-emerald-500/20 whitespace-nowrap flex items-center gap-1">📎 ${f.name}</span>`).join('');
-    }
-
-    async function loadHistory() {
-        try {
-            const chats = await apiCall('/ai/chats', 'GET');
-            els.historyList.innerHTML = chats.map(c => `
-                <div onclick="window.loadChat('${c.id}')" class="p-2 text-xs text-gray-400 hover:text-white cursor-pointer hover:bg-white/5 truncate border-b border-emerald-500/5 transition-colors flex justify-between items-center group">
-                    <span class="truncate w-40">${c.title}</span>
-                    <span class="opacity-0 group-hover:opacity-100 text-[10px] text-emerald-500">➜</span>
-                </div>
-            `).join('');
-        } catch(e) { console.log("History offline"); }
-    }
-
-    window.loadChat = async (id) => {
-        try {
-            const data = await apiCall(`/ai/chats/${id}`, 'GET');
-            state.chatId = data.id;
-            state.vfs = data.vfs_state || {};
-            state.history = [state.vfs];
-            els.chat.innerHTML = '';
+        load: async function(id) {
+            const data = await System.api(`/ai/chats/${id}`, 'GET');
+            System.config.chatId = data.id;
+            IDE.vfs = data.vfs_state || {};
+            setHTML('chat-stream', '');
             
             data.messages.forEach(m => {
-                if(m.image_data || m.image) appendImage(m.image_data || m.image, "gen.jpg");
-                else appendMsg(m.role || 'ai', m.content || m.response);
+                if(m.image_data) this.appendImg(m.image_data);
+                else this.appendMsg(m.role||'ai', m.content||m.response);
             });
-            
-            if(Object.keys(state.vfs).length > 0) {
-                updateIDE();
-                els.ideBtn.classList.remove('hidden', 'opacity-0');
+
+            const ideBtn = getEl('ide-trigger-btn');
+            if(Object.keys(IDE.vfs).length > 0) {
+                IDE.refreshTree();
+                if(ideBtn) ideBtn.classList.remove('hidden');
             } else {
-                els.ideBtn.classList.add('hidden');
+                if(ideBtn) ideBtn.classList.add('hidden');
             }
-            if(window.innerWidth < 768 && els.drawer) els.drawer.classList.add('-translate-x-full');
-        } catch(e) { alert("Load failed"); }
+            UI.toggleDrawer();
+        }
     };
+
+    // --- 6. UI UTILITIES ---
+    const UI = {
+        toggleDrawer: () => {
+            const d = getEl('drawer');
+            if(d) d.classList.toggle('-translate-x-full');
+        },
+        
+        showToast: function(msg, type='info') {
+            const box = getEl('toast-box');
+            if(!box) return;
+            const d = document.createElement('div');
+            const c = { success: 'bg-emerald-600', error: 'bg-red-600', info: 'bg-gray-800' };
+            d.className = `${c[type]} text-white px-4 py-2 rounded shadow-lg text-xs font-bold mb-2 animate-pop-in pointer-events-auto border border-white/10`;
+            d.innerText = msg;
+            box.appendChild(d);
+            setTimeout(() => d.remove(), 3000);
+        }
+    };
+
+    // --- 7. BINDINGS (This fixes ReferenceErrors) ---
+    window.UI = UI;
+    window.Popup = Popup;
+    window.SDK = SDK;
+    window.Chat = Chat;
+    window.System = System;
+    window.IDE = IDE;
+    window.Layout = { 
+        openIDE: Popup.openIDE, 
+        setAgent: System.setAgent, 
+        handleFiles: System.handleFiles,
+        runCode: IDE.runCode,
+        deploy: IDE.deploy,
+        download: IDE.download,
+        refreshPreview: IDE.refreshPreview,
+        refresh: IDE.refreshTree,
+        closeIDE: Popup.closeIDE
+    };
+    
+    window.toggleDrawer = UI.toggleDrawer;
+    window.newChat = Chat.new;
+
+    // 8. START
+    System.init();
+    const form = getEl('ai-form');
+    if(form) form.addEventListener('submit', (e) => Chat.send(e));
 }
 
-// Expose Global
+// Run Init
 window.initYukuAiPage = initYukuAiPage;
