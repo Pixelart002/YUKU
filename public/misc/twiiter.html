@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>AI X पोस्ट ट्रिगर</title>
+ <!-- Load Tailwind CSS -->
+ <script src="https://cdn.tailwindcss.com"></script>
+ <style>
+  body {
+   font-family: 'Inter', sans-serif;
+  }
+ </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+ 
+ <div class="w-full max-w-2xl bg-white shadow-2xl rounded-xl p-8 space-y-6">
+  <header class="text-center space-y-2">
+   <h1 class="text-3xl font-bold text-gray-800">AI X ऑटोमेशन फ़ॉर्म</h1>
+   <p class="text-red-600 font-semibold border border-red-300 bg-red-50 p-2 rounded-lg">
+    **असुरक्षा चेतावनी:** क्रेडेंशियल ब्राउज़र से भेजे जा रहे हैं। केवल टेस्टिंग के लिए उपयोग करें।
+   </p>
+  </header>
+  
+  <form id="automation-form" class="space-y-6">
+   <h2 class="text-xl font-semibold text-gray-700 border-b pb-2">1. X (Twitter) क्रेडेंशियल</h2>
+   
+   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <input type="text" id="api_key" placeholder="API Key (Consumer Key)" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+    <input type="text" id="api_key_secret" placeholder="API Key Secret (Consumer Secret)" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+    <input type="text" id="access_token" placeholder="Access Token" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+    <input type="text" id="access_token_secret" placeholder="Access Token Secret" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+   </div>
+   
+   <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 pt-4">2. AI प्रॉम्प्ट्स</h2>
+   
+   <div class="space-y-4">
+    <textarea id="image_prompt" placeholder="Image Prompt (इमेज प्रॉम्प्ट)" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" rows="3">A beautiful retro 80s synthwave landscape with a lonely car driving towards a neon city, detailed, 4k</textarea>
+    <textarea id="text_prompt" placeholder="Text Prompt (कैप्शन प्रॉम्प्ट)" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" rows="3">Write a short, dramatic, and captivating caption for a retro synthwave image, focusing on the feeling of a late-night drive. Include three relevant hashtags.</textarea>
+   </div>
+   
+   <button type="submit" id="trigger-button" class="w-full px-6 py-3 text-lg font-semibold text-white bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 ease-in-out flex items-center justify-content-center disabled:bg-indigo-400">
+    <svg id="button-icon" class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+    </svg>
+    <span id="button-text">AI पोस्ट ट्रिगर करें</span>
+   </button>
+  </form>
+  
+  <section id="result-section" class="hidden mt-6">
+   <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">परिणाम</h2>
+   <div id="result-box" class="p-4 rounded-lg">
+    <!-- परिणाम यहाँ इंजेक्ट किए जाएंगे -->
+   </div>
+  </section>
+ </div>
+ 
+ <script>
+  // API एंडपॉइंट जो router.py में परिभाषित है
+  const ENDPOINT = '/api/v1/automation/trigger-post';
+  // API बेस URL को ऑटोमैटिकली डिटेक्ट करें
+  const API_BASE_URL = window.location.origin;
+  
+  const form = document.getElementById('automation-form');
+  const triggerButton = document.getElementById('trigger-button');
+  const buttonText = document.getElementById('button-text');
+  const resultSection = document.getElementById('result-section');
+  const resultBox = document.getElementById('result-box');
+  
+  form.addEventListener('submit', handleTriggerPost);
+  
+  function setStatus(state) {
+   triggerButton.disabled = state === 'loading';
+   const loadingText = state === 'loading' ? 'जनरेट कर रहा है... (45s तक लग सकते हैं)' : 'AI पोस्ट ट्रिगर करें';
+   buttonText.textContent = loadingText;
+   triggerButton.classList.toggle('animate-pulse', state === 'loading');
+   resultSection.classList.add('hidden');
+   resultBox.className = 'p-4 rounded-lg';
+  }
+  
+  function displayResult(success, data) {
+   resultSection.classList.remove('hidden');
+   let content = '';
+   
+   if (success) {
+    resultBox.classList.add('border-l-4', 'border-green-500', 'bg-green-50');
+    resultBox.classList.remove('border-red-500', 'bg-red-50');
+    content = `
+                    <p class="text-green-800 font-semibold mb-2">✅ पोस्ट सफलतापूर्वक भेजी गई!</p>
+                    <p class="text-sm text-gray-700"><strong>X पोस्ट ID:</strong> <span class="font-mono text-xs text-indigo-600">${data.post_id}</span></p>
+                    <p class="text-sm text-gray-700 mt-1"><strong>कैप्शन:</strong> ${data.caption_used}</p>
+                    <p class="text-sm text-gray-700 mt-1"><strong>मैसेज:</strong> ${data.message}</p>
+                `;
+   } else {
+    resultBox.classList.add('border-l-4', 'border-red-500', 'bg-red-50');
+    resultBox.classList.remove('border-green-500', 'bg-green-50');
+    const detail = data.detail || 'अज्ञात त्रुटि (Unknown Error)';
+    content = `
+                    <p class="text-red-800 font-semibold">❌ पोस्ट विफल (Post Failed)!</p>
+                    <p class="text-sm text-red-700 mt-1"><strong>त्रुटि:</strong> ${detail}</p>
+                    <p class="text-xs text-red-700 mt-2">कृपया अपने क्रेडेंशियल और प्रॉम्प्ट्स जांचें।</p>
+                `;
+   }
+   resultBox.innerHTML = content;
+  }
+  
+  async function handleTriggerPost(event) {
+   event.preventDefault();
+   setStatus('loading');
+   
+   // फ़ॉर्म डेटा इकट्ठा करें
+   const request_data = {
+    api_key: document.getElementById('api_key').value,
+    api_key_secret: document.getElementById('api_key_secret').value,
+    access_token: document.getElementById('access_token').value,
+    access_token_secret: document.getElementById('access_token_secret').value,
+    image_prompt: document.getElementById('image_prompt').value,
+    text_prompt: document.getElementById('text_prompt').value,
+   };
+   
+   try {
+    // API को POST रिक्वेस्ट भेजें
+    const response = await fetch(API_BASE_URL + ENDPOINT, {
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body: JSON.stringify(request_data)
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+     displayResult(true, data);
+    } else {
+     displayResult(false, data);
+    }
+   } catch (error) {
+    // नेटवर्क/CORS त्रुटि
+    console.error("Fetch Error:", error);
+    displayResult(false, { detail: `API सर्वर तक पहुँचने में विफल: ${error.message}` });
+   } finally {
+    setStatus('ready');
+   }
+  }
+ </script>
+</body>
+
+</html>
