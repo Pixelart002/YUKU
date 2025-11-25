@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,11 +13,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+    
     <style>
         :root {
             --bg-dark: #030303;
-            --accent-primary: #00ff7f; /* Spring Green */
+            --accent-primary: #00ff7f;
+            /* Spring Green */
             --glass-border: rgba(255, 255, 255, 0.08);
             --glass-bg: rgba(10, 10, 10, 0.6);
         }
@@ -26,39 +28,57 @@
             color: #e0e0e0;
             font-family: 'Rajdhani', sans-serif;
             overflow-x: hidden;
-            cursor: none; /* SheryJS handles cursor */
+            cursor: none;
+            /* SheryJS handles cursor */
         }
-
-        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
         
         /* --- VISUALS --- */
         .system-grid {
-            position: fixed; inset: 0; z-index: -2;
-            background-image: 
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background-image:
                 linear-gradient(rgba(0, 255, 127, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 255, 127, 0.03) 1px, transparent 1px);
             background-size: 50px 50px;
             mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
         }
-
+        
         .scanlines {
-            position: fixed; inset: 0; z-index: 999; pointer-events: none;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0), rgba(0,0,0,0) 2px, rgba(0,255,127,0.02) 2px, rgba(0,255,127,0.02) 4px);
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 2px, rgba(0, 255, 127, 0.02) 2px, rgba(0, 255, 127, 0.02) 4px);
         }
-
+        
         #webgl-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            z-index: 1; outline: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+            outline: none;
         }
-
+        
         /* --- INIT OVERLAY --- */
         #init-overlay {
-            position: fixed; inset: 0; z-index: 9999;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
             background: #000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             transition: opacity 0.8s ease-out;
         }
-
+        
         /* --- HUD PANELS --- */
         .hud-panel {
             background: var(--glass-bg);
@@ -68,34 +88,70 @@
             overflow: hidden;
             transition: all 0.3s ease;
         }
+        
         .hud-panel:hover {
             border-color: var(--accent-primary);
             box-shadow: 0 0 20px rgba(0, 255, 127, 0.1);
         }
+        
         /* Tech Corners */
-        .hud-panel::before, .hud-panel::after {
-            content: ''; position: absolute; width: 10px; height: 10px;
-            border: 1px solid var(--accent-primary); transition: 0.3s ease;
+        .hud-panel::before,
+        .hud-panel::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border: 1px solid var(--accent-primary);
+            transition: 0.3s ease;
             opacity: 0.5;
         }
-        .hud-panel::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
-        .hud-panel::after { bottom: 0; right: 0; border-left: 0; border-top: 0; }
-
-        .section-header {
-            border-left: 4px solid var(--accent-primary);
-            padding-left: 1rem; margin-bottom: 3rem;
+        
+        .hud-panel::before {
+            top: 0;
+            left: 0;
+            border-right: 0;
+            border-bottom: 0;
         }
         
-        #scroll-container { position: relative; z-index: 10; pointer-events: none; }
-        section { pointer-events: auto; }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: var(--accent-primary); }
+        .hud-panel::after {
+            bottom: 0;
+            right: 0;
+            border-left: 0;
+            border-top: 0;
+        }
+        
+        .section-header {
+            border-left: 4px solid var(--accent-primary);
+            padding-left: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        #scroll-container {
+            position: relative;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        section {
+            pointer-events: auto;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+        }
     </style>
 </head>
-<body class="antialiased selection:bg-[#00ff7f] selection:text-black">
 
+<body class="antialiased selection:bg-[#00ff7f] selection:text-black">
+    
     <!-- INITIALIZATION OVERLAY -->
     <div id="init-overlay">
         <div class="text-center space-y-4 px-4 w-full max-w-md">
@@ -115,21 +171,21 @@
             <p id="audio-status" class="text-[10px] text-green-500 font-mono h-4"></p>
         </div>
     </div>
-
+    
     <!-- Local Audio Player -->
     <audio id="bg-music" loop>
         <source src="/assets/Haseen - Talwiinder.mp3" type="audio/mpeg">
         <!-- Fallback if path is slightly different in production -->
         <source src="assets/Haseen - Talwiinder.mp3" type="audio/mpeg">
     </audio>
-
+    
     <!-- Backgrounds -->
     <div class="system-grid"></div>
     <div class="scanlines"></div>
-
+    
     <!-- 3D Canvas -->
     <canvas id="webgl-canvas"></canvas>
-
+    
     <!-- Navigation -->
     <nav class="fixed top-0 w-full z-50 px-6 py-4 md:py-6 flex justify-between items-center border-b border-white/5 bg-black/20 backdrop-blur-sm pointer-events-auto">
         <div class="flex items-center gap-2">
@@ -148,10 +204,10 @@
             </button>
         </div>
     </nav>
-
+    
     <!-- CONTENT -->
     <div id="scroll-container">
-
+        
         <!-- HERO -->
         <section class="h-screen w-full flex flex-col justify-center px-6 md:px-24 relative">
             <div class="max-w-4xl z-10">
@@ -166,7 +222,7 @@
                     Orchestrating the next generation of decentralized commerce. Integrating Bitcoin solidity, Ethereum intelligence, and Solana velocity.
                 </p>
                 <div class="mt-12 flex gap-6">
-                    <button onclick="document.getElementById('protocol').scrollIntoView()" class="px-8 py-3 bg-white text-black font-orbitron font-bold tracking-wider hover:bg-[--accent-primary] transition-colors shery-magnetic">
+                    <button onclick="window.location.href='/app.html'" class="px-8 py-3 bg-white text-black font-orbitron font-bold tracking-wider hover:bg-[--accent-primary] transition-colors shery-magnetic">
                         ENTER SYSTEM
                     </button>
                 </div>
@@ -178,7 +234,7 @@
                 <div class="w-[1px] h-16 bg-white"></div>
             </div>
         </section>
-
+        
         <!-- PROTOCOL -->
         <section id="protocol" class="min-h-screen w-full bg-black/80 backdrop-blur-xl border-t border-white/10 py-24 px-6 md:px-24">
             <div class="section-header">
@@ -203,14 +259,16 @@
                     <div class="hud-panel p-6 group">
                         <h3 class="font-orbitron text-xl text-white mb-2 flex justify-between">
                             <span>Autonomous Commerce</span>
-                            <svg class="w-5 h-5 text-[--accent-primary]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <svg class="w-5 h-5 text-[--accent-primary]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
                         </h3>
                         <p class="text-sm text-gray-400">Self-managing mini-stores that optimize inventory based on real-time data.</p>
                     </div>
                 </div>
             </div>
         </section>
-
+        
         <!-- OPERATIVES -->
         <section id="operatives" class="w-full bg-[#050505] border-t border-white/10 py-24 px-6 md:px-24">
             <div class="section-header flex justify-end">
@@ -243,7 +301,7 @@
                 </div>
             </div>
         </section>
-
+        
         <!-- DATA STREAM (Fixed Layout) -->
         <section id="stream" class="min-h-screen w-full bg-black border-t border-white/10 py-24 px-6 md:px-24">
             <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-4">
@@ -255,7 +313,7 @@
                     LIVE FEED INCOMING
                 </div>
             </div>
-
+            
             <!-- Testimonials Grid -->
             <div id="testimonials-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                 <!-- Dynamic Content -->
@@ -267,7 +325,7 @@
                 </div>
             </div>
         </section>
-
+        
         <!-- FOOTER -->
         <footer class="py-12 bg-[#030303] border-t border-white/10 text-center relative z-10">
             <h1 class="font-orbitron text-[12vw] md:text-[15vw] leading-none text-[#0a0a0a] font-black select-none">YUKU</h1>
@@ -278,9 +336,9 @@
                 </div>
             </div>
         </footer>
-
+        
     </div>
-
+    
     <!-- DEPENDENCIES -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
@@ -298,7 +356,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-
+    
     <script>
         // --- AUDIO CONTROLLER (LOCAL MP3) ---
         const audioElement = document.getElementById('bg-music');
@@ -316,7 +374,7 @@
                 });
             }
         }
-
+        
         // --- BUTTON EVENT LISTENERS ---
         
         // 1. "ENABLE AUDIO UPLINK" Button
@@ -324,32 +382,34 @@
             e.stopPropagation();
             enableAudio();
         });
-
+        
         // 2. "INITIALIZE" Button (Main Entry)
         document.getElementById('start-btn').addEventListener('click', () => {
             const overlay = document.getElementById('init-overlay');
             
             // Try to play audio here too (as it's a user gesture)
             enableAudio();
-
+            
             // Fade out overlay
             overlay.style.opacity = '0';
             setTimeout(() => overlay.style.display = 'none', 800);
-
+            
             // Init other systems
             initApp();
         });
-
+        
         // --- APP INITIALIZATION ---
         const API_BASE_URL = 'https://giant-noell-pixelart002-1c1d1fda.koyeb.app';
-
+        
         function initApp() {
             // 1. SMOOTH SCROLL
             const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-            function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+            
+            function raf(time) { lenis.raf(time);
+                requestAnimationFrame(raf); }
             requestAnimationFrame(raf);
             gsap.registerPlugin(ScrollTrigger);
-
+            
             // 2. SHERY JS
             Shery.mouseFollower({
                 skew: true,
@@ -358,34 +418,34 @@
             });
             Shery.makeMagnet(".shery-magnetic", { ease: "cubic-bezier(0.23, 1, 0.320, 1)", duration: 1 });
             Shery.textAnimate(".shery-text", { style: 1, y: 10, delay: 0.1, duration: 2, ease: "cubic-bezier(0.23, 1, 0.320, 1)", multiplier: 0.1 });
-
+            
             // 3. DATA STREAM
             fetchTestimonials();
             
             // 4. 3D SCENE
             initThreeJS();
         }
-
+        
         // --- 3. THREE.JS CRYPTO SCENE ---
         const initThreeJS = () => {
             const canvas = document.querySelector('#webgl-canvas');
             const scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0x030303, 0.02);
-
+            
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 12;
             camera.position.y = 2;
-
+            
             const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.toneMapping = THREE.ReinhardToneMapping;
-
+            
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.autoRotate = true;
             controls.autoRotateSpeed = 1.0;
-
+            
             // Lighting
             const ambientLight = new THREE.AmbientLight(0x404040, 2);
             scene.add(ambientLight);
@@ -395,7 +455,7 @@
             const btcLight = new THREE.PointLight(0xF7931A, 2, 20);
             btcLight.position.set(0, 2, 2);
             scene.add(btcLight);
-
+            
             // Textures
             const textureLoader = new THREE.TextureLoader();
             textureLoader.crossOrigin = "anonymous";
@@ -403,10 +463,10 @@
             const btcTexture = textureLoader.load('https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=029');
             const ethTexture = textureLoader.load('https://cryptologos.cc/logos/ethereum-eth-logo.png?v=029');
             const solTexture = textureLoader.load('https://cryptologos.cc/logos/solana-sol-logo.png?v=029');
-
+            
             const group = new THREE.Group();
             scene.add(group);
-
+            
             // 1. BITCOIN
             const btcGeo = new THREE.CylinderGeometry(2.5, 2.5, 0.2, 64);
             const btcMaterials = [
@@ -417,38 +477,40 @@
             const btcCoin = new THREE.Mesh(btcGeo, btcMaterials);
             btcCoin.rotation.x = Math.PI / 2;
             group.add(btcCoin);
-
+            
             // 2. ETHEREUM
             const ethGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.1, 32);
             const ethMaterials = [
-                 new THREE.MeshStandardMaterial({ color: 0x627EEA }),
-                 new THREE.MeshBasicMaterial({ map: ethTexture, transparent: true }),
-                 new THREE.MeshBasicMaterial({ map: ethTexture, transparent: true })
+                new THREE.MeshStandardMaterial({ color: 0x627EEA }),
+                new THREE.MeshBasicMaterial({ map: ethTexture, transparent: true }),
+                new THREE.MeshBasicMaterial({ map: ethTexture, transparent: true })
             ];
             const ethCoin = new THREE.Mesh(ethGeo, ethMaterials);
             ethCoin.position.set(5, 2, 0);
             ethCoin.rotation.x = Math.PI / 2;
             group.add(ethCoin);
-
+            
             // 3. SOLANA
             const solGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.1, 32);
-             const solMaterials = [
-                 new THREE.MeshStandardMaterial({ color: 0x14F195 }),
-                 new THREE.MeshBasicMaterial({ map: solTexture, transparent: true }),
-                 new THREE.MeshBasicMaterial({ map: solTexture, transparent: true })
+            const solMaterials = [
+                new THREE.MeshStandardMaterial({ color: 0x14F195 }),
+                new THREE.MeshBasicMaterial({ map: solTexture, transparent: true }),
+                new THREE.MeshBasicMaterial({ map: solTexture, transparent: true })
             ];
             const solCoin = new THREE.Mesh(solGeo, solMaterials);
             solCoin.position.set(-5, -2, 1);
             solCoin.rotation.x = Math.PI / 2;
             group.add(solCoin);
-
+            
             // Post Processing
             const composer = new THREE.EffectComposer(renderer);
             composer.addPass(new THREE.RenderPass(scene, camera));
             const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-            bloomPass.threshold = 0.2; bloomPass.strength = 1.5; bloomPass.radius = 0.5;
+            bloomPass.threshold = 0.2;
+            bloomPass.strength = 1.5;
+            bloomPass.radius = 0.5;
             composer.addPass(bloomPass);
-
+            
             // Animation
             const clock = new THREE.Clock();
             const animate = () => {
@@ -461,7 +523,7 @@
                 requestAnimationFrame(animate);
             };
             animate();
-
+            
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
@@ -479,7 +541,7 @@
             }
             return stars;
         };
-
+        
         const fetchTestimonials = async () => {
             const container = document.getElementById('testimonials-grid');
             try {
@@ -523,4 +585,5 @@
         };
     </script>
 </body>
+
 </html>
