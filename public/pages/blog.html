@@ -2,37 +2,12 @@
 <html lang="en">
 <head>
     <!-- =========================================
-         1. META DATA & SEO (Google Crawling)
+         1. META DATA & SEO
     ========================================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
-    <!-- Primary Meta Tags -->
-    <title>Yuku Blog Admin | Manage Your Content</title>
-    <meta name="title" content="Yuku Blog Admin | Manage Your Content">
-    <meta name="description" content="Secure Admin Console for Yuku Blog. Write, edit, and manage articles efficiently with Markdown support and real-time analytics.">
-    <meta name="keywords" content="Admin Panel, Blog Management, CMS, Yuku Blog, Markdown Editor, Dashboard">
-    <meta name="robots" content="index, follow"> <!-- Allows Google to Crawl this page -->
-    <meta name="author" content="Vivek">
-    <meta name="language" content="English">
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://yuku-nine.vercel.app/app.html">
-    <meta property="og:title" content="Yuku Blog Admin | Manage Your Content">
-    <meta property="og:description" content="Secure Admin Console for Yuku Blog. Write, edit, and manage articles efficiently.">
-    <meta property="og:image" content="https://yuku-nine.vercel.app/assets/admin-preview.png"> <!-- Replace with actual image -->
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://yuku-nine.vercel.app/admin.html">
-    <meta property="twitter:title" content="Yuku Blog Admin | Manage Your Content">
-    <meta property="twitter:description" content="Secure Admin Console for Yuku Blog. Write, edit, and manage articles efficiently.">
-    <meta property="twitter:image" content="https://yuku-nine.vercel.app/assets/admin-preview.png">
-
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://yuku-nine.vercel.app/app.html" />
+    <title>Yuku Blog Admin | Console</title>
+    <meta name="robots" content="noindex, nofollow"> <!-- Admin panel should not be indexed -->
 
     <!-- =========================================
          2. STYLES & SCRIPTS
@@ -64,7 +39,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800 h-screen overflow-hidden flex">
 
-    <!-- === SIDEBAR (Left Menu) === -->
+    <!-- === SIDEBAR === -->
     <aside class="w-72 bg-emerald-900 text-white flex flex-col shadow-2xl relative overflow-hidden hidden md:flex">
         <!-- Decoration -->
         <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-800 rounded-full opacity-50 blur-xl"></div>
@@ -99,7 +74,7 @@
             <button onclick="app.switchTab('manage')" id="btn-manage" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-800 text-emerald-100 transition-all">
                 <i class="fas fa-layer-group"></i> Manage Posts
             </button>
-            <a href="/pages/host.html" target="_blank" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-800 text-emerald-100 transition-all">
+            <a href="/index.html" target="_blank" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-800 text-emerald-100 transition-all">
                 <i class="fas fa-external-link-alt"></i> View Live Site
             </a>
         </nav>
@@ -111,14 +86,13 @@
         </div>
     </aside>
 
-    <!-- === MAIN CONTENT (Right Side) === -->
+    <!-- === MAIN CONTENT === -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
         
         <!-- Top Bar -->
         <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20">
             <h2 id="page-title" class="text-xl font-bold text-gray-700">New Article</h2>
             <div class="text-sm text-gray-400 hidden md:block" id="date-display">...</div>
-            <!-- Mobile Menu Toggle -->
             <button onclick="alert('Use Desktop for Admin')" class="md:hidden text-gray-500"><i class="fas fa-bars"></i></button>
         </header>
 
@@ -128,15 +102,20 @@
             <!-- SUCCESS ANIMATION (Hidden by default) -->
             <div id="rive-container" class="hidden absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center fade-in">
                 <canvas id="canvas" width="400" height="400"></canvas>
-                <h3 class="text-2xl font-bold text-emerald-700 mt-4 animate-bounce">Published Successfully!</h3>
+                <h3 class="text-2xl font-bold text-emerald-700 mt-4 animate-bounce" id="success-msg">Success!</h3>
             </div>
 
-            <!-- TAB 1: WRITE POST -->
+            <!-- TAB 1: WRITE / EDIT POST -->
             <section id="tab-write" class="max-w-6xl mx-auto space-y-6 fade-in">
                 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Main Editor -->
                     <div class="lg:col-span-2 space-y-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wide" id="form-mode-label">Creating New Post</span>
+                            <button onclick="app.resetForm()" class="text-xs text-red-400 hover:text-red-600 hidden" id="cancel-edit-btn">Cancel Edit</button>
+                        </div>
+
                         <!-- Title Input -->
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                             <input type="text" id="post-title" class="w-full text-3xl font-bold p-2 border-b-2 border-transparent focus:border-emerald-500 outline-none placeholder-gray-300 transition" placeholder="Enter an engaging title...">
@@ -152,7 +131,7 @@
                     <div class="lg:col-span-1 space-y-6">
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-4">
                             <h3 class="font-bold text-gray-700 mb-6 flex items-center gap-2">
-                                <i class="fas fa-sliders-h text-emerald-500"></i> Post Settings
+                                <i class="fas fa-sliders-h text-emerald-500"></i> Settings
                             </h3>
                             
                             <!-- Image URL -->
@@ -168,9 +147,9 @@
                                 <p class="text-xs text-gray-400 mt-1">Separate with commas</p>
                             </div>
 
-                            <!-- Publish Button -->
-                            <button onclick="app.publishPost()" id="publish-btn" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition transform active:scale-95 flex justify-center items-center gap-2">
-                                <i class="fas fa-paper-plane"></i> Publish Now
+                            <!-- Publish/Update Button -->
+                            <button onclick="app.handlePostSubmit()" id="publish-btn" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition transform active:scale-95 flex justify-center items-center gap-2">
+                                <i class="fas fa-paper-plane"></i> <span id="btn-text">Publish Now</span>
                             </button>
                         </div>
                     </div>
@@ -200,12 +179,15 @@
 
     <!-- === JAVASCRIPT LOGIC === -->
     <script>
-        console.log("✅ Admin Panel Loaded: Initializing scripts...");
+        console.log("✅ Admin Panel Loaded...");
 
-        // --- 1. CONFIGURATION ---
+        // --- CONFIGURATION ---
         const API_BASE_URL = "https://giant-noell-pixelart002-1c1d1fda.koyeb.app"; 
+        
+        // State for Edit Mode
+        let currentEditSlug = null;
 
-        // --- 2. RIVE ANIMATION SETUP ---
+        // --- RIVE ANIMATION ---
         let riveInstance;
         try {
             riveInstance = new rive.Rive({
@@ -213,58 +195,49 @@
                 canvas: document.getElementById('canvas'),
                 autoplay: false,
             });
-        } catch(e) {
-            console.warn("⚠️ Rive Animation failed to load", e);
-        }
+        } catch(e) {}
 
-        // --- 3. APP LOGIC ---
+        // --- APP LOGIC ---
         const app = {
             
-            // Initialization
             init: () => {
-                console.log("🚀 App initializing...");
                 const token = localStorage.getItem('authToken');
                 
+                // Redirect if not logged in
                 if (!token) {
-                    console.error("❌ No Auth Token found. Redirecting to Login.");
-                    alert("Please Login First!");
-                    window.location.href = 'app.html'; 
+                    console.error("❌ No Token. Redirecting to /app.html");
+                    window.location.href = '/app.html'; 
                     return;
                 }
 
-                console.log("✅ Auth Token found.");
+                // UI Date
                 document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
                 
                 app.fetchUserProfile(token);
             },
 
-            // User Info Lana (/users/me)
             fetchUserProfile: async (token) => {
-                console.log("📡 Fetching User Profile...");
                 try {
                     const res = await fetch(`${API_BASE_URL}/users/me`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     
-                    if (!res.ok) throw new Error(`Token invalid or expired (Status: ${res.status})`);
-                    
+                    if (!res.ok) throw new Error("Auth Failed");
                     const user = await res.json();
-                    console.log("👤 User Profile Loaded:", user.email);
 
                     document.getElementById('name-box').innerText = user.fullname;
                     document.getElementById('email-box').innerText = user.email;
                     document.getElementById('avatar-initial').innerText = user.fullname.charAt(0).toUpperCase();
                 } catch (err) {
-                    console.error("❌ Profile Fetch Error:", err);
                     app.logout();
                 }
             },
 
-            // Post Publish Karna
-            publishPost: async () => {
-                console.log("📝 Attempting to publish post...");
+            // --- CREATE / UPDATE LOGIC ---
+            handlePostSubmit: async () => {
                 const token = localStorage.getItem('authToken');
                 const btn = document.getElementById('publish-btn');
+                const btnText = document.getElementById('btn-text');
                 
                 // Inputs
                 const title = document.getElementById('post-title').value;
@@ -272,20 +245,29 @@
                 const image = document.getElementById('post-image').value;
                 const tags = document.getElementById('post-tags').value.split(',').map(t => t.trim()).filter(t => t);
 
-                // Validation
                 if(!title || !content) {
-                    console.warn("⚠️ Validation Failed: Title or Content missing.");
-                    alert("Title and Content are mandatory!");
-                    return;
+                    return alert("Title and Content are mandatory!");
                 }
 
                 // Loading State
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Publishing...`;
+                btnText.innerText = currentEditSlug ? "Updating..." : "Publishing...";
                 btn.disabled = true;
 
                 try {
-                    const res = await fetch(`${API_BASE_URL}/blog/create`, {
-                        method: 'POST',
+                    let url, method;
+
+                    if (currentEditSlug) {
+                        // UPDATE MODE (PUT)
+                        url = `${API_BASE_URL}/blog/${currentEditSlug}`;
+                        method = 'PUT';
+                    } else {
+                        // CREATE MODE (POST)
+                        url = `${API_BASE_URL}/blog/create`;
+                        method = 'POST';
+                    }
+
+                    const res = await fetch(url, {
+                        method: method,
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
@@ -302,37 +284,83 @@
                     const data = await res.json();
 
                     if(res.ok) {
-                        console.log("✅ Post Published Successfully:", data);
+                        document.getElementById('success-msg').innerText = currentEditSlug ? "Updated Successfully!" : "Published Successfully!";
                         app.showSuccess();
-                        // Clear Form
-                        document.getElementById('post-title').value = "";
-                        document.getElementById('post-content').value = "";
-                        document.getElementById('post-tags').value = "";
+                        app.resetForm(); // Reset form after success
                     } else {
-                        console.error("❌ Server Error:", data);
-                        alert("Error: " + (data.detail || "Failed to post"));
+                        alert("Error: " + (data.detail || "Operation Failed"));
                     }
                 } catch (err) {
-                    console.error("❌ Network Error:", err);
-                    alert("Network Error: Check console for details.");
+                    alert("Network Error");
                 } finally {
-                    btn.innerHTML = `<i class="fas fa-paper-plane"></i> Publish Now`;
+                    btnText.innerText = currentEditSlug ? "Update Post" : "Publish Now";
                     btn.disabled = false;
                 }
             },
 
-            // Posts Load Karna (Manage Tab ke liye)
+            // --- EDIT MODE: Load Data into Form ---
+            loadEdit: async (slug) => {
+                const token = localStorage.getItem('authToken');
+                try {
+                    const res = await fetch(`${API_BASE_URL}/blog/${slug}`);
+                    const post = await res.json();
+
+                    // Switch to Write Tab
+                    app.switchTab('write');
+
+                    // Set Form State
+                    currentEditSlug = slug;
+                    document.getElementById('post-title').value = post.title;
+                    document.getElementById('post-content').value = post.content;
+                    document.getElementById('post-image').value = post.cover_image || "";
+                    document.getElementById('post-tags').value = post.tags.join(', ');
+
+                    // Update UI Buttons
+                    document.getElementById('page-title').innerText = "Edit Article";
+                    document.getElementById('btn-text').innerText = "Update Post";
+                    document.getElementById('form-mode-label').innerText = "Editing: " + post.title;
+                    document.getElementById('cancel-edit-btn').classList.remove('hidden');
+                    
+                    // Change Button Color to Blue for Edit Mode
+                    const btn = document.getElementById('publish-btn');
+                    btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                    btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+
+                } catch (e) {
+                    alert("Failed to load post for editing");
+                }
+            },
+
+            // --- RESET FORM ---
+            resetForm: () => {
+                currentEditSlug = null;
+                document.getElementById('post-title').value = "";
+                document.getElementById('post-content').value = "";
+                document.getElementById('post-image').value = "";
+                document.getElementById('post-tags').value = "";
+
+                // Reset UI
+                document.getElementById('page-title').innerText = "New Article";
+                document.getElementById('btn-text').innerText = "Publish Now";
+                document.getElementById('form-mode-label').innerText = "Creating New Post";
+                document.getElementById('cancel-edit-btn').classList.add('hidden');
+
+                // Reset Color
+                const btn = document.getElementById('publish-btn');
+                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+                btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            },
+
+            // --- LOAD POSTS LIST ---
             loadPosts: async () => {
-                console.log("📥 Loading posts list...");
                 const list = document.getElementById('posts-list');
-                list.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-gray-400">Loading posts...</td></tr>`;
+                list.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-gray-400">Loading...</td></tr>`;
 
                 try {
                     const res = await fetch(`${API_BASE_URL}/blog/`);
                     const posts = await res.json();
-                    console.log(`✅ Loaded ${posts.length} posts.`);
-
                     list.innerHTML = "";
+
                     if(posts.length === 0) {
                         list.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-gray-400">No posts found.</td></tr>`;
                         return;
@@ -344,11 +372,12 @@
                             <tr class="hover:bg-gray-50 transition group">
                                 <td class="p-5 font-medium text-gray-800 group-hover:text-emerald-700">${post.title}</td>
                                 <td class="p-5 text-gray-500">${date}</td>
-                                <td class="p-5 text-center">
-                                    <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">${post.views || 0}</span>
-                                </td>
-                                <td class="p-5 text-right">
-                                    <button onclick="app.deletePost('${post.slug}')" class="text-gray-300 hover:text-red-500 transition p-2">
+                                <td class="p-5 text-center"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">${post.views || 0}</span></td>
+                                <td class="p-5 text-right flex justify-end gap-3">
+                                    <button onclick="app.loadEdit('${post.slug}')" class="text-blue-400 hover:text-blue-600 transition" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="app.deletePost('${post.slug}')" class="text-gray-300 hover:text-red-500 transition" title="Delete">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </td>
@@ -356,75 +385,48 @@
                         `;
                     });
                 } catch (err) {
-                    console.error("❌ Error loading posts:", err);
                     list.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-red-400">Failed to load</td></tr>`;
                 }
             },
 
-            // Post Delete Karna
             deletePost: async (slug) => {
                 if(!confirm("Are you sure? This cannot be undone.")) return;
-
-                console.log(`🗑️ Deleting post: ${slug}`);
                 const token = localStorage.getItem('authToken');
                 try {
                     const res = await fetch(`${API_BASE_URL}/blog/${slug}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    
-                    if(res.ok) {
-                        console.log("✅ Delete successful");
-                        app.loadPosts(); 
-                    } else {
-                        console.error("❌ Delete failed");
-                        alert("Failed to delete. Are you the Admin?");
-                    }
-                } catch (err) {
-                    console.error("❌ Delete Network Error:", err);
-                    alert("Network Error");
-                }
+                    if(res.ok) app.loadPosts();
+                } catch (err) { alert("Network Error"); }
             },
 
-            // Tabs Switch Logic
             switchTab: (tab) => {
-                console.log(`🔄 Switching tab to: ${tab}`);
                 const writeSec = document.getElementById('tab-write');
                 const manageSec = document.getElementById('tab-manage');
                 const btnWrite = document.getElementById('btn-write');
                 const btnManage = document.getElementById('btn-manage');
-                const title = document.getElementById('page-title');
 
                 if (tab === 'write') {
                     writeSec.classList.remove('hidden');
                     manageSec.classList.add('hidden');
-                    
-                    // Active Styles
                     btnWrite.classList.add('bg-emerald-600', 'text-white', 'shadow-lg');
                     btnWrite.classList.remove('hover:bg-emerald-800', 'text-emerald-100');
-                    // Inactive Styles
                     btnManage.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg');
                     btnManage.classList.add('hover:bg-emerald-800', 'text-emerald-100');
-                    
-                    title.innerText = "New Article";
+                    // Note: We do NOT reset form here to allow user to toggle back to edit
                 } else {
                     writeSec.classList.add('hidden');
                     manageSec.classList.remove('hidden');
-                    
-                    // Active Styles
                     btnManage.classList.add('bg-emerald-600', 'text-white', 'shadow-lg');
                     btnManage.classList.remove('hover:bg-emerald-800', 'text-emerald-100');
-                    // Inactive Styles
                     btnWrite.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg');
                     btnWrite.classList.add('hover:bg-emerald-800', 'text-emerald-100');
-
-                    title.innerText = "Manage Posts";
                     app.loadPosts();
                 }
             },
 
             showSuccess: () => {
-                console.log("✨ Showing Success Animation");
                 const container = document.getElementById('rive-container');
                 container.classList.remove('hidden');
                 if(riveInstance) riveInstance.play();
@@ -435,13 +437,11 @@
             },
 
             logout: () => {
-                console.log("👋 Logging out...");
                 localStorage.removeItem('authToken');
-                window.location.href = 'app.html';
+                window.location.href = '/app.html';
             }
         };
 
-        // Initialize App
         document.addEventListener('DOMContentLoaded', app.init);
     </script>
 </body>
