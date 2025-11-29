@@ -1,14 +1,374 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1">
- <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yuku Blog Admin</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Rive Runtime -->
+    <script src="https://unpkg.com/@rive-app/canvas@2.7.0"></script>
+
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #059669; }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
 </head>
+<body class="bg-gray-50 text-gray-800 h-screen overflow-hidden flex">
 
-<body>
- <h1> blog</h1>
+    <!-- === SIDEBAR === -->
+    <aside class="w-72 bg-emerald-900 text-white flex flex-col shadow-2xl relative overflow-hidden">
+        <!-- Decorative Circle -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-800 rounded-full opacity-50 blur-xl"></div>
+
+        <div class="p-8 z-10">
+            <h1 class="text-2xl font-bold tracking-wider flex items-center gap-2">
+                <i class="fas fa-feather-alt"></i> YUKU BLOG
+            </h1>
+            <p class="text-emerald-300 text-xs mt-1">Admin Console</p>
+        </div>
+
+        <!-- User Profile Box (From /me endpoint) -->
+        <div class="px-6 pb-6 z-10">
+            <div class="bg-emerald-800 bg-opacity-50 p-4 rounded-xl border border-emerald-700 backdrop-blur-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-400 flex items-center justify-center text-emerald-900 font-bold text-lg shadow-lg" id="avatar-initial">
+                        U
+                    </div>
+                    <div>
+                        <div id="name-box" class="font-semibold text-sm">Loading...</div>
+                        <div id="email-box" class="text-xs text-emerald-300 truncate w-32">wait...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-4 space-y-2 z-10">
+            <button onclick="switchTab('write')" id="btn-write" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-600 shadow-lg text-white transition-all hover:scale-105">
+                <i class="fas fa-pen-nib"></i> Write Post
+            </button>
+            <button onclick="switchTab('manage')" id="btn-manage" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-800 text-emerald-100 transition-all">
+                <i class="fas fa-layer-group"></i> Manage Posts
+            </button>
+        </nav>
+
+        <div class="p-6 z-10">
+            <button onclick="logout()" class="flex items-center gap-2 text-emerald-300 hover:text-white transition text-sm">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- === MAIN CONTENT === -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        
+        <!-- Top Bar -->
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-20">
+            <h2 id="page-title" class="text-xl font-bold text-gray-700">New Article</h2>
+            <div class="text-sm text-gray-400" id="date-display">...</div>
+        </header>
+
+        <!-- Scrollable Area -->
+        <div class="flex-1 overflow-y-auto p-8 relative">
+            
+            <!-- RIVE ANIMATION CONTAINER (Hidden by default) -->
+            <div id="rive-container" class="hidden absolute inset-0 bg-white bg-opacity-90 z-50 flex flex-col items-center justify-center">
+                <canvas id="canvas" width="400" height="400"></canvas>
+                <h3 class="text-2xl font-bold text-emerald-700 mt-4">Published Successfully!</h3>
+            </div>
+
+            <!-- TAB 1: WRITE POST -->
+            <section id="tab-write" class="max-w-4xl mx-auto space-y-6 animate-fade-in">
+                
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- Main Editor -->
+                    <div class="col-span-2 space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Article Title</label>
+                            <input type="text" id="post-title" class="w-full text-2xl font-bold p-4 border-b-2 border-gray-200 focus:border-emerald-500 outline-none bg-transparent transition" placeholder="Enter an engaging title...">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Content (Markdown)</label>
+                            <textarea id="post-content" class="w-full h-96 p-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 outline-none transition font-mono text-sm leading-relaxed" placeholder="# Start writing your story..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Settings -->
+                    <div class="col-span-1 space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-gray-700 mb-4">Meta Data</h3>
+                            
+                            <div class="mb-4">
+                                <label class="text-xs font-bold text-gray-400 uppercase">Cover Image URL</label>
+                                <input type="text" id="post-image" class="w-full mt-1 p-2 bg-gray-50 rounded border border-gray-200 focus:border-emerald-500 outline-none text-sm" placeholder="https://...">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="text-xs font-bold text-gray-400 uppercase">Tags (Comma separated)</label>
+                                <input type="text" id="post-tags" class="w-full mt-1 p-2 bg-gray-50 rounded border border-gray-200 focus:border-emerald-500 outline-none text-sm" placeholder="tech, coding, life">
+                            </div>
+
+                            <button onclick="publishPost()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition transform active:scale-95 flex justify-center items-center gap-2">
+                                <i class="fas fa-paper-plane"></i> Publish Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: MANAGE POSTS -->
+            <section id="tab-manage" class="hidden max-w-5xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-bold">
+                            <tr>
+                                <th class="p-5">Article Title</th>
+                                <th class="p-5">Published Date</th>
+                                <th class="p-5 text-center">Views</th>
+                                <th class="p-5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="posts-list" class="divide-y divide-gray-100 text-sm">
+                            <!-- JS Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // === CONFIGURATION ===
+        const API_URL = "https://giant-noell-pixelart002-1c1d1fda.koyeb.app";
+        const ADMIN_EMAIL_CHECK = "admin@yuku.app"; // Sirf UI warning ke liye
+
+        // === RIVE SETUP ===
+        let riveInstance;
+        try {
+            riveInstance = new rive.Rive({
+                src: 'https://cdn.rive.app/animations/vehicles.riv', // Using a generic placeholder, ideally use your own 'success.riv'
+                canvas: document.getElementById('canvas'),
+                autoplay: false,
+                stateMachines: "State Machine 1" // Usually default
+            });
+        } catch(e) { console.log("Rive failed to load", e); }
+
+        // === INITIALIZATION ===
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("access_token");
+            
+            // 1. Redirect if no token
+            if (!token) {
+                window.location.href = "login.html"; // Assume login.html exists
+                return;
+            }
+
+            // 2. Fetch User Data (/me)
+            fetchUserInfo(token);
+
+            // 3. Set Date
+            document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        });
+
+        // === FETCH USER INFO ===
+        async function fetchUserInfo(token) {
+            try {
+                const res = await fetch(`${API_URL}/users/me`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (res.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const user = await res.json();
+                
+                // Populate UI from your specific Schema
+                document.getElementById('name-box').innerText = user.fullname;
+                document.getElementById('email-box').innerText = user.email;
+                document.getElementById('avatar-initial').innerText = user.fullname.charAt(0).toUpperCase();
+
+                if(user.email !== ADMIN_EMAIL_CHECK) {
+                    alert("Warning: You are logged in, but not as the configured Admin. You might not be able to post.");
+                }
+
+            } catch (error) {
+                console.error("User fetch error:", error);
+            }
+        }
+
+        // === PUBLISH POST ===
+        async function publishPost() {
+            const token = localStorage.getItem("access_token");
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const image = document.getElementById('post-image').value;
+            const tags = document.getElementById('post-tags').value.split(',').map(t => t.trim()).filter(t => t);
+
+            if(!title || !content) {
+                alert("Please fill title and content");
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="publishPost()"]');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Publishing...`;
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/blog/create`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content,
+                        tags: tags,
+                        cover_image: image,
+                        is_published: true
+                    })
+                });
+
+                const data = await res.json();
+
+                if(res.ok) {
+                    // Success Animation
+                    showSuccessAnimation();
+                    // Clear Form
+                    document.getElementById('post-title').value = "";
+                    document.getElementById('post-content').value = "";
+                    document.getElementById('post-tags').value = "";
+                } else {
+                    alert("Error: " + (data.detail || "Failed to post"));
+                }
+            } catch(e) {
+                alert("Network error");
+            } finally {
+                btn.innerHTML = `<i class="fas fa-paper-plane"></i> Publish Now`;
+                btn.disabled = false;
+            }
+        }
+
+        // === MANAGE POSTS ===
+        async function loadPosts() {
+            const list = document.getElementById('posts-list');
+            list.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-gray-400">Loading posts...</td></tr>`;
+
+            try {
+                const res = await fetch(`${API_URL}/blog/`);
+                const posts = await res.json();
+
+                list.innerHTML = "";
+                posts.forEach(post => {
+                    list.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="p-5 font-medium text-gray-800">${post.title}</td>
+                            <td class="p-5 text-gray-500">${new Date(post.created_at).toLocaleDateString()}</td>
+                            <td class="p-5 text-center">
+                                <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">${post.views}</span>
+                            </td>
+                            <td class="p-5 text-right">
+                                <button onclick="deletePost('${post.slug}')" class="text-red-400 hover:text-red-600 transition">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                list.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-red-400">Failed to load posts</td></tr>`;
+            }
+        }
+
+        async function deletePost(slug) {
+            if(!confirm("Delete this post?")) return;
+            const token = localStorage.getItem("access_token");
+            
+            await fetch(`${API_URL}/blog/${slug}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            loadPosts();
+        }
+
+        // === UI UTILS ===
+        function switchTab(tab) {
+            const writeSec = document.getElementById('tab-write');
+            const manageSec = document.getElementById('tab-manage');
+            const btnWrite = document.getElementById('btn-write');
+            const btnManage = document.getElementById('btn-manage');
+            const title = document.getElementById('page-title');
+
+            if (tab === 'write') {
+                writeSec.classList.remove('hidden');
+                manageSec.classList.add('hidden');
+                
+                // Style Active
+                btnWrite.classList.add('bg-emerald-600', 'text-white', 'shadow-lg');
+                btnWrite.classList.remove('hover:bg-emerald-800', 'text-emerald-100');
+                
+                // Style Inactive
+                btnManage.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg');
+                btnManage.classList.add('hover:bg-emerald-800', 'text-emerald-100');
+                
+                title.innerText = "New Article";
+            } else {
+                writeSec.classList.add('hidden');
+                manageSec.classList.remove('hidden');
+                
+                // Style Active
+                btnManage.classList.add('bg-emerald-600', 'text-white', 'shadow-lg');
+                btnManage.classList.remove('hover:bg-emerald-800', 'text-emerald-100');
+
+                // Style Inactive
+                btnWrite.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg');
+                btnWrite.classList.add('hover:bg-emerald-800', 'text-emerald-100');
+
+                title.innerText = "Manage Posts";
+                loadPosts();
+            }
+        }
+
+        function showSuccessAnimation() {
+            const container = document.getElementById('rive-container');
+            container.classList.remove('hidden');
+            
+            if(riveInstance) {
+                riveInstance.play();
+            }
+
+            setTimeout(() => {
+                container.classList.add('hidden');
+                if(riveInstance) riveInstance.pause();
+            }, 3000); // 3 seconds success screen
+        }
+
+        function logout() {
+            localStorage.removeItem("access_token");
+            window.location.href = "login.html";
+        }
+    </script>
 </body>
-
 </html>
