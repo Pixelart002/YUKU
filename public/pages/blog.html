@@ -30,6 +30,9 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
         }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 h-screen overflow-hidden flex">
@@ -46,15 +49,15 @@
             <p class="text-emerald-300 text-xs mt-1">Admin Console</p>
         </div>
 
-        <!-- User Profile Box (From /me endpoint) -->
+        <!-- User Profile Box -->
         <div class="px-6 pb-6 z-10">
             <div class="bg-emerald-800 bg-opacity-50 p-4 rounded-xl border border-emerald-700 backdrop-blur-sm">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-emerald-400 flex items-center justify-center text-emerald-900 font-bold text-lg shadow-lg" id="avatar-initial">
-                        U
+                        ?
                     </div>
-                    <div>
-                        <div id="name-box" class="font-semibold text-sm">Loading...</div>
+                    <div class="overflow-hidden">
+                        <div id="name-box" class="font-semibold text-sm truncate">Loading...</div>
                         <div id="email-box" class="text-xs text-emerald-300 truncate w-32">wait...</div>
                     </div>
                 </div>
@@ -63,16 +66,16 @@
 
         <!-- Navigation -->
         <nav class="flex-1 px-4 space-y-2 z-10">
-            <button onclick="switchTab('write')" id="btn-write" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-600 shadow-lg text-white transition-all hover:scale-105">
+            <button onclick="app.switchTab('write')" id="btn-write" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-600 shadow-lg text-white transition-all hover:scale-105">
                 <i class="fas fa-pen-nib"></i> Write Post
             </button>
-            <button onclick="switchTab('manage')" id="btn-manage" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-800 text-emerald-100 transition-all">
+            <button onclick="app.switchTab('manage')" id="btn-manage" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-emerald-800 text-emerald-100 transition-all">
                 <i class="fas fa-layer-group"></i> Manage Posts
             </button>
         </nav>
 
         <div class="p-6 z-10">
-            <button onclick="logout()" class="flex items-center gap-2 text-emerald-300 hover:text-white transition text-sm">
+            <button onclick="app.logout()" class="flex items-center gap-2 text-emerald-300 hover:text-white transition text-sm">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </button>
         </div>
@@ -88,47 +91,48 @@
         </header>
 
         <!-- Scrollable Area -->
-        <div class="flex-1 overflow-y-auto p-8 relative">
+        <div class="flex-1 overflow-y-auto p-8 relative bg-gray-50/50">
             
             <!-- RIVE ANIMATION CONTAINER (Hidden by default) -->
-            <div id="rive-container" class="hidden absolute inset-0 bg-white bg-opacity-90 z-50 flex flex-col items-center justify-center">
+            <div id="rive-container" class="hidden absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col items-center justify-center fade-in">
                 <canvas id="canvas" width="400" height="400"></canvas>
-                <h3 class="text-2xl font-bold text-emerald-700 mt-4">Published Successfully!</h3>
+                <h3 class="text-2xl font-bold text-emerald-700 mt-4 animate-bounce">Published Successfully!</h3>
             </div>
 
             <!-- TAB 1: WRITE POST -->
-            <section id="tab-write" class="max-w-4xl mx-auto space-y-6 animate-fade-in">
+            <section id="tab-write" class="max-w-6xl mx-auto space-y-6 fade-in">
                 
-                <div class="grid grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Main Editor -->
-                    <div class="col-span-2 space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-500 mb-1">Article Title</label>
-                            <input type="text" id="post-title" class="w-full text-2xl font-bold p-4 border-b-2 border-gray-200 focus:border-emerald-500 outline-none bg-transparent transition" placeholder="Enter an engaging title...">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <input type="text" id="post-title" class="w-full text-3xl font-bold p-2 border-b-2 border-transparent focus:border-emerald-500 outline-none placeholder-gray-300 transition" placeholder="Enter an engaging title...">
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-500 mb-1">Content (Markdown)</label>
-                            <textarea id="post-content" class="w-full h-96 p-4 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 outline-none transition font-mono text-sm leading-relaxed" placeholder="# Start writing your story..."></textarea>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[600px] flex flex-col">
+                            <textarea id="post-content" class="flex-1 w-full resize-none outline-none font-mono text-sm leading-relaxed text-gray-700 placeholder-gray-300" placeholder="# Start writing your story here (Markdown supported)..."></textarea>
                         </div>
                     </div>
 
                     <!-- Sidebar Settings -->
-                    <div class="col-span-1 space-y-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                            <h3 class="font-bold text-gray-700 mb-4">Meta Data</h3>
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-4">
+                            <h3 class="font-bold text-gray-700 mb-6 flex items-center gap-2">
+                                <i class="fas fa-sliders-h text-emerald-500"></i> Post Settings
+                            </h3>
                             
-                            <div class="mb-4">
-                                <label class="text-xs font-bold text-gray-400 uppercase">Cover Image URL</label>
-                                <input type="text" id="post-image" class="w-full mt-1 p-2 bg-gray-50 rounded border border-gray-200 focus:border-emerald-500 outline-none text-sm" placeholder="https://...">
+                            <div class="mb-6">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wide">Cover Image URL</label>
+                                <input type="text" id="post-image" class="w-full mt-2 p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-emerald-500 focus:bg-white outline-none text-sm transition" placeholder="https://...">
                             </div>
 
-                            <div class="mb-4">
-                                <label class="text-xs font-bold text-gray-400 uppercase">Tags (Comma separated)</label>
-                                <input type="text" id="post-tags" class="w-full mt-1 p-2 bg-gray-50 rounded border border-gray-200 focus:border-emerald-500 outline-none text-sm" placeholder="tech, coding, life">
+                            <div class="mb-8">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wide">Tags</label>
+                                <input type="text" id="post-tags" class="w-full mt-2 p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-emerald-500 focus:bg-white outline-none text-sm transition" placeholder="tech, coding, life">
+                                <p class="text-xs text-gray-400 mt-1">Separate with commas</p>
                             </div>
 
-                            <button onclick="publishPost()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition transform active:scale-95 flex justify-center items-center gap-2">
+                            <button onclick="app.publishPost()" id="publish-btn" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition transform active:scale-95 flex justify-center items-center gap-2">
                                 <i class="fas fa-paper-plane"></i> Publish Now
                             </button>
                         </div>
@@ -137,18 +141,18 @@
             </section>
 
             <!-- TAB 2: MANAGE POSTS -->
-            <section id="tab-manage" class="hidden max-w-5xl mx-auto">
+            <section id="tab-manage" class="hidden max-w-6xl mx-auto fade-in">
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <table class="w-full text-left">
-                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-bold">
+                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-bold border-b border-gray-100">
                             <tr>
-                                <th class="p-5">Article Title</th>
+                                <th class="p-5 w-1/2">Article Title</th>
                                 <th class="p-5">Published Date</th>
                                 <th class="p-5 text-center">Views</th>
                                 <th class="p-5 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="posts-list" class="divide-y divide-gray-100 text-sm">
+                        <tbody id="posts-list" class="divide-y divide-gray-50 text-sm">
                             <!-- JS Injected -->
                         </tbody>
                     </table>
@@ -157,218 +161,261 @@
         </div>
     </main>
 
+    <!-- === CORE LOGIC === -->
     <script>
-        // === CONFIGURATION ===
-        const API_URL = "https://giant-noell-pixelart002-1c1d1fda.koyeb.app";
-        const ADMIN_EMAIL_CHECK = "9013ms@gmail.com"; // Sirf UI warning ke liye
-
-        // === RIVE SETUP ===
+        // Rive Setup
         let riveInstance;
         try {
             riveInstance = new rive.Rive({
-                src: 'https://cdn.rive.app/animations/vehicles.riv', // Using a generic placeholder, ideally use your own 'success.riv'
+                src: 'https://cdn.rive.app/animations/vehicles.riv', // Placeholder, use checkmark.riv for best effect
                 canvas: document.getElementById('canvas'),
                 autoplay: false,
-                stateMachines: "State Machine 1" // Usually default
             });
-        } catch(e) { console.log("Rive failed to load", e); }
+        } catch(e) {}
 
-        // === INITIALIZATION ===
-        document.addEventListener("DOMContentLoaded", () => {
-            const token = localStorage.getItem("access_token");
+        const app = {
+            config: {
+                API_BASE_URL: 'https://giant-noell-pixelart002-1c1d1fda.koyeb.app'
+            },
             
-            // 1. Redirect if no token
-            if (!token) {
-                window.location.href = "./app.html"; // Assume login.html exists
-                return;
-            }
+            // 1. GET AUTH TOKEN (Updated Key)
+            getAuthToken() {
+                return localStorage.getItem('authToken');
+            },
 
-            // 2. Fetch User Data (/me)
-            fetchUserInfo(token);
+            // 2. CORE API HANDLER (Your exact logic)
+            async handleApiRequest(endpoint, options = {}, button = null) {
+                if (button) {
+                    button.disabled = true;
+                    // Add loading spinner if button passed
+                    const originalText = button.innerHTML;
+                    button.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
+                    button.dataset.original = originalText;
+                }
 
-            // 3. Set Date
-            document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-        });
+                try {
+                    const response = await fetch(`${this.config.API_BASE_URL}/${endpoint}`, options);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => {
+                            throw new Error(`Request failed with status: ${response.status}`);
+                        });
+                        
+                        if (Array.isArray(errorData.detail)) {
+                            const readableError = errorData.detail.map(err => err.msg).join('. ');
+                            throw new Error(readableError);
+                        }
+                        if (typeof errorData.detail === 'string') {
+                            throw new Error(errorData.detail);
+                        }
+                        throw new Error('An unknown error occurred.');
+                    }
+                    
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        return await response.json();
+                    } else {
+                        return { success: true };
+                    }
+                    
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                    return null;
+                } finally {
+                    if (button) {
+                        button.disabled = false;
+                        button.innerHTML = button.dataset.original;
+                    }
+                }
+            },
 
-        // === FETCH USER INFO ===
-        async function fetchUserInfo(token) {
-            try {
-                const res = await fetch(`${API_URL}/users/me`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-
-                if (res.status === 401) {
-                    logout();
+            // 3. INITIALIZATION
+            init() {
+                const token = this.getAuthToken();
+                if (!token) {
+                    // Redirect to login if not authenticated
+                    alert("Authentication required. Redirecting to login...");
+                    window.location.href = 'index.html'; // Assuming your login page is index.html
                     return;
                 }
 
-                const user = await res.json();
-                
-                // Populate UI from your specific Schema
-                document.getElementById('name-box').innerText = user.fullname;
-                document.getElementById('email-box').innerText = user.email;
-                document.getElementById('avatar-initial').innerText = user.fullname.charAt(0).toUpperCase();
+                // Set Date
+                document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-                if(user.email !== ADMIN_EMAIL_CHECK) {
-                    alert("Warning: You are logged in, but not as the configured Admin. You might not be able to post.");
+                // Fetch Profile
+                this.fetchUserProfile();
+            },
+
+            // 4. FETCH USER PROFILE (/users/me)
+            async fetchUserProfile() {
+                const options = {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${this.getAuthToken()}` }
+                };
+                
+                // Using 'users/me' endpoint as per your previous code
+                const user = await this.handleApiRequest('users/me', options);
+                
+                if (user) {
+                    document.getElementById('name-box').innerText = user.fullname;
+                    document.getElementById('email-box').innerText = user.email;
+                    document.getElementById('avatar-initial').innerText = user.fullname.charAt(0).toUpperCase();
+                } else {
+                    this.logout();
+                }
+            },
+
+            // 5. PUBLISH POST LOGIC
+            async publishPost() {
+                const title = document.getElementById('post-title').value;
+                const content = document.getElementById('post-content').value;
+                const image = document.getElementById('post-image').value;
+                const tags = document.getElementById('post-tags').value.split(',').map(t => t.trim()).filter(t => t);
+                const btn = document.getElementById('publish-btn');
+
+                if(!title || !content) {
+                    alert("Title and Content are required.");
+                    return;
                 }
 
-            } catch (error) {
-                console.error("User fetch error:", error);
-            }
-        }
+                const payload = {
+                    title: title,
+                    content: content,
+                    tags: tags,
+                    cover_image: image,
+                    is_published: true
+                };
 
-        // === PUBLISH POST ===
-        async function publishPost() {
-            const token = localStorage.getItem("access_token");
-            const title = document.getElementById('post-title').value;
-            const content = document.getElementById('post-content').value;
-            const image = document.getElementById('post-image').value;
-            const tags = document.getElementById('post-tags').value.split(',').map(t => t.trim()).filter(t => t);
-
-            if(!title || !content) {
-                alert("Please fill title and content");
-                return;
-            }
-
-            const btn = document.querySelector('button[onclick="publishPost()"]');
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Publishing...`;
-            btn.disabled = true;
-
-            try {
-                const res = await fetch(`${API_URL}/blog/create`, {
-                    method: "POST",
+                const options = {
+                    method: 'POST',
                     headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.getAuthToken()}`
                     },
-                    body: JSON.stringify({
-                        title: title,
-                        content: content,
-                        tags: tags,
-                        cover_image: image,
-                        is_published: true
-                    })
-                });
+                    body: JSON.stringify(payload)
+                };
 
-                const data = await res.json();
+                // Calling your endpoint
+                const result = await this.handleApiRequest('blog/create', options, btn);
 
-                if(res.ok) {
-                    // Success Animation
-                    showSuccessAnimation();
-                    // Clear Form
+                if (result) {
+                    this.showSuccessAnimation();
+                    // Reset Form
                     document.getElementById('post-title').value = "";
                     document.getElementById('post-content').value = "";
                     document.getElementById('post-tags').value = "";
-                } else {
-                    alert("Error: " + (data.detail || "Failed to post"));
                 }
-            } catch(e) {
-                alert("Network error");
-            } finally {
-                btn.innerHTML = `<i class="fas fa-paper-plane"></i> Publish Now`;
-                btn.disabled = false;
-            }
-        }
+            },
 
-        // === MANAGE POSTS ===
-        async function loadPosts() {
-            const list = document.getElementById('posts-list');
-            list.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-gray-400">Loading posts...</td></tr>`;
+            // 6. LOAD POSTS
+            async loadPosts() {
+                const list = document.getElementById('posts-list');
+                list.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-gray-400">Loading...</td></tr>`;
 
-            try {
-                const res = await fetch(`${API_URL}/blog/`);
-                const posts = await res.json();
+                const options = {
+                    method: 'GET',
+                    // Note: Ensure /blog/ is public or handles token if needed. Usually public GET doesn't need auth, 
+                    // but providing it doesn't hurt.
+                };
 
-                list.innerHTML = "";
-                posts.forEach(post => {
-                    list.innerHTML += `
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="p-5 font-medium text-gray-800">${post.title}</td>
-                            <td class="p-5 text-gray-500">${new Date(post.created_at).toLocaleDateString()}</td>
-                            <td class="p-5 text-center">
-                                <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">${post.views}</span>
-                            </td>
-                            <td class="p-5 text-right">
-                                <button onclick="deletePost('${post.slug}')" class="text-red-400 hover:text-red-600 transition">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch(e) {
-                list.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-red-400">Failed to load posts</td></tr>`;
-            }
-        }
+                const posts = await this.handleApiRequest('blog/', options);
 
-        async function deletePost(slug) {
-            if(!confirm("Delete this post?")) return;
-            const token = localStorage.getItem("access_token");
-            
-            await fetch(`${API_URL}/blog/${slug}`, {
-                method: "DELETE",
-                headers: { "Authorization": `Bearer ${token}` }
-            });
-            loadPosts();
-        }
+                if (posts) {
+                    list.innerHTML = "";
+                    if(posts.length === 0) {
+                        list.innerHTML = `<tr><td colspan="4" class="p-5 text-center text-gray-400">No posts found.</td></tr>`;
+                        return;
+                    }
 
-        // === UI UTILS ===
-        function switchTab(tab) {
-            const writeSec = document.getElementById('tab-write');
-            const manageSec = document.getElementById('tab-manage');
-            const btnWrite = document.getElementById('btn-write');
-            const btnManage = document.getElementById('btn-manage');
-            const title = document.getElementById('page-title');
+                    posts.forEach(post => {
+                        list.innerHTML += `
+                            <tr class="hover:bg-gray-50 transition group">
+                                <td class="p-5 font-medium text-gray-800 group-hover:text-emerald-700 transition">${post.title}</td>
+                                <td class="p-5 text-gray-500">${new Date(post.created_at).toLocaleDateString()}</td>
+                                <td class="p-5 text-center">
+                                    <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">${post.views || 0}</span>
+                                </td>
+                                <td class="p-5 text-right">
+                                    <button onclick="app.deletePost('${post.slug}')" class="text-gray-300 hover:text-red-500 transition p-2">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            },
 
-            if (tab === 'write') {
-                writeSec.classList.remove('hidden');
-                manageSec.classList.add('hidden');
+            // 7. DELETE POST
+            async deletePost(slug) {
+                if(!confirm("Are you sure you want to delete this post?")) return;
+
+                const options = {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${this.getAuthToken()}` }
+                };
+
+                const result = await this.handleApiRequest(`blog/${slug}`, options);
                 
-                // Style Active
-                btnWrite.classList.add('bg-emerald-600', 'text-white', 'shadow-lg');
-                btnWrite.classList.remove('hover:bg-emerald-800', 'text-emerald-100');
-                
-                // Style Inactive
-                btnManage.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg');
-                btnManage.classList.add('hover:bg-emerald-800', 'text-emerald-100');
-                
-                title.innerText = "New Article";
-            } else {
-                writeSec.classList.add('hidden');
-                manageSec.classList.remove('hidden');
-                
-                // Style Active
-                btnManage.classList.add('bg-emerald-600', 'text-white', 'shadow-lg');
-                btnManage.classList.remove('hover:bg-emerald-800', 'text-emerald-100');
+                if (result) {
+                    this.loadPosts(); // Refresh list
+                }
+            },
 
-                // Style Inactive
-                btnWrite.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg');
-                btnWrite.classList.add('hover:bg-emerald-800', 'text-emerald-100');
+            // UI HELPERS
+            switchTab(tab) {
+                const writeSec = document.getElementById('tab-write');
+                const manageSec = document.getElementById('tab-manage');
+                const btnWrite = document.getElementById('btn-write');
+                const btnManage = document.getElementById('btn-manage');
+                const title = document.getElementById('page-title');
 
-                title.innerText = "Manage Posts";
-                loadPosts();
+                if (tab === 'write') {
+                    writeSec.classList.remove('hidden');
+                    manageSec.classList.add('hidden');
+                    
+                    btnWrite.classList.add('bg-emerald-600', 'text-white', 'shadow-lg');
+                    btnWrite.classList.remove('hover:bg-emerald-800', 'text-emerald-100');
+                    
+                    btnManage.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg');
+                    btnManage.classList.add('hover:bg-emerald-800', 'text-emerald-100');
+                    
+                    title.innerText = "New Article";
+                } else {
+                    writeSec.classList.add('hidden');
+                    manageSec.classList.remove('hidden');
+                    
+                    btnManage.classList.add('bg-emerald-600', 'text-white', 'shadow-lg');
+                    btnManage.classList.remove('hover:bg-emerald-800', 'text-emerald-100');
+
+                    btnWrite.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg');
+                    btnWrite.classList.add('hover:bg-emerald-800', 'text-emerald-100');
+
+                    title.innerText = "Manage Posts";
+                    this.loadPosts();
+                }
+            },
+
+            showSuccessAnimation() {
+                const container = document.getElementById('rive-container');
+                container.classList.remove('hidden');
+                if(riveInstance) riveInstance.play();
+                setTimeout(() => {
+                    container.classList.add('hidden');
+                    if(riveInstance) riveInstance.pause();
+                }, 3000);
+            },
+
+            logout() {
+                localStorage.removeItem('authToken');
+                window.location.href = 'index.html';
             }
-        }
+        };
 
-        function showSuccessAnimation() {
-            const container = document.getElementById('rive-container');
-            container.classList.remove('hidden');
-            
-            if(riveInstance) {
-                riveInstance.play();
-            }
-
-            setTimeout(() => {
-                container.classList.add('hidden');
-                if(riveInstance) riveInstance.pause();
-            }, 3000); // 3 seconds success screen
-        }
-
-        function logout() {
-            localStorage.removeItem("access_token");
-            window.location.href = "login.html";
-        }
+        // Run Init
+        document.addEventListener("DOMContentLoaded", () => {
+            app.init();
+        });
     </script>
 </body>
 </html>
