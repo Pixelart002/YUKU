@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- SEO Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Personal Blog</title>
+    <meta name="description" content="Read my latest thoughts on technology and coding.">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Markdown Parser (Marked.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        /* Typography for Article Content */
+        .prose-content { font-family: 'Merriweather', serif; line-height: 1.8; color: #374151; }
+        .prose-content h1 { font-size: 2rem; font-weight: 800; margin: 1.5rem 0 1rem; color: #111827; }
+        .prose-content h2 { font-size: 1.5rem; font-weight: 700; margin: 1.5rem 0 1rem; color: #064e3b; }
+        .prose-content p { margin-bottom: 1.2rem; font-size: 1.1rem; }
+        .prose-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .prose-content pre { background: #1f2937; color: #f3f4f6; padding: 1rem; rounded: 0.5rem; overflow-x: auto; margin-bottom: 1.5rem; }
+        .prose-content blockquote { border-left: 4px solid #10b981; padding-left: 1rem; font-style: italic; color: #4b5563; background: #f0fdf4; padding: 1rem; margin: 1rem 0; }
+        .prose-content img { border-radius: 0.5rem; margin: 1.5rem auto; width: 100%; max-height: 500px; object-fit: cover; }
+        .prose-content a { color: #059669; text-decoration: underline; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- === HEADER === -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+            <!-- Logo -->
+            <div onclick="router.goHome()" class="cursor-pointer flex items-center gap-2 group">
+                <div class="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg transition transform group-hover:rotate-12">
+                    <i class="fas fa-feather-alt"></i>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-gray-800">My <span class="text-emerald-600">Blog</span></h1>
+            </div>
+            
+            <!-- Links -->
+            <div class="flex items-center gap-4">
+                <a href="admin.html" class="px-5 py-2 text-sm font-bold text-emerald-600 border border-emerald-200 rounded-full hover:bg-emerald-50 transition">
+                    Admin Login
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- === MAIN CONTENT === -->
+    <main class="flex-1 max-w-6xl mx-auto w-full p-6">
+        
+        <!-- VIEW 1: HOME (List of Articles) -->
+        <div id="view-home" class="animate-fade-in">
+            <div class="text-center py-12">
+                <h2 class="text-4xl font-bold text-gray-900 mb-2">Latest Writings</h2>
+                <p class="text-gray-500">Insights, tutorials, and updates.</p>
+            </div>
+
+            <!-- Loader -->
+            <div id="loader" class="text-center py-20">
+                <i class="fas fa-circle-notch fa-spin text-4xl text-emerald-500"></i>
+                <p class="mt-4 text-gray-400">Fetching articles...</p>
+            </div>
+
+            <!-- Grid -->
+            <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20 hidden">
+                <!-- JS will fill this -->
+            </div>
+        </div>
+
+        <!-- VIEW 2: SINGLE ARTICLE -->
+        <div id="view-article" class="hidden max-w-4xl mx-auto pt-4">
+            <button onclick="router.goHome()" class="mb-6 flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition font-medium group">
+                <i class="fas fa-arrow-left group-hover:-translate-x-1 transition"></i> Back to Home
+            </button>
+
+            <article class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <!-- Cover Image -->
+                <img id="article-cover" class="w-full h-64 md:h-96 object-cover hidden" alt="Cover">
+                
+                <div class="p-8 md:p-12">
+                    <!-- Meta -->
+                    <div class="flex items-center gap-4 text-sm text-gray-500 mb-6">
+                        <span id="article-date"><i class="far fa-calendar mr-1"></i> ...</span>
+                        <span id="article-views" class="text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full"><i class="far fa-eye mr-1"></i> ...</span>
+                    </div>
+
+                    <!-- Title -->
+                    <h1 id="article-title" class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight"></h1>
+
+                    <!-- Tags -->
+                    <div id="article-tags" class="flex flex-wrap gap-2 mb-10"></div>
+
+                    <!-- Markdown Content -->
+                    <div id="article-content" class="prose-content"></div>
+                </div>
+            </article>
+        </div>
+
+    </main>
+
+    <!-- === FOOTER === -->
+    <footer class="bg-white border-t border-gray-200 py-10 mt-10 text-center">
+        <p class="text-gray-400 text-sm">&copy; <span id="year"></span> My Blog. Powered by FastAPI.</p>
+    </footer>
+
+    <!-- === LOGIC === -->
+    <script>
+        // CONFIGURATION
+        const API_BASE_URL = "https://giant-noell-pixelart002-1c1d1fda.koyeb.app"; 
+
+        // ROUTER (Handles Navigation)
+        const router = {
+            goHome: () => {
+                document.getElementById('view-home').classList.remove('hidden');
+                document.getElementById('view-article').classList.add('hidden');
+                window.scrollTo(0, 0);
+                app.loadPosts(); // Refresh list
+                history.pushState(null, null, 'index.html'); // Clean URL
+            },
+            goPost: (slug) => {
+                document.getElementById('view-home').classList.add('hidden');
+                document.getElementById('view-article').classList.remove('hidden');
+                window.scrollTo(0, 0);
+                app.loadSinglePost(slug);
+                history.pushState(null, null, `#${slug}`); // Set URL hash
+            }
+        };
+
+        // APP LOGIC
+        const app = {
+            init: () => {
+                document.getElementById('year').innerText = new Date().getFullYear();
+                
+                // Handle direct link to article (e.g., index.html#my-post)
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                    router.goPost(hash);
+                } else {
+                    app.loadPosts();
+                }
+            },
+
+            // 1. Load All Posts (For Home Grid)
+            loadPosts: async () => {
+                const grid = document.getElementById('posts-grid');
+                const loader = document.getElementById('loader');
+                
+                try {
+                    const res = await fetch(`${API_BASE_URL}/blog/`);
+                    if (!res.ok) throw new Error("Failed to fetch");
+                    
+                    const posts = await res.json();
+                    
+                    // Hide Loader, Show Grid
+                    loader.classList.add('hidden');
+                    grid.classList.remove('hidden');
+                    grid.innerHTML = ''; // Clear old
+
+                    if (posts.length === 0) {
+                        grid.innerHTML = `<div class="col-span-full text-center text-gray-400 py-10">No articles found. Go to Admin to write one!</div>`;
+                        return;
+                    }
+
+                    posts.forEach(post => {
+                        // Date Formatting
+                        const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                        
+                        // Image Handling
+                        const imgHTML = post.cover_image 
+                            ? `<img src="${post.cover_image}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-500" onerror="this.style.display='none'">` 
+                            : `<div class="w-full h-48 bg-emerald-100 flex items-center justify-center text-emerald-300"><i class="fas fa-image text-4xl"></i></div>`;
+
+                        // Preview Text (Strip Markdown)
+                        const preview = post.content.replace(/[#*_`]/g, '').substring(0, 100) + '...';
+
+                        // Card HTML
+                        const html = `
+                            <div onclick="router.goPost('${post.slug}')" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer group hover:shadow-xl hover:-translate-y-1 transition duration-300">
+                                <div class="overflow-hidden bg-gray-100">
+                                    ${imgHTML}
+                                </div>
+                                <div class="p-6">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">${post.tags[0] || 'Blog'}</span>
+                                        <span class="text-xs text-gray-400">${date}</span>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-800 mb-3 group-hover:text-emerald-700 transition leading-tight">${post.title}</h3>
+                                    <p class="text-gray-500 text-sm mb-4 line-clamp-3">${preview}</p>
+                                    <div class="flex items-center text-emerald-600 font-bold text-sm">
+                                        Read Article <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        grid.innerHTML += html;
+                    });
+                } catch (err) {
+                    console.error(err);
+                    loader.innerHTML = `<p class="text-red-500">Failed to load articles. Is the backend running?</p>`;
+                }
+            },
+
+            // 2. Load Single Post (For Article View)
+            loadSinglePost: async (slug) => {
+                // Reset UI
+                document.getElementById('article-title').innerText = "Loading...";
+                document.getElementById('article-content').innerHTML = "";
+                document.getElementById('article-cover').classList.add('hidden');
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/blog/${slug}`);
+                    if (!res.ok) throw new Error("Article not found");
+                    
+                    const post = await res.json();
+
+                    // Fill Data
+                    document.getElementById('article-title').innerText = post.title;
+                    document.getElementById('article-date').innerHTML = `<i class="far fa-calendar mr-2"></i> ${new Date(post.created_at).toLocaleDateString()}`;
+                    document.getElementById('article-views').innerHTML = `<i class="far fa-eye mr-2"></i> ${post.views} Views`;
+
+                    // Render Markdown content
+                    document.getElementById('article-content').innerHTML = marked.parse(post.content);
+
+                    // Cover Image
+                    if (post.cover_image) {
+                        const img = document.getElementById('article-cover');
+                        img.src = post.cover_image;
+                        img.classList.remove('hidden');
+                    }
+
+                    // Tags
+                    const tagBox = document.getElementById('article-tags');
+                    tagBox.innerHTML = '';
+                    post.tags.forEach(tag => {
+                        tagBox.innerHTML += `<span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold uppercase">#${tag}</span>`;
+                    });
+
+                } catch (err) {
+                    document.getElementById('article-title').innerText = "404 Not Found";
+                    document.getElementById('article-content').innerHTML = `<p class="text-red-500">Sorry, this article could not be loaded.</p>`;
+                }
+            }
+        };
+
+        // Handle Browser Back Button
+        window.onpopstate = () => {
+            const hash = window.location.hash.substring(1);
+            if (hash) router.goPost(hash);
+            else router.goHome();
+        };
+
+        // Start App
+        document.addEventListener('DOMContentLoaded', app.init);
+    </script>
+</body>
+</html>
