@@ -4,50 +4,55 @@
     <!-- SEO & Meta -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yuku Blog | Tech & Ideas</title>
+    <title>Yuku's Blog | Tech & Ideas</title>
     <meta name="description" content="Read insights on technology, coding, and life.">
 
     <!-- 1. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 2. Fonts (Outfit for UI, Merriweather for Reading) -->
+    <!-- 2. Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- 3. Markdown Parser -->
+    <!-- 3. PrismJS (Code Highlighting for Tech Blog) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+
+    <!-- 4. Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
         body { font-family: 'Outfit', sans-serif; }
         
-        /* Article Reading Styling */
+        /* Article Typography */
         .prose-content { font-family: 'Merriweather', serif; line-height: 1.8; color: #374151; }
-        .prose-content h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem; color: #111827; margin-top: 2rem; }
-        .prose-content h2 { font-size: 1.8rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: #064e3b; }
+        .prose-content h1 { font-size: 2.25rem; font-weight: 800; margin: 2rem 0 1rem; color: #111827; }
+        .prose-content h2 { font-size: 1.8rem; font-weight: 700; margin: 2rem 0 1rem; color: #064e3b; }
         .prose-content p { margin-bottom: 1.5rem; font-size: 1.125rem; }
         .prose-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
         .prose-content blockquote { border-left: 4px solid #10b981; padding-left: 1rem; font-style: italic; color: #4b5563; background: #f0fdf4; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem; }
-        .prose-content pre { background: #1f2937; color: #f3f4f6; padding: 1.5rem; rounded: 0.5rem; overflow-x: auto; margin-bottom: 1.5rem; }
-        .prose-content code { background: #e5e7eb; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-family: monospace; font-size: 0.9em; color: #dc2626; }
-        .prose-content pre code { background: transparent; color: inherit; padding: 0; }
-        .prose-content img { border-radius: 0.5rem; margin: 2rem auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); width: 100%; }
+        /* Code Block Styling */
+        .prose-content pre { border-radius: 0.5rem; margin: 1.5rem 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .prose-content img { border-radius: 0.5rem; margin: 2rem auto; width: 100%; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .prose-content a { color: #059669; text-decoration: underline; text-underline-offset: 4px; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col selection:bg-emerald-200">
 
     <!-- === HEADER === -->
-    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 transition-all duration-300" id="navbar">
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 transition-all duration-300">
         <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
             <!-- Logo -->
-            <div onclick="router.showHome()" class="cursor-pointer flex items-center gap-3 group">
+            <div onclick="router.home()" class="cursor-pointer flex items-center gap-3 group">
                 <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:rotate-12 transition transform">
                     V
                 </div>
                 <h1 class="text-2xl font-bold tracking-tight text-gray-800 group-hover:text-emerald-700 transition">yuku's <span class="text-emerald-500">Blog</span></h1>
             </div>
             
-            <!-- Links (Social Only) -->
+            <!-- Social Links -->
             <div class="flex items-center gap-6">
                 <a href="#" class="text-gray-500 hover:text-emerald-600 transition hover:scale-110"><i class="fab fa-twitter text-xl"></i></a>
                 <a href="#" class="text-gray-500 hover:text-emerald-600 transition hover:scale-110"><i class="fab fa-github text-xl"></i></a>
@@ -58,13 +63,12 @@
     <!-- === MAIN CONTENT === -->
     <main class="flex-1 max-w-6xl mx-auto w-full p-6">
         
-        <!-- [SCENE 1] HOME PAGE: LIST OF POSTS -->
+        <!-- [SCENE 1] HOME PAGE -->
         <div id="scene-home" class="animate-fade-in">
-            <!-- Hero Section -->
             <div class="text-center py-20 border-b border-gray-100 mb-12">
                 <span class="text-emerald-600 font-bold tracking-widest text-xs uppercase mb-3 block">Welcome to my space</span>
                 <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">Thoughts, Code & <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Everything In Between.</span></h2>
-                <p class="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">Join me on a journey through technology, software architecture, and the occasional life lesson.</p>
+                <p class="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">Join me on a journey through technology, software architecture, and life.</p>
             </div>
 
             <!-- Loader -->
@@ -73,23 +77,18 @@
                 <p class="mt-4 text-gray-400 font-medium">Fetching latest stories...</p>
             </div>
 
-            <!-- Grid Container -->
-            <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-20">
-                <!-- Javascript cards ko yahan inject karega -->
-            </div>
+            <!-- Grid -->
+            <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-20"></div>
         </div>
 
-        <!-- [SCENE 2] ARTICLE PAGE: SINGLE POST READER -->
+        <!-- [SCENE 2] ARTICLE READER -->
         <div id="scene-article" class="hidden max-w-4xl mx-auto">
             
-            <!-- Back Button -->
-            <button onclick="router.showHome()" class="mb-10 flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition font-medium group px-4 py-2 rounded-lg hover:bg-gray-100 w-fit">
+            <button onclick="router.home()" class="mb-10 flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition font-medium group px-4 py-2 rounded-lg hover:bg-gray-100 w-fit">
                 <i class="fas fa-arrow-left group-hover:-translate-x-1 transition"></i> Back to Home
             </button>
 
-            <!-- Article Container -->
             <article class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden">
-                <!-- Cover Image -->
                 <div id="reader-cover-container" class="h-64 md:h-[400px] w-full overflow-hidden hidden relative">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
                     <img id="reader-cover" src="" class="w-full h-full object-cover">
@@ -103,25 +102,25 @@
                         <span id="reader-tag" class="text-emerald-600 font-bold uppercase tracking-wider text-xs border border-emerald-100 px-3 py-1 rounded-full">#Tech</span>
                     </div>
 
-                    <!-- Title -->
                     <h1 id="reader-title" class="text-4xl md:text-5xl font-bold text-gray-900 mb-10 leading-tight"></h1>
 
-                    <!-- The Content (Markdown -> HTML) -->
-                    <div id="reader-content" class="prose-content">
-                        <!-- Content yahan aayega -->
+                    <!-- Content -->
+                    <div id="reader-content" class="prose-content"></div>
+                </div>
+
+                <!-- Share Section (NO LIKES) -->
+                <div class="bg-gray-50 p-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-center gap-6">
+                    <span class="text-gray-400 font-bold text-xs uppercase tracking-widest">Share this article</span>
+                    <div class="flex gap-4">
+                        <button onclick="app.shareTwitter()" class="flex items-center gap-2 px-5 py-2 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition shadow-lg shadow-blue-200 hover:-translate-y-1">
+                            <i class="fab fa-twitter"></i> Tweet
+                        </button>
+                        <button onclick="app.shareCopy()" class="flex items-center gap-2 px-5 py-2 bg-gray-800 text-white rounded-full font-bold hover:bg-gray-900 transition shadow-lg hover:-translate-y-1">
+                            <i class="fas fa-link"></i> Copy Link
+                        </button>
                     </div>
                 </div>
             </article>
-
-            <!-- Share Section -->
-            <div class="mt-12 text-center">
-                <p class="text-gray-400 text-sm mb-4">Did you enjoy this read?</p>
-                <div class="flex justify-center gap-4">
-                    <button class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition flex items-center justify-center"><i class="fab fa-twitter"></i></button>
-                    <button class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white transition flex items-center justify-center"><i class="fab fa-linkedin-in"></i></button>
-                    <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link Copied!')" class="w-10 h-10 rounded-full bg-gray-50 text-gray-500 hover:bg-gray-800 hover:text-white transition flex items-center justify-center"><i class="fas fa-link"></i></button>
-                </div>
-            </div>
         </div>
 
     </main>
@@ -137,88 +136,61 @@
         </div>
     </footer>
 
-    <!-- === JAVASCRIPT MAGIC === -->
+    <!-- === LOGIC === -->
     <script>
-        // --- 1. CONFIGURATION ---
         const API_BASE_URL = "https://giant-noell-pixelart002-1c1d1fda.koyeb.app";
 
-        // --- 2. ROUTER LOGIC (The Trick) ---
         const router = {
-            // Home dikhao
-            showHome: () => {
+            home: () => {
                 document.getElementById('scene-home').classList.remove('hidden');
                 document.getElementById('scene-article').classList.add('hidden');
                 window.scrollTo({top: 0, behavior: 'smooth'});
-                // URL saaf karo
                 history.pushState("", document.title, window.location.pathname);
             },
-            
-            // Article dikhao
-            showArticle: (slug) => {
+            article: (slug) => {
                 document.getElementById('scene-home').classList.add('hidden');
                 document.getElementById('scene-article').classList.remove('hidden');
                 window.scrollTo({top: 0, behavior: 'smooth'});
-                
-                // URL me hash lagao (taaki share kar sake)
                 window.location.hash = slug;
-                
-                // Data load karo
                 app.fetchSinglePost(slug);
             }
         };
 
-        // --- 3. APP LOGIC ---
         const app = {
             init: () => {
                 document.getElementById('year').innerText = new Date().getFullYear();
-
-                // Check: Kya user direct link se aaya hai? (#some-post-slug)
                 const hash = window.location.hash.substring(1);
-                if(hash) {
-                    router.showArticle(hash);
-                } else {
-                    app.fetchPosts();
-                }
+                if(hash) router.article(hash);
+                else app.fetchPosts();
             },
 
-            // List of Posts lana
             fetchPosts: async () => {
                 const loader = document.getElementById('loader');
                 const grid = document.getElementById('posts-grid');
                 
                 loader.classList.remove('hidden');
-                grid.innerHTML = ''; // Clear old data
+                grid.innerHTML = ''; 
 
                 try {
                     const res = await fetch(`${API_BASE_URL}/blog/`);
                     const posts = await res.json();
-                    
                     loader.classList.add('hidden');
 
                     if(posts.length === 0) {
-                        grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-400">No articles published yet. Time to write!</div>`;
+                        grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-400">No articles published yet.</div>`;
                         return;
                     }
 
                     posts.forEach(post => {
-                        // Date Format
                         const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                        
-                        // Text Preview (Markdown symbols hata kar)
                         const plainText = post.content.replace(/[#*_`\[\]]/g, '').substring(0, 120) + "...";
                         
-                        // Image Handling
-                        let imgHtml = '';
-                        if(post.cover_image && post.cover_image.startsWith('http')) {
-                            imgHtml = `<img src="${post.cover_image}" class="w-full h-56 object-cover group-hover:scale-105 transition duration-700">`;
-                        } else {
-                            // Fallback gradient placeholder
-                            imgHtml = `<div class="w-full h-56 bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center text-emerald-200"><i class="fas fa-image text-5xl opacity-50"></i></div>`;
-                        }
+                        let imgHtml = post.cover_image ? 
+                            `<img src="${post.cover_image}" class="w-full h-56 object-cover group-hover:scale-105 transition duration-700">` : 
+                            `<div class="w-full h-56 bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center text-emerald-200"><i class="fas fa-image text-5xl opacity-50"></i></div>`;
 
-                        // Card HTML Injection
-                        const card = `
-                            <div onclick="router.showArticle('${post.slug}')" class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition duration-300 cursor-pointer overflow-hidden flex flex-col h-full">
+                        grid.innerHTML += `
+                            <div onclick="router.article('${post.slug}')" class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition duration-300 cursor-pointer overflow-hidden flex flex-col h-full">
                                 <div class="overflow-hidden relative">
                                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition z-10"></div>
                                     ${imgHtml}
@@ -244,27 +216,17 @@
                                 </div>
                             </div>
                         `;
-                        grid.innerHTML += card;
                     });
-
                 } catch (err) {
-                    console.error(err);
                     loader.classList.add('hidden');
-                    grid.innerHTML = `<div class="col-span-full text-center text-red-400 py-10">Server seems to be sleeping. Wake it up!</div>`;
+                    grid.innerHTML = `<div class="col-span-full text-center text-red-400 py-10">Server sleeping? Check console.</div>`;
                 }
             },
 
-            // Single Post lana
             fetchSinglePost: async (slug) => {
                 // UI Reset
                 document.getElementById('reader-title').innerText = "Loading...";
-                document.getElementById('reader-content').innerHTML = `
-                    <div class="space-y-4 animate-pulse">
-                        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-                        <div class="h-4 bg-gray-200 rounded w-full"></div>
-                        <div class="h-4 bg-gray-200 rounded w-5/6"></div>
-                    </div>
-                `;
+                document.getElementById('reader-content').innerHTML = `<div class="animate-pulse space-y-4"><div class="h-4 bg-gray-200 rounded w-3/4"></div><div class="h-4 bg-gray-200 rounded w-full"></div></div>`;
                 document.getElementById('reader-cover-container').classList.add('hidden');
 
                 try {
@@ -272,42 +234,47 @@
                     if(!res.ok) throw new Error("Not Found");
                     const post = await res.json();
 
-                    // --- POPULATE DATA ---
-                    
-                    // 1. Title & Meta
                     document.getElementById('reader-title').innerText = post.title;
-                    document.getElementById('reader-date').innerHTML = `<i class="far fa-calendar text-emerald-500"></i> ${new Date(post.created_at).toLocaleDateString('en-US', { dateStyle: 'long' })}`;
+                    document.getElementById('reader-date').innerText = new Date(post.created_at).toLocaleDateString('en-US', { dateStyle: 'long' });
                     document.getElementById('reader-views').innerHTML = `<i class="far fa-eye"></i> ${post.views} Views`;
                     document.getElementById('reader-tag').innerText = post.tags.length > 0 ? `#${post.tags[0]}` : '#Story';
 
-                    // 2. Cover Image
                     if(post.cover_image && post.cover_image.startsWith('http')) {
                         document.getElementById('reader-cover').src = post.cover_image;
                         document.getElementById('reader-cover-container').classList.remove('hidden');
                     }
 
-                    // 3. Content (Markdown Parsing)
+                    // Markdown -> HTML
                     document.getElementById('reader-content').innerHTML = marked.parse(post.content);
+                    
+                    // Highlight Code Blocks
+                    Prism.highlightAll();
 
                 } catch (err) {
                     document.getElementById('reader-title').innerText = "404 - Article Not Found";
-                    document.getElementById('reader-content').innerHTML = "<p class='text-red-500'>The article you are looking for does not exist or has been deleted.</p>";
+                    document.getElementById('reader-content').innerHTML = "<p class='text-red-500'>Post not found.</p>";
                 }
+            },
+
+            shareTwitter: () => {
+                const title = document.getElementById('reader-title').innerText;
+                const url = window.location.href;
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank');
+            },
+
+            shareCopy: () => {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Link Copied!');
             }
         };
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', app.init);
 
         // Handle Back Button
         window.onpopstate = () => {
-            if(!window.location.hash) {
-                router.showHome();
-            } else {
-                router.showArticle(window.location.hash.substring(1));
-            }
+            if(!window.location.hash) router.home();
+            else router.article(window.location.hash.substring(1));
         };
 
+        document.addEventListener('DOMContentLoaded', app.init);
     </script>
 </body>
 </html>
