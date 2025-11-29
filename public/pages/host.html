@@ -1,54 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- SEO Meta Tags -->
+    <!-- SEO & Meta -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Personal Blog</title>
-    <meta name="description" content="Read my latest thoughts on technology and coding.">
+    <title>Yuku Blog | Tech & Ideas</title>
+    <meta name="description" content="Read insights on technology, coding, and life.">
 
-    <!-- Tailwind CSS -->
+    <!-- 1. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Fonts -->
+
+    <!-- 2. Fonts (Outfit for UI, Merriweather for Reading) -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Markdown Parser (Marked.js) -->
+
+    <!-- 3. Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
         body { font-family: 'Outfit', sans-serif; }
-        /* Typography for Article Content */
+        
+        /* Article Reading Styling */
         .prose-content { font-family: 'Merriweather', serif; line-height: 1.8; color: #374151; }
-        .prose-content h1 { font-size: 2rem; font-weight: 800; margin: 1.5rem 0 1rem; color: #111827; }
-        .prose-content h2 { font-size: 1.5rem; font-weight: 700; margin: 1.5rem 0 1rem; color: #064e3b; }
-        .prose-content p { margin-bottom: 1.2rem; font-size: 1.1rem; }
-        .prose-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
-        .prose-content pre { background: #1f2937; color: #f3f4f6; padding: 1rem; rounded: 0.5rem; overflow-x: auto; margin-bottom: 1.5rem; }
-        .prose-content blockquote { border-left: 4px solid #10b981; padding-left: 1rem; font-style: italic; color: #4b5563; background: #f0fdf4; padding: 1rem; margin: 1rem 0; }
-        .prose-content img { border-radius: 0.5rem; margin: 1.5rem auto; width: 100%; max-height: 500px; object-fit: cover; }
-        .prose-content a { color: #059669; text-decoration: underline; }
+        .prose-content h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem; color: #111827; margin-top: 2rem; }
+        .prose-content h2 { font-size: 1.8rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: #064e3b; }
+        .prose-content p { margin-bottom: 1.5rem; font-size: 1.125rem; }
+        .prose-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+        .prose-content blockquote { border-left: 4px solid #10b981; padding-left: 1rem; font-style: italic; color: #4b5563; background: #f0fdf4; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem; }
+        .prose-content pre { background: #1f2937; color: #f3f4f6; padding: 1.5rem; rounded: 0.5rem; overflow-x: auto; margin-bottom: 1.5rem; }
+        .prose-content code { background: #e5e7eb; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-family: monospace; font-size: 0.9em; color: #dc2626; }
+        .prose-content pre code { background: transparent; color: inherit; padding: 0; }
+        .prose-content img { border-radius: 0.5rem; margin: 2rem auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); width: 100%; }
+        .prose-content a { color: #059669; text-decoration: underline; text-underline-offset: 4px; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col selection:bg-emerald-200">
 
     <!-- === HEADER === -->
-    <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 transition-all duration-300" id="navbar">
         <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
             <!-- Logo -->
-            <div onclick="router.goHome()" class="cursor-pointer flex items-center gap-2 group">
-                <div class="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg transition transform group-hover:rotate-12">
-                    <i class="fas fa-feather-alt"></i>
+            <div onclick="router.showHome()" class="cursor-pointer flex items-center gap-3 group">
+                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:rotate-12 transition transform">
+                    V
                 </div>
-                <h1 class="text-2xl font-bold tracking-tight text-gray-800">My <span class="text-emerald-600">Blog</span></h1>
+                <h1 class="text-2xl font-bold tracking-tight text-gray-800 group-hover:text-emerald-700 transition">yuku's <span class="text-emerald-500">Blog</span></h1>
             </div>
             
-            <!-- Links -->
-            <div class="flex items-center gap-4">
-                <a href="admin.html" class="px-5 py-2 text-sm font-bold text-emerald-600 border border-emerald-200 rounded-full hover:bg-emerald-50 transition">
-                    Admin Login
-                </a>
+            <!-- Links (Social Only) -->
+            <div class="flex items-center gap-6">
+                <a href="#" class="text-gray-500 hover:text-emerald-600 transition hover:scale-110"><i class="fab fa-twitter text-xl"></i></a>
+                <a href="#" class="text-gray-500 hover:text-emerald-600 transition hover:scale-110"><i class="fab fa-github text-xl"></i></a>
             </div>
         </div>
     </header>
@@ -56,209 +58,256 @@
     <!-- === MAIN CONTENT === -->
     <main class="flex-1 max-w-6xl mx-auto w-full p-6">
         
-        <!-- VIEW 1: HOME (List of Articles) -->
-        <div id="view-home" class="animate-fade-in">
-            <div class="text-center py-12">
-                <h2 class="text-4xl font-bold text-gray-900 mb-2">Latest Writings</h2>
-                <p class="text-gray-500">Insights, tutorials, and updates.</p>
+        <!-- [SCENE 1] HOME PAGE: LIST OF POSTS -->
+        <div id="scene-home" class="animate-fade-in">
+            <!-- Hero Section -->
+            <div class="text-center py-20 border-b border-gray-100 mb-12">
+                <span class="text-emerald-600 font-bold tracking-widest text-xs uppercase mb-3 block">Welcome to my space</span>
+                <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">Thoughts, Code & <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Everything In Between.</span></h2>
+                <p class="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">Join me on a journey through technology, software architecture, and the occasional life lesson.</p>
             </div>
 
             <!-- Loader -->
-            <div id="loader" class="text-center py-20">
-                <i class="fas fa-circle-notch fa-spin text-4xl text-emerald-500"></i>
-                <p class="mt-4 text-gray-400">Fetching articles...</p>
+            <div id="loader" class="text-center py-20 hidden">
+                <div class="inline-block w-10 h-10 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+                <p class="mt-4 text-gray-400 font-medium">Fetching latest stories...</p>
             </div>
 
-            <!-- Grid -->
-            <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20 hidden">
-                <!-- JS will fill this -->
+            <!-- Grid Container -->
+            <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-20">
+                <!-- Javascript cards ko yahan inject karega -->
             </div>
         </div>
 
-        <!-- VIEW 2: SINGLE ARTICLE -->
-        <div id="view-article" class="hidden max-w-4xl mx-auto pt-4">
-            <button onclick="router.goHome()" class="mb-6 flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition font-medium group">
+        <!-- [SCENE 2] ARTICLE PAGE: SINGLE POST READER -->
+        <div id="scene-article" class="hidden max-w-4xl mx-auto">
+            
+            <!-- Back Button -->
+            <button onclick="router.showHome()" class="mb-10 flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition font-medium group px-4 py-2 rounded-lg hover:bg-gray-100 w-fit">
                 <i class="fas fa-arrow-left group-hover:-translate-x-1 transition"></i> Back to Home
             </button>
 
-            <article class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <!-- Article Container -->
+            <article class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden">
                 <!-- Cover Image -->
-                <img id="article-cover" class="w-full h-64 md:h-96 object-cover hidden" alt="Cover">
+                <div id="reader-cover-container" class="h-64 md:h-[400px] w-full overflow-hidden hidden relative">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
+                    <img id="reader-cover" src="" class="w-full h-full object-cover">
+                </div>
                 
-                <div class="p-8 md:p-12">
-                    <!-- Meta -->
-                    <div class="flex items-center gap-4 text-sm text-gray-500 mb-6">
-                        <span id="article-date"><i class="far fa-calendar mr-1"></i> ...</span>
-                        <span id="article-views" class="text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full"><i class="far fa-eye mr-1"></i> ...</span>
+                <div class="p-8 md:p-16">
+                    <!-- Meta Info -->
+                    <div class="flex flex-wrap items-center gap-6 text-sm text-gray-500 mb-8 border-b border-gray-100 pb-8">
+                        <span id="reader-date" class="flex items-center gap-2 font-medium"><i class="far fa-calendar text-emerald-500"></i> ...</span>
+                        <span id="reader-views" class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-bold text-xs uppercase tracking-wide"><i class="far fa-eye"></i> ... Views</span>
+                        <span id="reader-tag" class="text-emerald-600 font-bold uppercase tracking-wider text-xs border border-emerald-100 px-3 py-1 rounded-full">#Tech</span>
                     </div>
 
                     <!-- Title -->
-                    <h1 id="article-title" class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight"></h1>
+                    <h1 id="reader-title" class="text-4xl md:text-5xl font-bold text-gray-900 mb-10 leading-tight"></h1>
 
-                    <!-- Tags -->
-                    <div id="article-tags" class="flex flex-wrap gap-2 mb-10"></div>
-
-                    <!-- Markdown Content -->
-                    <div id="article-content" class="prose-content"></div>
+                    <!-- The Content (Markdown -> HTML) -->
+                    <div id="reader-content" class="prose-content">
+                        <!-- Content yahan aayega -->
+                    </div>
                 </div>
             </article>
+
+            <!-- Share Section -->
+            <div class="mt-12 text-center">
+                <p class="text-gray-400 text-sm mb-4">Did you enjoy this read?</p>
+                <div class="flex justify-center gap-4">
+                    <button class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition flex items-center justify-center"><i class="fab fa-twitter"></i></button>
+                    <button class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white transition flex items-center justify-center"><i class="fab fa-linkedin-in"></i></button>
+                    <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link Copied!')" class="w-10 h-10 rounded-full bg-gray-50 text-gray-500 hover:bg-gray-800 hover:text-white transition flex items-center justify-center"><i class="fas fa-link"></i></button>
+                </div>
+            </div>
         </div>
 
     </main>
 
     <!-- === FOOTER === -->
-    <footer class="bg-white border-t border-gray-200 py-10 mt-10 text-center">
-        <p class="text-gray-400 text-sm">&copy; <span id="year"></span> My Blog. Powered by FastAPI.</p>
+    <footer class="bg-white border-t border-gray-200 py-12 mt-12">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">yuku's Blog</h2>
+            <p class="text-gray-400 text-sm mb-8">Building logic, one line of code at a time.</p>
+            <div class="text-gray-300 text-xs">
+                &copy; <span id="year"></span> All rights reserved.
+            </div>
+        </div>
     </footer>
 
-    <!-- === LOGIC === -->
+    <!-- === JAVASCRIPT MAGIC === -->
     <script>
-        // CONFIGURATION
-        const API_BASE_URL = "https://giant-noell-pixelart002-1c1d1fda.koyeb.app"; 
+        // --- 1. CONFIGURATION ---
+        const API_BASE_URL = "https://giant-noell-pixelart002-1c1d1fda.koyeb.app";
 
-        // ROUTER (Handles Navigation)
+        // --- 2. ROUTER LOGIC (The Trick) ---
         const router = {
-            goHome: () => {
-                document.getElementById('view-home').classList.remove('hidden');
-                document.getElementById('view-article').classList.add('hidden');
-                window.scrollTo(0, 0);
-                app.loadPosts(); // Refresh list
-                history.pushState(null, null, 'index.html'); // Clean URL
+            // Home dikhao
+            showHome: () => {
+                document.getElementById('scene-home').classList.remove('hidden');
+                document.getElementById('scene-article').classList.add('hidden');
+                window.scrollTo({top: 0, behavior: 'smooth'});
+                // URL saaf karo
+                history.pushState("", document.title, window.location.pathname);
             },
-            goPost: (slug) => {
-                document.getElementById('view-home').classList.add('hidden');
-                document.getElementById('view-article').classList.remove('hidden');
-                window.scrollTo(0, 0);
-                app.loadSinglePost(slug);
-                history.pushState(null, null, `#${slug}`); // Set URL hash
+            
+            // Article dikhao
+            showArticle: (slug) => {
+                document.getElementById('scene-home').classList.add('hidden');
+                document.getElementById('scene-article').classList.remove('hidden');
+                window.scrollTo({top: 0, behavior: 'smooth'});
+                
+                // URL me hash lagao (taaki share kar sake)
+                window.location.hash = slug;
+                
+                // Data load karo
+                app.fetchSinglePost(slug);
             }
         };
 
-        // APP LOGIC
+        // --- 3. APP LOGIC ---
         const app = {
             init: () => {
                 document.getElementById('year').innerText = new Date().getFullYear();
-                
-                // Handle direct link to article (e.g., index.html#my-post)
+
+                // Check: Kya user direct link se aaya hai? (#some-post-slug)
                 const hash = window.location.hash.substring(1);
-                if (hash) {
-                    router.goPost(hash);
+                if(hash) {
+                    router.showArticle(hash);
                 } else {
-                    app.loadPosts();
+                    app.fetchPosts();
                 }
             },
 
-            // 1. Load All Posts (For Home Grid)
-            loadPosts: async () => {
-                const grid = document.getElementById('posts-grid');
+            // List of Posts lana
+            fetchPosts: async () => {
                 const loader = document.getElementById('loader');
+                const grid = document.getElementById('posts-grid');
                 
+                loader.classList.remove('hidden');
+                grid.innerHTML = ''; // Clear old data
+
                 try {
                     const res = await fetch(`${API_BASE_URL}/blog/`);
-                    if (!res.ok) throw new Error("Failed to fetch");
-                    
                     const posts = await res.json();
                     
-                    // Hide Loader, Show Grid
                     loader.classList.add('hidden');
-                    grid.classList.remove('hidden');
-                    grid.innerHTML = ''; // Clear old
 
-                    if (posts.length === 0) {
-                        grid.innerHTML = `<div class="col-span-full text-center text-gray-400 py-10">No articles found. Go to Admin to write one!</div>`;
+                    if(posts.length === 0) {
+                        grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-400">No articles published yet. Time to write!</div>`;
                         return;
                     }
 
                     posts.forEach(post => {
-                        // Date Formatting
+                        // Date Format
                         const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
                         
+                        // Text Preview (Markdown symbols hata kar)
+                        const plainText = post.content.replace(/[#*_`\[\]]/g, '').substring(0, 120) + "...";
+                        
                         // Image Handling
-                        const imgHTML = post.cover_image 
-                            ? `<img src="${post.cover_image}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-500" onerror="this.style.display='none'">` 
-                            : `<div class="w-full h-48 bg-emerald-100 flex items-center justify-center text-emerald-300"><i class="fas fa-image text-4xl"></i></div>`;
+                        let imgHtml = '';
+                        if(post.cover_image && post.cover_image.startsWith('http')) {
+                            imgHtml = `<img src="${post.cover_image}" class="w-full h-56 object-cover group-hover:scale-105 transition duration-700">`;
+                        } else {
+                            // Fallback gradient placeholder
+                            imgHtml = `<div class="w-full h-56 bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center text-emerald-200"><i class="fas fa-image text-5xl opacity-50"></i></div>`;
+                        }
 
-                        // Preview Text (Strip Markdown)
-                        const preview = post.content.replace(/[#*_`]/g, '').substring(0, 100) + '...';
-
-                        // Card HTML
-                        const html = `
-                            <div onclick="router.goPost('${post.slug}')" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer group hover:shadow-xl hover:-translate-y-1 transition duration-300">
-                                <div class="overflow-hidden bg-gray-100">
-                                    ${imgHTML}
-                                </div>
-                                <div class="p-6">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">${post.tags[0] || 'Blog'}</span>
-                                        <span class="text-xs text-gray-400">${date}</span>
+                        // Card HTML Injection
+                        const card = `
+                            <div onclick="router.showArticle('${post.slug}')" class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition duration-300 cursor-pointer overflow-hidden flex flex-col h-full">
+                                <div class="overflow-hidden relative">
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition z-10"></div>
+                                    ${imgHtml}
+                                    <div class="absolute top-4 left-4 z-20">
+                                        <span class="bg-white/90 backdrop-blur-sm text-emerald-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm uppercase tracking-wide">
+                                            ${post.tags[0] || 'Blog'}
+                                        </span>
                                     </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-3 group-hover:text-emerald-700 transition leading-tight">${post.title}</h3>
-                                    <p class="text-gray-500 text-sm mb-4 line-clamp-3">${preview}</p>
-                                    <div class="flex items-center text-emerald-600 font-bold text-sm">
-                                        Read Article <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition"></i>
+                                </div>
+                                <div class="p-6 flex flex-col flex-1">
+                                    <div class="text-xs text-gray-400 mb-3 flex items-center gap-2">
+                                        <i class="far fa-clock"></i> ${date}
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-800 mb-3 group-hover:text-emerald-600 transition leading-tight">
+                                        ${post.title}
+                                    </h3>
+                                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
+                                        ${plainText}
+                                    </p>
+                                    <div class="flex items-center text-emerald-600 font-bold text-sm group-hover:gap-2 transition-all">
+                                        Read Story <i class="fas fa-arrow-right ml-2"></i>
                                     </div>
                                 </div>
                             </div>
                         `;
-                        grid.innerHTML += html;
+                        grid.innerHTML += card;
                     });
+
                 } catch (err) {
                     console.error(err);
-                    loader.innerHTML = `<p class="text-red-500">Failed to load articles. Is the backend running?</p>`;
+                    loader.classList.add('hidden');
+                    grid.innerHTML = `<div class="col-span-full text-center text-red-400 py-10">Server seems to be sleeping. Wake it up!</div>`;
                 }
             },
 
-            // 2. Load Single Post (For Article View)
-            loadSinglePost: async (slug) => {
-                // Reset UI
-                document.getElementById('article-title').innerText = "Loading...";
-                document.getElementById('article-content').innerHTML = "";
-                document.getElementById('article-cover').classList.add('hidden');
+            // Single Post lana
+            fetchSinglePost: async (slug) => {
+                // UI Reset
+                document.getElementById('reader-title').innerText = "Loading...";
+                document.getElementById('reader-content').innerHTML = `
+                    <div class="space-y-4 animate-pulse">
+                        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div class="h-4 bg-gray-200 rounded w-full"></div>
+                        <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                    </div>
+                `;
+                document.getElementById('reader-cover-container').classList.add('hidden');
 
                 try {
                     const res = await fetch(`${API_BASE_URL}/blog/${slug}`);
-                    if (!res.ok) throw new Error("Article not found");
-                    
+                    if(!res.ok) throw new Error("Not Found");
                     const post = await res.json();
 
-                    // Fill Data
-                    document.getElementById('article-title').innerText = post.title;
-                    document.getElementById('article-date').innerHTML = `<i class="far fa-calendar mr-2"></i> ${new Date(post.created_at).toLocaleDateString()}`;
-                    document.getElementById('article-views').innerHTML = `<i class="far fa-eye mr-2"></i> ${post.views} Views`;
+                    // --- POPULATE DATA ---
+                    
+                    // 1. Title & Meta
+                    document.getElementById('reader-title').innerText = post.title;
+                    document.getElementById('reader-date').innerHTML = `<i class="far fa-calendar text-emerald-500"></i> ${new Date(post.created_at).toLocaleDateString('en-US', { dateStyle: 'long' })}`;
+                    document.getElementById('reader-views').innerHTML = `<i class="far fa-eye"></i> ${post.views} Views`;
+                    document.getElementById('reader-tag').innerText = post.tags.length > 0 ? `#${post.tags[0]}` : '#Story';
 
-                    // Render Markdown content
-                    document.getElementById('article-content').innerHTML = marked.parse(post.content);
-
-                    // Cover Image
-                    if (post.cover_image) {
-                        const img = document.getElementById('article-cover');
-                        img.src = post.cover_image;
-                        img.classList.remove('hidden');
+                    // 2. Cover Image
+                    if(post.cover_image && post.cover_image.startsWith('http')) {
+                        document.getElementById('reader-cover').src = post.cover_image;
+                        document.getElementById('reader-cover-container').classList.remove('hidden');
                     }
 
-                    // Tags
-                    const tagBox = document.getElementById('article-tags');
-                    tagBox.innerHTML = '';
-                    post.tags.forEach(tag => {
-                        tagBox.innerHTML += `<span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold uppercase">#${tag}</span>`;
-                    });
+                    // 3. Content (Markdown Parsing)
+                    document.getElementById('reader-content').innerHTML = marked.parse(post.content);
 
                 } catch (err) {
-                    document.getElementById('article-title').innerText = "404 Not Found";
-                    document.getElementById('article-content').innerHTML = `<p class="text-red-500">Sorry, this article could not be loaded.</p>`;
+                    document.getElementById('reader-title').innerText = "404 - Article Not Found";
+                    document.getElementById('reader-content').innerHTML = "<p class='text-red-500'>The article you are looking for does not exist or has been deleted.</p>";
                 }
             }
         };
 
-        // Handle Browser Back Button
+        // Initialize
+        document.addEventListener('DOMContentLoaded', app.init);
+
+        // Handle Back Button
         window.onpopstate = () => {
-            const hash = window.location.hash.substring(1);
-            if (hash) router.goPost(hash);
-            else router.goHome();
+            if(!window.location.hash) {
+                router.showHome();
+            } else {
+                router.showArticle(window.location.hash.substring(1));
+            }
         };
 
-        // Start App
-        document.addEventListener('DOMContentLoaded', app.init);
     </script>
 </body>
 </html>
