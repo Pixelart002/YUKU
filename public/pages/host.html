@@ -1,20 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- SEO & Meta -->
+    <!-- =========================================
+         SEO & META
+    ========================================== -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yuku-prtocol's Blog | Tech & Ideas</title>
-    <meta name="description" content="Read insights on technology, coding, and life.">
+    <title>Yuku Protocol | Engineering & Ideas</title>
+    <meta name="description" content="A tech archive exploring software architecture, coding patterns, and digital life.">
+    <meta name="theme-color" content="#10b981">
 
+    <!-- =========================================
+         LIBRARIES
+    ========================================== -->
     <!-- 1. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                    colors: {
+                        emerald: { 450: '#10b981' } // Custom Golden Green
+                    },
+                    spacing: {
+                        'golden': '1.618rem', // Golden Ratio Spacer
+                    }
+                }
+            }
+        }
+    </script>
 
-    <!-- 2. Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- 2. Fonts (Optimized for Readability) -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&family=Merriweather:wght@300;400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- 3. PrismJS (Code Highlighting for Tech Blog) -->
+    <!-- 3. PrismJS (Syntax Highlighting) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
@@ -23,133 +47,295 @@
     <!-- 4. Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+    <!-- =========================================
+         CUSTOM STYLES (Typography & Z-Index)
+    ========================================== -->
     <style>
-        body { font-family: 'Outfit', sans-serif; }
+        body { font-family: 'Outfit', sans-serif; -webkit-font-smoothing: antialiased; }
         
-        /* Article Typography */
-        .prose-content { font-family: 'Merriweather', serif; line-height: 1.8; color: #374151; }
-        .prose-content h1 { font-size: 2.25rem; font-weight: 800; margin: 2rem 0 1rem; color: #111827; }
-        .prose-content h2 { font-size: 1.8rem; font-weight: 700; margin: 2rem 0 1rem; color: #064e3b; }
-        .prose-content p { margin-bottom: 1.5rem; font-size: 1.125rem; }
-        .prose-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
-        .prose-content blockquote { border-left: 4px solid #10b981; padding-left: 1rem; font-style: italic; color: #4b5563; background: #f0fdf4; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem; }
-        /* Code Block Styling */
-        .prose-content pre { border-radius: 0.5rem; margin: 1.5rem 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .prose-content img { border-radius: 0.5rem; margin: 2rem auto; width: 100%; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .prose-content a { color: #059669; text-decoration: underline; text-underline-offset: 4px; }
+        /* Reading Typography (Golden Ratio Line Height) */
+        .prose-content { font-family: 'Merriweather', serif; color: #374151; font-size: 1.125rem; line-height: 1.8; }
+        
+        /* Headings */
+        .prose-content h1 { font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 800; letter-spacing: -0.025em; margin-top: 3rem; margin-bottom: 1.5rem; color: #111827; }
+        .prose-content h2 { font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.015em; margin-top: 2.5rem; margin-bottom: 1rem; color: #065f46; border-left: 4px solid #10b981; padding-left: 1rem; }
+        .prose-content h3 { font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem; color: #1f2937; }
+        
+        /* Elements */
+        .prose-content p { margin-bottom: 1.618rem; }
+        .prose-content ul, .prose-content ol { padding-left: 1.5rem; margin-bottom: 1.618rem; }
+        .prose-content li { margin-bottom: 0.5rem; position: relative; }
+        .prose-content li::marker { color: #10b981; }
+        .prose-content blockquote { border-left: 4px solid #10b981; padding: 1.5rem; background: #f0fdf4; border-radius: 0 0.75rem 0.75rem 0; font-style: italic; color: #4b5563; margin-bottom: 2rem; }
+        .prose-content img { border-radius: 0.75rem; width: 100%; height: auto; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); margin: 2.5rem 0; }
+        .prose-content a { color: #059669; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; transition: color 0.2s; }
+        .prose-content a:hover { color: #047857; }
+        
+        /* Code Blocks */
+        .prose-content pre { border-radius: 0.75rem; margin: 2rem 0; background: #1e1e1e !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #374151; }
+        
+        /* Scroll Progress */
+        #progress-container { width: 100%; height: 4px; background: transparent; position: absolute; bottom: 0; left: 0; z-index: 60; }
+        #progress-bar { height: 4px; background: #10b981; width: 0%; transition: width 0.1s linear; }
+
+        /* Ad Placeholder Pattern */
+        .ad-pattern {
+            background-color: #f3f4f6;
+            background-image: radial-gradient(#e5e7eb 2px, transparent 2px);
+            background-size: 20px 20px;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col selection:bg-emerald-200">
 
-    <!-- === HEADER === -->
-    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 transition-all duration-300">
-        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+    <!-- =========================================
+         HEADER (Fixed, Z-Index 50)
+    ========================================== -->
+    <header class="bg-white/90 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-50 transition-all duration-300 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <!-- Logo -->
-            <div onclick="router.home()" class="cursor-pointer flex items-center gap-3 group">
-                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:rotate-12 transition transform">
-                    V
+            <div onclick="router.home()" class="cursor-pointer flex items-center gap-3 group select-none">
+                <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-extrabold text-xl shadow-lg group-hover:rotate-12 transition-transform duration-300">
+                    Y
                 </div>
-                <h1 class="text-2xl font-bold tracking-tight text-gray-800 group-hover:text-emerald-700 transition">yuku-protocol's <span class="text-emerald-500">Blog</span></h1>
+                <h1 class="text-2xl font-bold tracking-tight text-gray-900 group-hover:text-emerald-700 transition">YUKU <span class="text-emerald-500">PROTOCOL</span></h1>
             </div>
             
-            <!-- Social Links -->
-            <div class="flex items-center gap-6">
-                <a href="#" class="text-gray-500 hover:text-emerald-600 transition hover:scale-110"><i class="fab fa-twitter text-xl"></i></a>
-                <a href="#" class="text-gray-500 hover:text-emerald-600 transition hover:scale-110"><i class="fab fa-github text-xl"></i></a>
+            <!-- Search & Socials -->
+            <div class="flex items-center gap-4">
+                <!-- Desktop Search -->
+                <div class="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:bg-white transition-all w-64 border border-transparent focus-within:border-emerald-200">
+                    <i class="fas fa-search text-gray-400 mr-2"></i>
+                    <input type="text" id="search-input" onkeyup="app.searchPosts()" placeholder="Search articles..." class="bg-transparent border-none outline-none text-sm w-full placeholder-gray-400 text-gray-700">
+                </div>
+
+                <div class="h-6 w-px bg-gray-200 hidden md:block"></div>
+
+                <a href="#" class="text-gray-400 hover:text-blue-400 transition hover:scale-110"><i class="fab fa-twitter text-xl"></i></a>
+                <a href="#" class="text-gray-400 hover:text-gray-900 transition hover:scale-110"><i class="fab fa-github text-xl"></i></a>
             </div>
+        </div>
+        
+        <!-- Progress Bar (Only visible in Article Mode) -->
+        <div id="progress-container" class="hidden">
+            <div id="progress-bar"></div>
         </div>
     </header>
 
-    <!-- === MAIN CONTENT === -->
-    <main class="flex-1 max-w-6xl mx-auto w-full p-6">
+    <!-- =========================================
+         MAIN CONTENT
+    ========================================== -->
+    <main class="flex-1 w-full p-4 md:p-8 max-w-7xl mx-auto">
         
-        <!-- [SCENE 1] HOME PAGE -->
-        <div id="scene-home" class="animate-fade-in">
-            <div class="text-center py-20 border-b border-gray-100 mb-12">
-                <span class="text-emerald-600 font-bold tracking-widest text-xs uppercase mb-3 block">Welcome to my space</span>
-                <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">Thoughts, Code & <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Everything In Between.</span></h2>
-                <p class="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">Join me on a journey through technology, software architecture, and life.</p>
+        <!-- [SCENE 1] HOME VIEW -->
+        <div id="scene-home" class="animate-fade-in w-full">
+            
+            <!-- Hero Section -->
+            <div class="text-center py-16 md:py-24 border-b border-gray-200 mb-12 relative overflow-hidden">
+                <!-- Decorative Elements -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-100/50 rounded-full blur-3xl -z-10 opacity-50"></div>
+                
+                <span class="inline-block py-1 px-3 rounded-full bg-emerald-50 text-emerald-600 font-bold text-xs tracking-widest uppercase mb-6 border border-emerald-100">
+                    The Engineering Blog
+                </span>
+                <h2 class="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 leading-tight tracking-tight">
+                    Ideas engineered <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">for the future.</span>
+                </h2>
+                <p class="text-gray-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-light">
+                    A curated collection of technical deep-dives, architectural patterns, and the occasional rant about JavaScript frameworks.
+                </p>
+
+                <!-- Mobile Search (Visible only on mobile) -->
+                <div class="mt-8 md:hidden px-4">
+                    <div class="flex items-center bg-white border border-gray-300 rounded-full px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-emerald-500">
+                        <i class="fas fa-search text-gray-400 mr-3"></i>
+                        <input type="text" id="search-input-mobile" onkeyup="app.searchPostsMobile()" placeholder="Search topics..." class="bg-transparent border-none outline-none w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- AD SLOT: TOP BANNER (Leaderboard) -->
+            <div class="w-full h-32 md:h-24 ad-pattern rounded-xl border border-gray-200 flex flex-col items-center justify-center text-gray-400 mb-16 relative overflow-hidden group cursor-pointer">
+                <span class="text-xs font-bold uppercase tracking-widest bg-white px-2 py-1 rounded border border-gray-200 absolute top-2 right-2">Ad</span>
+                <i class="fas fa-ad text-3xl mb-2 opacity-50 group-hover:scale-110 transition"></i>
+                <span class="text-sm font-medium">Sponsored: Cloud Infrastructure Solutions</span>
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             </div>
 
             <!-- Loader -->
             <div id="loader" class="text-center py-20 hidden">
-                <div class="inline-block w-10 h-10 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
-                <p class="mt-4 text-gray-400 font-medium">Fetching latest stories...</p>
+                <div class="inline-block w-12 h-12 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin"></div>
+                <p class="mt-4 text-gray-400 font-medium tracking-wide">Retrieving data from server...</p>
             </div>
 
-            <!-- Grid -->
-            <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-20"></div>
+            <!-- CONTENT GRID -->
+            <div class="flex flex-col lg:flex-row gap-12">
+                <!-- Post Grid (Main) -->
+                <div id="posts-grid" class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
+                    <!-- Cards Injected Here -->
+                </div>
+
+                <!-- Sidebar (Desktop Only for Ads/Tags) -->
+                <div class="hidden lg:block w-80 shrink-0 space-y-8">
+                    <!-- Tag Cloud -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <h4 class="font-bold text-gray-900 mb-4 flex items-center"><i class="fas fa-tags text-emerald-500 mr-2"></i> Trending Topics</h4>
+                        <div id="tag-cloud" class="flex flex-wrap gap-2">
+                            <!-- Tags here -->
+                        </div>
+                    </div>
+
+                    <!-- AD SLOT: SQUARE -->
+                    <div class="w-full aspect-square ad-pattern rounded-2xl border border-gray-200 flex flex-col items-center justify-center text-gray-400 relative">
+                        <span class="text-xs font-bold uppercase tracking-widest bg-white px-2 py-1 rounded border border-gray-200 absolute top-2 right-2">Ad</span>
+                        <i class="fas fa-laptop-code text-4xl mb-3 opacity-50"></i>
+                        <span class="text-center px-8 text-sm">Master Fullstack Development with this Course</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- [SCENE 2] ARTICLE READER -->
-        <div id="scene-article" class="hidden max-w-4xl mx-auto">
+        <div id="scene-article" class="hidden w-full animate-fade-in">
             
-            <button onclick="router.home()" class="mb-10 flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition font-medium group px-4 py-2 rounded-lg hover:bg-gray-100 w-fit">
-                <i class="fas fa-arrow-left group-hover:-translate-x-1 transition"></i> Back to Home
-            </button>
-
-            <article class="bg-white rounded-3xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden">
-                <div id="reader-cover-container" class="h-64 md:h-[400px] w-full overflow-hidden hidden relative">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
-                    <img id="reader-cover" src="" class="w-full h-full object-cover">
-                </div>
+            <div class="flex flex-col lg:flex-row gap-12 relative">
                 
-                <div class="p-8 md:p-16">
-                    <!-- Meta Info -->
-                    <div class="flex flex-wrap items-center gap-6 text-sm text-gray-500 mb-8 border-b border-gray-100 pb-8">
-                        <span id="reader-date" class="flex items-center gap-2 font-medium"><i class="far fa-calendar text-emerald-500"></i> ...</span>
-                        <span id="reader-views" class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-bold text-xs uppercase tracking-wide"><i class="far fa-eye"></i> ... Views</span>
-                        <span id="reader-tag" class="text-emerald-600 font-bold uppercase tracking-wider text-xs border border-emerald-100 px-3 py-1 rounded-full">#Tech</span>
+                <!-- LEFT COLUMN: CONTENT (Golden Ratio ~62%) -->
+                <div class="flex-1 min-w-0"> <!-- min-w-0 prevents flex blowout -->
+                    
+                    <button onclick="router.home()" class="mb-8 flex items-center gap-2 text-gray-500 hover:text-emerald-600 font-bold uppercase text-xs tracking-widest group transition">
+                        <i class="fas fa-arrow-left group-hover:-translate-x-1 transition"></i> Return Home
+                    </button>
+
+                    <article class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+                        <!-- Cover Image -->
+                        <div id="reader-cover-container" class="h-64 md:h-[450px] w-full overflow-hidden hidden relative">
+                            <img id="reader-cover" src="" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                            
+                            <!-- Title Overlay on Image -->
+                            <div class="absolute bottom-0 left-0 p-8 md:p-12 w-full">
+                                <span id="reader-tag" class="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-4 inline-block shadow-lg">Tech</span>
+                                <h1 id="reader-title" class="text-3xl md:text-5xl font-extrabold text-white leading-tight drop-shadow-md mb-2">Title Loading...</h1>
+                                <div class="flex items-center gap-4 text-white/90 text-sm font-medium">
+                                    <span id="reader-date"><i class="far fa-calendar mr-2"></i> ...</span>
+                                    <span>&bull;</span>
+                                    <span id="reader-read-time"><i class="far fa-clock mr-2"></i> ... min read</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fallback Title (if no image) -->
+                        <div id="reader-header-fallback" class="p-8 md:p-12 border-b border-gray-100 hidden">
+                            <h1 id="reader-title-fallback" class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6"></h1>
+                            <div class="flex items-center gap-4 text-gray-500 text-sm">
+                                <span id="reader-date-fb"></span>
+                                <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">#TECH</span>
+                            </div>
+                        </div>
+
+                        <!-- Main Content -->
+                        <div class="p-8 md:p-12">
+                            <div id="reader-content" class="prose-content mx-auto">
+                                <!-- Markdown injected here -->
+                            </div>
+                        </div>
+
+                        <!-- Footer Actions -->
+                        <div class="bg-gray-50 p-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div class="text-sm font-bold text-gray-400 uppercase tracking-widest">Share Knowledge</div>
+                            <div class="flex gap-3">
+                                <button onclick="app.shareTwitter()" class="flex items-center gap-2 px-6 py-3 bg-[#1DA1F2] text-white rounded-full font-bold hover:bg-[#1a91da] transition shadow-lg hover:-translate-y-1">
+                                    <i class="fab fa-twitter"></i> Tweet
+                                </button>
+                                <button onclick="app.shareCopy()" class="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-full font-bold hover:bg-gray-900 transition shadow-lg hover:-translate-y-1">
+                                    <i class="fas fa-link"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Related Posts -->
+                    <div class="mt-12">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6">Read Next</h3>
+                        <div id="related-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
                     </div>
-
-                    <h1 id="reader-title" class="text-4xl md:text-5xl font-bold text-gray-900 mb-10 leading-tight"></h1>
-
-                    <!-- Content -->
-                    <div id="reader-content" class="prose-content"></div>
                 </div>
 
-                <!-- Share Section (NO LIKES) -->
-                <div class="bg-gray-50 p-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-center gap-6">
-                    <span class="text-gray-400 font-bold text-xs uppercase tracking-widest">Share this article</span>
-                    <div class="flex gap-4">
-                        <button onclick="app.shareTwitter()" class="flex items-center gap-2 px-5 py-2 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition shadow-lg shadow-blue-200 hover:-translate-y-1">
-                            <i class="fab fa-twitter"></i> Tweet
-                        </button>
-                        <button onclick="app.shareCopy()" class="flex items-center gap-2 px-5 py-2 bg-gray-800 text-white rounded-full font-bold hover:bg-gray-900 transition shadow-lg hover:-translate-y-1">
-                            <i class="fas fa-link"></i> Copy Link
-                        </button>
+                <!-- RIGHT COLUMN: SIDEBAR (Golden Ratio ~38%) -->
+                <aside class="w-full lg:w-96 shrink-0 space-y-8">
+                    
+                    <!-- Author Box -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-center">
+                        <div class="w-20 h-20 bg-emerald-100 rounded-full mx-auto flex items-center justify-center text-3xl mb-4">👨‍💻</div>
+                        <h4 class="font-bold text-lg">Vikram</h4>
+                        <p class="text-gray-500 text-sm mt-2">Full-stack developer building scalable systems. Writing about code, architecture, and bugs.</p>
+                        <div class="flex justify-center gap-4 mt-4 text-gray-400">
+                            <a href="#" class="hover:text-emerald-600"><i class="fab fa-github text-xl"></i></a>
+                            <a href="#" class="hover:text-blue-500"><i class="fab fa-linkedin text-xl"></i></a>
+                        </div>
                     </div>
-                </div>
-            </article>
+
+                    <!-- AD SLOT: VERTICAL -->
+                    <div class="w-full h-[600px] ad-pattern rounded-2xl border border-gray-200 flex flex-col items-center justify-center text-gray-400 sticky top-24 relative">
+                        <span class="text-xs font-bold uppercase tracking-widest bg-white px-2 py-1 rounded border border-gray-200 absolute top-2 right-2">Ad</span>
+                        <i class="fas fa-server text-5xl mb-4 opacity-50"></i>
+                        <span class="text-center px-8 font-medium">Reliable Hosting for your Next Project</span>
+                        <button class="mt-6 px-6 py-2 border-2 border-gray-400 rounded-full text-sm font-bold hover:bg-gray-400 hover:text-white transition">Learn More</button>
+                    </div>
+
+                </aside>
+
+            </div>
         </div>
 
     </main>
 
-    <!-- === FOOTER === -->
-    <footer class="bg-white border-t border-gray-200 py-12 mt-12">
-        <div class="max-w-6xl mx-auto px-6 text-center">
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">yuku-protocol's Blog</h2>
-            <p class="text-gray-400 text-sm mb-8">Building logic, one line of code at a time.</p>
-            <div class="text-gray-300 text-xs">
-                &copy; <span id="year"></span> All rights reserved.
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
+    <footer class="bg-white border-t border-gray-200 mt-20">
+        <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">Y</div>
+                <span class="font-bold text-gray-800">Yuku Protocol</span>
+            </div>
+            <div class="text-gray-400 text-sm">
+                &copy; <span id="year"></span> All rights reserved. Designed with <i class="fas fa-heart text-red-400 mx-1"></i> & Code.
             </div>
         </div>
     </footer>
 
-    <!-- === LOGIC === -->
+    <!-- =========================================
+         JAVASCRIPT LOGIC
+    ========================================== -->
     <script>
-        const API_BASE_URL = "https://giant-noell-pixelart002-1c1d1fda.koyeb.app";
+        const API_URL = "https://giant-noell-pixelart002-1c1d1fda.koyeb.app";
+        let allPostsData = [];
+        let currentPost = null;
+
+        // SCROLL PROGRESS
+        window.onscroll = function() {
+            if(document.getElementById('scene-article').classList.contains('hidden')) return;
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
+        };
 
         const router = {
             home: () => {
                 document.getElementById('scene-home').classList.remove('hidden');
                 document.getElementById('scene-article').classList.add('hidden');
+                document.getElementById('progress-container').classList.add('hidden');
                 window.scrollTo({top: 0, behavior: 'smooth'});
                 history.pushState("", document.title, window.location.pathname);
+                app.renderGrid(allPostsData); // Reset filter
             },
             article: (slug) => {
                 document.getElementById('scene-home').classList.add('hidden');
                 document.getElementById('scene-article').classList.remove('hidden');
+                document.getElementById('progress-container').classList.remove('hidden');
                 window.scrollTo({top: 0, behavior: 'smooth'});
                 window.location.hash = slug;
                 app.fetchSinglePost(slug);
@@ -157,118 +343,187 @@
         };
 
         const app = {
-            init: () => {
+            init: async () => {
                 document.getElementById('year').innerText = new Date().getFullYear();
+                
+                await app.fetchAllPosts();
+
                 const hash = window.location.hash.substring(1);
                 if(hash) router.article(hash);
-                else app.fetchPosts();
+                else {
+                    app.renderGrid(allPostsData);
+                    app.generateTags();
+                }
             },
 
-            fetchPosts: async () => {
-                const loader = document.getElementById('loader');
-                const grid = document.getElementById('posts-grid');
-                
-                loader.classList.remove('hidden');
-                grid.innerHTML = ''; 
-
+            fetchAllPosts: async () => {
+                document.getElementById('loader').classList.remove('hidden');
                 try {
-                    const res = await fetch(`${API_BASE_URL}/blog/`);
-                    const posts = await res.json();
-                    loader.classList.add('hidden');
+                    const res = await fetch(`${API_URL}/blog/`);
+                    allPostsData = await res.json();
+                } catch(e) { console.error(e); }
+                document.getElementById('loader').classList.add('hidden');
+            },
 
-                    if(posts.length === 0) {
-                        grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-400">No articles published yet.</div>`;
-                        return;
-                    }
+            generateTags: () => {
+                const tags = new Set();
+                allPostsData.forEach(p => p.tags.forEach(t => tags.add(t.toLowerCase())));
+                const cloud = document.getElementById('tag-cloud');
+                cloud.innerHTML = "";
+                tags.forEach(t => {
+                    cloud.innerHTML += `<span onclick="app.filterTag('${t}')" class="px-3 py-1 bg-gray-50 border border-gray-200 rounded-full text-xs text-gray-600 hover:border-emerald-500 hover:text-emerald-600 cursor-pointer transition uppercase font-bold">#${t}</span>`;
+                });
+            },
 
-                    posts.forEach(post => {
-                        const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                        const plainText = post.content.replace(/[#*_`\[\]]/g, '').substring(0, 120) + "...";
-                        
-                        let imgHtml = post.cover_image ? 
-                            `<img src="${post.cover_image}" class="w-full h-56 object-cover group-hover:scale-105 transition duration-700">` : 
-                            `<div class="w-full h-56 bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center text-emerald-200"><i class="fas fa-image text-5xl opacity-50"></i></div>`;
+            filterTag: (tag) => {
+                const filtered = allPostsData.filter(p => p.tags.some(t => t.toLowerCase() === tag));
+                app.renderGrid(filtered);
+                document.getElementById('search-input').value = `#${tag}`;
+            },
 
-                        grid.innerHTML += `
-                            <div onclick="router.article('${post.slug}')" class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition duration-300 cursor-pointer overflow-hidden flex flex-col h-full">
-                                <div class="overflow-hidden relative">
-                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition z-10"></div>
-                                    ${imgHtml}
-                                    <div class="absolute top-4 left-4 z-20">
-                                        <span class="bg-white/90 backdrop-blur-sm text-emerald-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm uppercase tracking-wide">
-                                            ${post.tags[0] || 'Blog'}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="p-6 flex flex-col flex-1">
-                                    <div class="text-xs text-gray-400 mb-3 flex items-center gap-2">
-                                        <i class="far fa-clock"></i> ${date}
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-800 mb-3 group-hover:text-emerald-600 transition leading-tight">
-                                        ${post.title}
-                                    </h3>
-                                    <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1">
-                                        ${plainText}
-                                    </p>
-                                    <div class="flex items-center text-emerald-600 font-bold text-sm group-hover:gap-2 transition-all">
-                                        Read Story <i class="fas fa-arrow-right ml-2"></i>
-                                    </div>
+            searchPosts: () => {
+                const q = document.getElementById('search-input').value.toLowerCase();
+                const filtered = allPostsData.filter(p => p.title.toLowerCase().includes(q) || p.tags.some(t => t.includes(q)));
+                app.renderGrid(filtered);
+            },
+            
+            searchPostsMobile: () => {
+                const q = document.getElementById('search-input-mobile').value.toLowerCase();
+                const filtered = allPostsData.filter(p => p.title.toLowerCase().includes(q));
+                app.renderGrid(filtered);
+            },
+
+            renderGrid: (posts) => {
+                const grid = document.getElementById('posts-grid');
+                grid.innerHTML = "";
+                
+                if(posts.length === 0) return grid.innerHTML = `<div class="col-span-full text-center text-gray-400 py-10">No matching posts found.</div>`;
+
+                // Render Posts (With Ads Interspersed logic if needed)
+                posts.forEach(p => {
+                    const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const readTime = Math.ceil(p.content.split(' ').length / 200);
+                    const plainText = p.content.replace(/[#*_`\[\]]/g, '').substring(0, 100) + "...";
+                    
+                    // Conditional Image
+                    let imgHtml = p.cover_image ? 
+                        `<img src="${p.cover_image}" class="w-full h-56 object-cover group-hover:scale-105 transition duration-700">` : 
+                        `<div class="w-full h-56 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-300"><i class="fas fa-image text-3xl"></i></div>`;
+
+                    grid.innerHTML += `
+                        <div onclick="router.article('${p.slug}')" class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition duration-300 cursor-pointer overflow-hidden flex flex-col h-full">
+                            <div class="overflow-hidden relative">
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition z-10"></div>
+                                ${imgHtml}
+                                <div class="absolute top-4 left-4 z-20">
+                                    <span class="bg-white/90 backdrop-blur-md text-emerald-700 text-[10px] font-extrabold px-3 py-1 rounded-full shadow-sm uppercase tracking-wider border border-white/50">
+                                        ${p.tags[0] || 'Article'}
+                                    </span>
                                 </div>
                             </div>
-                        `;
-                    });
-                } catch (err) {
-                    loader.classList.add('hidden');
-                    grid.innerHTML = `<div class="col-span-full text-center text-red-400 py-10">Server sleeping? Check console.</div>`;
-                }
+                            <div class="p-6 flex flex-col flex-1">
+                                <div class="flex items-center gap-3 text-xs text-gray-400 font-bold mb-3 uppercase tracking-wide">
+                                    <span>${date}</span>
+                                    <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                    <span>${readTime} min read</span>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition leading-snug">
+                                    ${p.title}
+                                </h3>
+                                <p class="text-gray-500 text-sm leading-relaxed mb-6 flex-1 line-clamp-3">
+                                    ${plainText}
+                                </p>
+                                <div class="flex items-center text-emerald-600 font-bold text-sm group-hover:gap-2 transition-all">
+                                    Read Article <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
             },
 
             fetchSinglePost: async (slug) => {
                 // UI Reset
-                document.getElementById('reader-title').innerText = "Loading...";
-                document.getElementById('reader-content').innerHTML = `<div class="animate-pulse space-y-4"><div class="h-4 bg-gray-200 rounded w-3/4"></div><div class="h-4 bg-gray-200 rounded w-full"></div></div>`;
+                document.getElementById('reader-header-fallback').classList.add('hidden');
                 document.getElementById('reader-cover-container').classList.add('hidden');
+                document.getElementById('reader-content').innerHTML = `
+                    <div class="space-y-6 animate-pulse mt-8">
+                        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div class="h-4 bg-gray-200 rounded w-full"></div>
+                        <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                        <div class="h-64 bg-gray-100 rounded w-full"></div>
+                    </div>`;
 
                 try {
-                    const res = await fetch(`${API_BASE_URL}/blog/${slug}`);
+                    const res = await fetch(`${API_URL}/blog/${slug}`);
                     if(!res.ok) throw new Error("Not Found");
-                    const post = await res.json();
+                    currentPost = await res.json();
 
-                    document.getElementById('reader-title').innerText = post.title;
-                    document.getElementById('reader-date').innerText = new Date(post.created_at).toLocaleDateString('en-US', { dateStyle: 'long' });
-                    document.getElementById('reader-views').innerHTML = `<i class="far fa-eye"></i> ${post.views} Views`;
-                    document.getElementById('reader-tag').innerText = post.tags.length > 0 ? `#${post.tags[0]}` : '#Story';
-
-                    if(post.cover_image && post.cover_image.startsWith('http')) {
-                        document.getElementById('reader-cover').src = post.cover_image;
+                    // --- POPULATE DATA ---
+                    const date = new Date(currentPost.created_at).toLocaleDateString('en-US', { dateStyle: 'long' });
+                    const readTime = Math.ceil(currentPost.content.split(' ').length / 200);
+                    
+                    // HEADER LOGIC (Image vs No Image)
+                    if(currentPost.cover_image && currentPost.cover_image.startsWith('http')) {
                         document.getElementById('reader-cover-container').classList.remove('hidden');
+                        document.getElementById('reader-cover').src = currentPost.cover_image;
+                        
+                        // Text Overlay
+                        document.getElementById('reader-title').innerText = currentPost.title;
+                        document.getElementById('reader-date').innerHTML = `<i class="far fa-calendar mr-2"></i> ${date}`;
+                        document.getElementById('reader-read-time').innerHTML = `<i class="far fa-clock mr-2"></i> ${readTime} min read`;
+                        document.getElementById('reader-tag').innerText = currentPost.tags[0] || 'Tech';
+                    } else {
+                        // Fallback Header
+                        document.getElementById('reader-header-fallback').classList.remove('hidden');
+                        document.getElementById('reader-title-fallback').innerText = currentPost.title;
+                        document.getElementById('reader-date-fb').innerText = date;
                     }
 
-                    // Markdown -> HTML
-                    document.getElementById('reader-content').innerHTML = marked.parse(post.content);
-                    
-                    // Highlight Code Blocks
+                    // CONTENT
+                    document.getElementById('reader-content').innerHTML = marked.parse(currentPost.content);
                     Prism.highlightAll();
 
+                    // RELATED POSTS LOGIC
+                    const related = allPostsData.filter(p => p.slug !== slug && p.tags.some(t => currentPost.tags.includes(t))).slice(0, 2);
+                    const relGrid = document.getElementById('related-grid');
+                    relGrid.innerHTML = "";
+                    
+                    if(related.length > 0) {
+                        related.forEach(p => {
+                            relGrid.innerHTML += `
+                                <div onclick="router.article('${p.slug}')" class="bg-gray-50 border border-gray-100 p-4 rounded-xl cursor-pointer hover:border-emerald-200 transition flex gap-4 items-center group">
+                                    <div class="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                                        <img src="${p.cover_image || ''}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" onerror="this.style.display='none'">
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800 line-clamp-2 group-hover:text-emerald-600 transition">${p.title}</h4>
+                                        <p class="text-xs text-gray-400 mt-1 font-bold uppercase">Read Now &rarr;</p>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        relGrid.innerHTML = `<p class="text-gray-400 text-sm">No related posts found.</p>`;
+                    }
+
                 } catch (err) {
-                    document.getElementById('reader-title').innerText = "404 - Article Not Found";
-                    document.getElementById('reader-content').innerHTML = "<p class='text-red-500'>Post not found.</p>";
+                    document.getElementById('reader-content').innerHTML = `<div class="p-8 bg-red-50 text-red-500 rounded-xl text-center">Article not found or deleted.</div>`;
                 }
             },
 
             shareTwitter: () => {
-                const title = document.getElementById('reader-title').innerText;
+                const text = `Read: ${currentPost.title}`;
                 const url = window.location.href;
-                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank');
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
             },
 
             shareCopy: () => {
                 navigator.clipboard.writeText(window.location.href);
-                alert('Link Copied!');
+                alert('Link Copied to Clipboard!');
             }
         };
 
-        // Handle Back Button
         window.onpopstate = () => {
             if(!window.location.hash) router.home();
             else router.article(window.location.hash.substring(1));
@@ -278,3 +533,5 @@
     </script>
 </body>
 </html>
+
+
