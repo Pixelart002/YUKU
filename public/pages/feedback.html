@@ -1,62 +1,139 @@
+<!-- === FEEDBACK TERMINAL (Responsive) === -->
 <style>
-    .rating {
-        display: flex;
+    /* Star Rating Logic - Mobile Optimized */
+    .rating-group {
+        display: inline-flex;
         flex-direction: row-reverse;
-        justify-content: center;
-        gap: 0.5em; /* Add spacing between stars to prevent overlap */
+        gap: 0.25rem; /* Tighter gap on mobile */
+    }
+    @media (min-width: 768px) {
+        .rating-group { gap: 0.5rem; }
     }
 
-    .rating > input {
-        display: none;
-    }
-
-    .rating > label {
-        position: relative;
-        width: 2.5rem; /* fixed width per star to avoid overlap */
-        height: 2.5rem; /* optional to keep consistent */
-        font-size: 2.5rem;
-        color: var(--border-color);
+    .rating-group input { display: none; }
+    
+    .rating-group label {
         cursor: pointer;
+        width: 2.5rem;
+        height: 2.5rem; /* Large touch target */
         display: flex;
-        align-items: center;
         justify-content: center;
+        align-items: center;
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+        color: #333; /* Inactive Color */
     }
 
-    .rating > label::before {
-        content: "\2605"; /* Unicode star */
-        position: relative; /* changed from absolute */
-        opacity: 1;
+    /* Star Icon - SVG Scaled */
+    .rating-group label svg {
+        width: 1.75rem; 
+        height: 1.75rem;
+        fill: currentColor;
+        filter: drop-shadow(0 0 0 transparent);
+        transition: all 0.3s ease;
+    }
+    @media (min-width: 768px) {
+        .rating-group label svg { width: 2rem; height: 2rem; }
     }
 
-    .rating > label:hover:before,
-    .rating > label:hover ~ label:before {
-        color: var(--accent-green);
-        opacity: 0.7;
+    /* Hover & Checked States */
+    .rating-group label:hover,
+    .rating-group label:hover ~ label,
+    .rating-group input:checked ~ label {
+        color: #00ff7f; /* Accent Green */
+        filter: drop-shadow(0 0 8px rgba(0, 255, 127, 0.6));
     }
-
-    .rating > input:checked ~ label:before {
-        color: var(--accent-green);
-        opacity: 1;
+    
+    .rating-group label:hover svg,
+    .rating-group input:checked ~ label svg {
+        transform: scale(1.2);
     }
 </style>
 
-<div class="glass-panel p-6 rounded-lg max-w-2xl mx-auto text-center">
-    <h3 class="text-2xl font-orbitron text-accent-green mb-2">Submit Feedback</h3>
-    <p class="text-text-secondary mb-6">How would you rate your experience?</p>
+<div class="glass-panel relative w-full max-w-2xl mx-auto rounded-xl md:rounded-2xl border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.7)] overflow-hidden animate-fade-in transition-all duration-300">
     
-    <div id="feedback-status" class="mb-4 text-center"></div>
+    <!-- Header Background -->
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-green to-transparent opacity-50"></div>
+    <div class="absolute top-0 right-0 w-32 h-32 bg-accent-green/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
 
-    <div class="rating mb-4">
-        <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 stars"></label>
-        <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars"></label>
-        <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars"></label>
-        <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars"></label>
-        <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star"></label>
+    <div class="p-5 md:p-10 relative z-10">
+        
+        <!-- Header -->
+        <div class="text-center mb-8 md:mb-10">
+            <div class="inline-flex items-center gap-2 md:gap-3 px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-black/40 border border-white/5 mb-3 md:mb-4 backdrop-blur-sm">
+                <span class="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-green opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-full w-full bg-accent-green"></span>
+                </span>
+                <span class="text-[9px] md:text-[10px] font-mono text-gray-400 uppercase tracking-widest">Uplink Secure</span>
+            </div>
+            <h3 class="text-2xl md:text-3xl font-orbitron text-white tracking-[0.15em] md:tracking-[0.2em] mb-2">TRANSMISSION <span class="text-accent-green">LOG</span></h3>
+            <p class="text-[10px] md:text-xs text-gray-500 font-mono uppercase tracking-wider leading-relaxed">Rate protocol efficiency & report status</p>
+        </div>
+
+        <!-- Status Feedback Container -->
+        <div id="feedback-status" class="mb-6 min-h-[20px] text-center text-xs font-bold tracking-wide"></div>
+
+        <!-- RATING MODULE -->
+        <div class="mb-8 text-center">
+            <p class="text-[9px] md:text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em] mb-4">Signal Quality Index</p>
+            
+            <div class="rating-group">
+                <!-- Star 5 -->
+                <input type="radio" id="star5" name="rating" value="5">
+                <label for="star5" title="Optimal">
+                    <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                </label>
+                <!-- Star 4 -->
+                <input type="radio" id="star4" name="rating" value="4">
+                <label for="star4" title="Stable">
+                    <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                </label>
+                <!-- Star 3 -->
+                <input type="radio" id="star3" name="rating" value="3">
+                <label for="star3" title="Nominal">
+                    <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                </label>
+                <!-- Star 2 -->
+                <input type="radio" id="star2" name="rating" value="2">
+                <label for="star2" title="Unstable">
+                    <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                </label>
+                <!-- Star 1 -->
+                <input type="radio" id="star1" name="rating" value="1">
+                <label for="star1" title="Critical">
+                    <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                </label>
+            </div>
+        </div>
+
+        <!-- INPUT MODULE -->
+        <div class="group relative mb-6 md:mb-8">
+            <label for="feedback-textarea" class="block text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-accent-green transition-colors">
+                Message Payload
+            </label>
+            <div class="relative">
+                <!-- Decorative Corner -->
+                <div class="absolute -top-1 -left-1 w-3 h-3 border-t border-l border-gray-600 group-focus-within:border-accent-green transition-colors"></div>
+                <div class="absolute -bottom-1 -right-1 w-3 h-3 border-b border-r border-gray-600 group-focus-within:border-accent-green transition-colors"></div>
+                
+                <textarea id="feedback-textarea" 
+                    class="input-field w-full p-3 md:p-4 rounded-lg h-28 md:h-32 text-xs md:text-sm font-mono leading-relaxed bg-black/30 border border-white/10 focus:border-accent-green focus:bg-black/50 focus:ring-1 focus:ring-accent-green/50 transition-all resize-none placeholder-gray-700"
+                    placeholder="// Enter system observations here..."></textarea>
+            </div>
+        </div>
+
+        <!-- ACTION MODULE -->
+        <button id="submit-feedback-btn" class="tactical-btn w-full py-3 md:py-4 rounded-lg text-[10px] md:text-xs font-bold tracking-[0.25em] flex items-center justify-center gap-3 group hover:scale-[1.02] transition-transform">
+            <span>TRANSMIT DATA</span>
+            <svg class="w-3 h-3 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+        </button>
+
     </div>
+</div>
 
-    <textarea id="feedback-textarea" class="input-field w-full p-3 rounded-md h-32" placeholder="write your thought about yuku protocol!"></textarea>
-    
-    <button id="submit-feedback-btn" class="tactical-btn w-full mt-4 py-3 rounded-md">
-        Submit Feedback
-    </button>
+<!-- RECENT TRANSMISSIONS (Grid Container) -->
+<div id="testimonials-list" class="mt-8 md:mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-4xl mx-auto animate-fade-in">
+    <!-- JS will inject cards here -->
 </div>
