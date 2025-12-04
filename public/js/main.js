@@ -420,38 +420,68 @@ hideProfilePopup() {
             if (userData) {
                 this.updateUserInfo(userData);
                 const contentContainer = document.getElementById('profile-content');
-                contentContainer.innerHTML = `<div class="glass-panel relative p-6 rounded-lg max-w-2xl mx-auto space-y-4 border border-[var(--border-color)] bg-[var(--bg-medium)]/50 backdrop-blur-md shadow-md">
-    <!-- Header with right-aligned edit icon -->
-    <div class="flex items-center justify-between">
-        <h3 class="text-2xl font-orbitron text-[var(--accent-green)]">AGENT DOSSIER</h3>
+                contentContainer.innerHTML = `
+<div class="glass-panel relative p-8 rounded-2xl max-w-2xl mx-auto border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] overflow-hidden group">
+    
+    <!-- Ambient Background Glow (Visual Theory) -->
+    <div class="absolute top-0 right-0 w-40 h-40 bg-accent-green/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
 
-        <a 
-            href="/misc/update-profile.html" 
-            title="Edit Profile"
-            class="transition-transform hover:scale-110"
-        >
-            <img 
-                src="https://cdn-icons-png.flaticon.com/512/1782/1782750.png" 
-                alt="Edit Profile"
-                class="w-6 h-6 opacity-90 hover:opacity-100 drop-shadow-[0_0_6px_var(--accent-green)]"
-            >
+    <!-- Header Section -->
+    <div class="flex items-center justify-between mb-8 border-b border-white/5 pb-4 relative z-10">
+        <div class="flex items-center gap-3">
+            <!-- Status Indicator -->
+            <div class="w-1 h-8 bg-accent-green rounded-full shadow-[0_0_15px_#00ff7f]"></div>
+            <div>
+                <h3 class="text-xl font-orbitron tracking-[0.2em] text-white">AGENT <span class="text-accent-green">DOSSIER</span></h3>
+                <p class="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Classified Personnel Record</p>
+            </div>
+        </div>
+
+        <!-- Edit Action with Hover Micro-interaction -->
+        <a href="/misc/update-profile.html" title="Update Config" class="group/btn p-2 rounded-lg hover:bg-white/5 transition-all duration-300">
+            <svg class="w-5 h-5 text-gray-400 group-hover/btn:text-accent-green group-hover/btn:rotate-90 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
         </a>
     </div>
 
-    <!-- Profile Info -->
-    <div>
-        <p class="text-sm text-text-secondary">USERNAME</p>
-        <p class="text-lg">@${userData.username}</p>
+    <!-- Data Grid (Responsiveness Theory) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+        
+        <!-- Codename -->
+        <div class="space-y-1">
+            <p class="text-[9px] font-bold text-gray-500 uppercase tracking-[0.15em] mb-1">Codename</p>
+            <div class="font-mono text-xl text-accent-green tracking-wide flex items-center gap-2">
+                <span class="opacity-50">@</span>${userData.username}
+            </div>
+            <div class="h-px w-full bg-gradient-to-r from-accent-green/50 to-transparent"></div>
+        </div>
+
+        <!-- Full Name -->
+        <div class="space-y-1">
+            <p class="text-[9px] font-bold text-gray-500 uppercase tracking-[0.15em] mb-1">Operative Identity</p>
+            <div class="font-mono text-lg text-white tracking-wide">${userData.fullname}</div>
+            <div class="h-px w-full bg-gradient-to-r from-white/20 to-transparent"></div>
+        </div>
+
+        <!-- Email (Full Width) -->
+        <div class="md:col-span-2 space-y-1 pt-2">
+            <p class="text-[9px] font-bold text-gray-500 uppercase tracking-[0.15em] mb-1">Secure Comm Channel</p>
+            <div class="font-mono text-sm text-gray-300 tracking-widest flex items-center gap-2 p-3 bg-black/20 rounded border border-white/5">
+                <svg class="w-4 h-4 text-accent-green shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
+                ${userData.email}
+            </div>
+        </div>
     </div>
 
-    <div>
-        <p class="text-sm text-text-secondary">FULL NAME</p>
-        <p class="text-lg">${userData.fullname}</p>
-    </div>
-
-    <div>
-        <p class="text-sm text-text-secondary">AGENT ID (EMAIL)</p>
-        <p class="text-lg">${userData.email}</p>
+    <!-- Footer / Status -->
+    <div class="mt-8 pt-4 flex items-center gap-3 border-t border-white/5 opacity-60">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-green opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-accent-green"></span>
+        </span>
+        <span class="text-[9px] font-mono text-accent-green uppercase tracking-widest">Active Status: Verified</span>
     </div>
 </div>`;
             } else {
