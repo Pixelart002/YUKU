@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>YUKU :: Mission Control</title>
     
     <!-- LIBRARIES -->
@@ -15,6 +15,7 @@
     
     <script async custom-element="amp-auto-ads" src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"></script>
     
+    <!-- === VISUAL THEORY STYLES === -->
     <style>
         :root {
             --bg-dark: #0a0a0a;
@@ -27,7 +28,7 @@
             --text-secondary: #888888;
         }
         
-        /* === GLOBAL TEXTURE THEORY === */
+        /* Texture Theory */
         body {
             font-family: 'Roboto Mono', monospace;
             background-color: var(--bg-dark);
@@ -42,7 +43,7 @@
         
         .font-orbitron { font-family: 'Orbitron', sans-serif; letter-spacing: 0.1em; }
         
-        /* === GLASSMORPHISM & NOISE === */
+        /* Glassmorphism Theory */
         .glass-panel {
             background: rgba(15, 15, 15, 0.75);
             backdrop-filter: blur(16px);
@@ -51,13 +52,13 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
         }
 
-        /* Subtle Noise Texture for Sidebar */
+        /* Texture Noise */
         .texture-noise {
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
         }
 
-        /* === TRANSITIONS & ANIMATIONS === */
-        .page { transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease; width: 100%; height: 100%; position: absolute; }
+        /* Transitions */
+        .page { transition: opacity 0.4s ease, filter 0.4s ease, transform 0.4s ease; width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
         .page-hidden { opacity: 0; filter: blur(10px); transform: scale(0.98); pointer-events: none; z-index: 0; }
         .page-visible { opacity: 1; filter: blur(0px); transform: scale(1); z-index: 10; }
         
@@ -65,11 +66,12 @@
         .form-hidden { opacity: 0; transform: translateY(10px); position: absolute; pointer-events: none; }
         .form-visible { opacity: 1; transform: translateY(0); position: relative; }
         
+        /* Content Panel Animation */
         .content-panel { display: none; height: 100%; animation: fadeUp 0.3s ease-out; }
         .content-panel.active { display: block; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* === SIDEBAR NAVIGATION === */
+        /* Navigation */
         .nav-link { 
             position: relative; 
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
@@ -78,7 +80,7 @@
         .nav-link:hover { 
             background: rgba(255, 255, 255, 0.05); 
             color: white; 
-            padding-left: 1.2rem; /* Interaction Feedback */
+            padding-left: 1.2rem; 
         }
         .nav-link.active { 
             background: linear-gradient(90deg, rgba(0,255,127,0.1) 0%, transparent 100%); 
@@ -89,13 +91,13 @@
         
         .sidebar-transition { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* === Z-INDEX HIERARCHY (Fixed) === */
-        #sidebar { z-index: 50; } 
+        /* Z-INDEX HIERARCHY */
         #overlay { z-index: 40; } 
+        #sidebar { z-index: 50; } 
         header { z-index: 30; }
         main { z-index: 10; }
 
-        /* === UI ELEMENTS === */
+        /* UI Elements */
         .tactical-btn {
             background: var(--accent-green); color: black; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
             box-shadow: 0 0 15px rgba(0, 255, 127, 0.2); transition: all 0.2s;
@@ -107,6 +109,7 @@
         }
         .input-field:focus { border-color: var(--accent-green); box-shadow: 0 0 15px rgba(0,255,127,0.2); outline: none; }
 
+        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
@@ -120,7 +123,7 @@
     <amp-auto-ads type="adsense" data-ad-client="ca-pub-8360942174797973"></amp-auto-ads>
     
     <!-- =========================================
-         AUTH PAGE (UNCHANGED UI as requested)
+         AUTH PAGE (UNCHANGED)
     ========================================== -->
     <div id="auth-page" class="page page-visible flex items-center justify-center min-h-screen p-4">
         <div class="relative w-full max-w-md p-8 space-y-6 glass-panel rounded-lg">
@@ -173,7 +176,7 @@
         <div id="overlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden transition-opacity duration-300" onclick="document.getElementById('closeBtn').click()"></div>
 
         <!-- SIDEBAR (Z-50 | Fixed Width | Responsive Slide) -->
-        <aside id="sidebar" class="texture-noise glass-panel w-64 h-full fixed top-0 left-0 z-50 transform -translate-x-full md:translate-x-0 sidebar-transition flex flex-col border-r border-white/5 shadow-2xl">
+        <aside id="sidebar" class="texture-noise glass-panel w-64 h-full fixed top-0 left-0 z-50 transform -translate-x-full sidebar-transition flex flex-col border-r border-white/5 shadow-2xl">
             
             <!-- Sidebar Header -->
             <div class="p-5 flex justify-between items-center shrink-0 border-b border-white/5">
@@ -181,16 +184,16 @@
                     <div class="w-2 h-2 bg-accent-green rounded-full animate-pulse shadow-[0_0_10px_#00ff7f]"></div>
                     <h2 class="text-xl font-orbitron text-white tracking-widest">YUKU<span class="text-accent-green text-xs align-top opacity-80">OS</span></h2>
                 </div>
-                <!-- Close Button (Mobile Only) -->
-                <button id="closeBtn" class="md:hidden p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition">
+                <!-- Close Button -->
+                <button id="closeBtn" class="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
 
-            <!-- Scrollable Nav Links -->
+            <!-- Scrollable Nav Links (Flex Grow) -->
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
                 
-                <p class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-2">Core Systems</p>
+                <p class="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 mt-1">Core Systems</p>
                 
                 <a href="#" class="nav-link flex items-center px-3 py-3 rounded-md text-sm text-gray-300" data-page="yuku-ai">
                     <svg class="h-4 w-4 mr-3 text-accent-green opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
@@ -202,7 +205,11 @@
                     OPS CENTER
                 </a>
 
-              
+                <a href="#" class="nav-link flex items-center px-3 py-3 rounded-md text-sm text-gray-300" data-page="admin-notify">
+                    <svg class="h-4 w-4 mr-3 text-yellow-400 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    NOTIFICATIONS
+                </a>
+
                 <!-- Dropdown Menu -->
                 <div class="pt-4 mt-2 border-t border-white/5">
                     <button onclick="toggleSidebarDropdown()" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm text-gray-400 hover:text-white hover:bg-white/5 transition group">
@@ -230,7 +237,7 @@
                 </div>
             </nav>
 
-            <!-- Sidebar Footer (Profile) -->
+            <!-- Sidebar Footer (Profile - Fixed Bottom) -->
             <div class="p-4 border-t border-white/5 bg-black/20 shrink-0 relative group" id="profile-container">
                 <!-- Hover Profile Popup -->
                 <div id="profile-popup" class="absolute left-4 bottom-full mb-3 w-56 glass-panel rounded-lg p-3 opacity-0 transform translate-y-2 pointer-events-none transition-all duration-200 border-l-2 border-accent-green shadow-2xl z-50">
@@ -253,13 +260,14 @@
             </div>
         </aside>
         
-        <!-- MAIN CANVAS (Responsive: ml-64 on desktop) -->
-        <div class="flex-1 flex flex-col h-screen w-full relative md:ml-64 transition-all duration-300">
+        <!-- MAIN CANVAS (Full Screen Content) -->
+        <div class="flex-1 flex flex-col h-screen w-full relative transition-all duration-300">
             
             <!-- Sticky Header (Z-30) -->
             <header class="glass-panel h-16 flex items-center justify-between px-6 z-30 shrink-0 sticky top-0 border-b border-white/5">
                 <div class="flex items-center">
-                    <button id="hamburgerBtn" class="p-2 -ml-2 mr-3 rounded text-gray-400 hover:text-white md:hidden hover:bg-white/5 transition">
+                    <!-- Hamburger (Visible on ALL devices) -->
+                    <button id="hamburgerBtn" class="p-2 -ml-2 mr-3 rounded text-gray-400 hover:text-white hover:bg-white/5 transition">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                     </button>
                     <h1 id="header-title" class="text-sm font-orbitron text-white tracking-widest uppercase truncate border-l border-accent-green pl-3 h-6 flex items-center shadow-[inset_1px_0_0_0_rgba(0,255,127,0.5)]">Overview</h1>
@@ -273,14 +281,15 @@
                 </div>
             </header>
             
-            <!-- Main Scrollable Content -->
-            <main class="flex-grow p-4 md:p-8 overflow-y-auto relative custom-scrollbar bg-gradient-to-b from-transparent to-black/30">
+            <!-- Main Scrollable Content (P-0 for Full Screen Apps) -->
+            <main class="flex-grow p-0 overflow-y-auto relative custom-scrollbar bg-gradient-to-b from-transparent to-black/30 w-full h-full">
                 <!-- Content Injection Points -->
-                <div id="yuku-ai-content" class="content-panel"></div>
-                <div id="dashboard-content" class="content-panel"></div>
-                <div id="profile-content" class="content-panel"></div>
-                <div id="settings-content" class="content-panel"></div>
-              
+                <div id="yuku-ai-content" class="content-panel h-full w-full"></div>
+                <div id="dashboard-content" class="content-panel h-full w-full"></div>
+                <div id="profile-content" class="content-panel h-full w-full"></div>
+                <div id="settings-content" class="content-panel h-full w-full"></div>
+                <div id="admin-notify-content" class="content-panel h-full w-full"></div>
+                <div id="feedback-content" class="content-panel h-full w-full"></div>
             </main>
 
             <!-- Footer -->
@@ -311,16 +320,8 @@
         function toggleSidebarDropdown() {
             const menu = document.getElementById('sidebar-dropdown');
             const arrow = document.getElementById('dropdown-arrow');
-            
-            // Toggle visibility using classList
             menu.classList.toggle('hidden');
-            
-            // Rotate arrow
-            if (menu.classList.contains('hidden')) {
-                arrow.style.transform = 'rotate(0deg)';
-            } else {
-                arrow.style.transform = 'rotate(180deg)';
-            }
+            arrow.style.transform = menu.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
         }
     </script>
 </body>
