@@ -1,1 +1,95 @@
-blank
+<div class="h-full w-full relative bg-[#050505] font-sans text-gray-100 overflow-hidden isolate selection:bg-emerald-500/30 flex flex-col">
+
+    <!-- --- STYLES (Scoped) --- -->
+    <style>
+        /* Minimal Texture */
+        .noise-bg {
+            position: absolute; inset: 0; z-index: -1; opacity: 0.02;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        /* Glass Input */
+        .glass-input { 
+            background: rgba(20, 20, 20, 0.8); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+        }
+        
+        /* Drawer Transition */
+        #chat-drawer { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        #drawer-overlay { transition: opacity 0.3s ease; }
+        
+        /* Markdown Styling */
+        .prose p { margin-bottom: 0.5rem; line-height: 1.6; color: #d4d4d8; }
+        .prose h1, .prose h2, .prose h3 { color: #fff; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .prose pre { margin: 0.5rem 0; border-radius: 0.5rem; border: 1px solid #333; background: #111 !important; padding: 1rem; overflow-x: auto; }
+        .prose code { color: #34d399; font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 99px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #10b981; }
+    </style>
+
+    <div class="noise-bg"></div>
+
+    <!-- --- 1. HISTORY DRAWER (Hidden Left Sidebar) --- -->
+    <!-- Z-Index 60 to stay above everything -->
+    <div id="drawer-overlay" onclick="AI_UI.toggleDrawer()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[55] hidden opacity-0 transition-opacity"></div>
+    
+    <aside id="chat-drawer" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#0a0a0a] border-r border-white/10 transform -translate-x-full flex flex-col shadow-2xl">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center bg-[#0e0e0e]">
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Archives</span>
+            <button onclick="AI.newChat()" class="text-emerald-500 hover:text-white transition text-[10px] font-bold px-3 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 hover:bg-emerald-500 hover:text-black">
+                + NEW
+            </button>
+        </div>
+        <div id="chat-history-list" class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1">
+            <!-- History items injected here -->
+        </div>
+    </aside>
+
+    <!-- --- 2. MAIN CHAT AREA --- -->
+    <div class="flex-1 flex flex-col relative z-0 h-full w-full">
+        
+        <!-- Toggle Button (Floating) -->
+        <button onclick="AI_UI.toggleDrawer()" class="absolute top-4 left-4 z-40 p-2.5 bg-black/40 hover:bg-emerald-500/20 text-gray-400 hover:text-emerald-400 border border-white/10 rounded-lg transition-all backdrop-blur-md shadow-lg group">
+            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+            </svg>
+        </button>
+
+        <!-- Messages Container -->
+        <div id="messages-container" class="flex-1 overflow-y-auto px-4 pt-16 pb-4 space-y-6 custom-scroll scroll-smooth w-full max-w-4xl mx-auto">
+            <!-- Empty State -->
+            <div class="h-full flex flex-col items-center justify-center opacity-30 select-none">
+                <div class="w-20 h-20 rounded-3xl border border-white/10 bg-white/5 flex items-center justify-center mb-6 animate-pulse">
+                    <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                </div>
+                <p class="font-mono text-xs text-gray-500 tracking-[0.3em]">NEURAL LINK ACTIVE</p>
+            </div>
+        </div>
+
+        <!-- Input Area (Bottom Fixed) -->
+        <div class="p-4 w-full bg-gradient-to-t from-black via-[#050505] to-transparent">
+            <div class="max-w-3xl mx-auto">
+                <form id="chat-form" class="relative glass-input rounded-2xl p-2 flex items-end gap-2 transition-all focus-within:border-emerald-500/30 focus-within:shadow-[0_0_30px_rgba(16,185,129,0.05)]" onsubmit="AI.sendMessage(event)">
+                    
+                    <textarea id="user-input" rows="1" class="w-full bg-transparent border-none text-sm text-gray-200 focus:ring-0 resize-none px-4 py-3 max-h-32 font-mono placeholder-gray-600 leading-relaxed" placeholder="Execute command..."></textarea>
+                    
+                    <button type="submit" id="send-btn" class="p-3 bg-white/5 hover:bg-emerald-600 hover:text-black text-gray-400 rounded-xl transition-all duration-200 shrink-0">
+                        <svg class="w-5 h-5 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    </button>
+                </form>
+                <div class="text-center mt-2">
+                    <p class="text-[10px] text-gray-700 font-mono">Pollinations.ai // DevOps Module</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
