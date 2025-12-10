@@ -3,25 +3,36 @@
 async function initStorePage() {
  console.log("Initializing Store Protocol...");
  
- // 1. Get Elements
+ // 1. Get Elements (Mapped strictly to your HTML IDs)
  const els = {
   loading: document.getElementById('store-loading'),
   createView: document.getElementById('create-store-view'),
   dashboardView: document.getElementById('store-dashboard-view'),
   form: document.getElementById('createStoreForm'),
   
-  // Dashboard Fields
-  name: document.getElementById('dash-store-name'),
-  slug: document.getElementById('dash-store-slug'),
-  cat: document.getElementById('dash-store-category'),
-  date: document.getElementById('dash-store-date'),
-  desc: document.getElementById('dash-store-desc'),
-  link: document.getElementById('dash-store-link')
+  // Dashboard Output Fields
+  dashName: document.getElementById('dash-store-name'),
+  dashSlug: document.getElementById('dash-store-slug'),
+  dashCat: document.getElementById('dash-store-category'),
+  dashDate: document.getElementById('dash-store-date'),
+  dashDesc: document.getElementById('dash-store-desc'),
+  dashLink: document.getElementById('dash-store-link')
  };
  
- // 2. Initial Fetch: Check if store exists
- // We use a manual fetch here to handle the 404 (Not Found) gracefully
- // without triggering a global error alert.
+ // 2. View Switcher Helper
+ const showView = (viewName) => {
+  // Hide all first
+  els.loading.classList.add('hidden');
+  els.createView.classList.add('hidden');
+  els.dashboardView.classList.add('hidden');
+  
+  // Show specific view
+  if (viewName === 'loading') els.loading.classList.remove('hidden');
+  if (viewName === 'create') els.createView.classList.remove('hidden');
+  if (viewName === 'dashboard') els.dashboardView.classList.remove('hidden');
+ };
+ 
+ // 3. Initial Fetch: Check if store exists
  try {
   const token = window.app.getAuthToken();
   const response = await fetch(`${window.app.config.API_BASE_URL}/store/my-store`, {
@@ -33,14 +44,14 @@ async function initStorePage() {
   });
   
   if (response.status === 200) {
-   // Store Found -> Show Dashboard
+   // Store Found -> Render Dashboard
    const data = await response.json();
    renderDashboard(data);
   } else if (response.status === 404) {
    // No Store -> Show Create Form
-   showCreateView();
+   showView('create');
   } else {
-   // Other Error (500 etc) -> Show global error
+   // Server Error -> Throw to catch block
    throw new Error(`Server Status: ${response.status}`);
   }
   
@@ -48,66 +59,63 @@ async function initStorePage() {
   window.app.showAuthError(error.message);
  }
  
- // 3. Helper Functions to Switch Views
- function showCreateView() {
-  els.loading.classList.add('hidden');
-  els.createView.classList.remove('hidden');
- }
- 
+ // 4. Render Dashboard Function
  function renderDashboard(data) {
-  els.loading.classList.add('hidden');
-  els.dashboardView.classList.remove('hidden');
+  showView('dashboard');
   
-  // Populate Data
-  els.name.textContent = data.name;
-  els.slug.textContent = data.slug;
-  els.cat.textContent = data.category;
-  els.desc.textContent = data.description || "No manifest details provided.";
+  // Populate Text Fields
+  els.dashName.textContent = data.name;
+  els.dashSlug.textContent = data.slug;
+  els.dashCat.textContent = data.category || 'General';
+  els.dashDesc.textContent = data.description || "No manifest details provided.";
   
+  // Format Date
   const d = new Date(data.created_at);
-  els.date.textContent = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+  els.dashDate.textContent = d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   
-  // Update Link (Assuming your backend runs on port 8000 or similar for testing)
-  // You might need to adjust the URL base depending on where your frontend store is hosted
-  els.link.href = data.store_url;
+  // Update Link (This will now use the /pages/store.html?store=slug format sent by backend)
+  els.dashLink.href = data.store_url || '#';
  }
  
- // 4. Handle Create Form Submit
- els.form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const btn = els.form.querySelector('button');
-  
-  const payload = {
-   name: document.getElementById('input-store-name').value,
-   category: document.getElementById('input-store-category').value,
-   description: document.getElementById('input-store-desc').value
-  };
-  
-  const options = {
-   method: 'POST',
-   headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${window.app.getAuthToken()}`
-   },
-   body: JSON.stringify(payload)
-  };
-  
-  // Use the global handler for creation (so we get nice error alerts if validation fails)
-  const result = await window.app.handleApiRequest('store/create', options, btn);
-  
-  if (result) {
-   Swal.fire({
-    icon: 'success',
-    title: 'NODE ESTABLISHED',
-    text: 'Your store has been successfully deployed.',
-    background: '#111',
-    color: '#fff',
-    confirmButtonColor: '#00ff7f'
-   });
-   // Switch to Dashboard immediately
-   els.createView.classList.add('hidden');
-   renderDashboard(result);
-  }
- });
+ // 5. Handle Create Form Submit
+ if (els.form) {
+  els.form.addEventListener('submit', async (e) => {
+   e.preventDefault();
+   
+   const btn = els.form.querySelector('button');
+   
+   // Gather Data from Inputs (IDs from your HTML)
+   const payload = {
+    name: document.getElementById('input-store-name').value,
+    category: document.getElementById('input-store-category').value,
+    description: document.getElementById('input-store-desc').value
+   };
+   
+   const options = {
+    method: 'POST',
+    headers: {
+     'Content-Type': 'application/json',
+     'Authorization': `Bearer ${window.app.getAuthToken()}`
+    },
+    body: JSON.stringify(payload)
+   };
+   
+   // Use global handler (handles loading state on button automatically if configured, or we pass btn)
+   const result = await window.app.handleApiRequest('store/create', options, btn);
+   
+   if (result) {
+    Swal.fire({
+     icon: 'success',
+     title: 'NODE ESTABLISHED',
+     text: 'Your store has been successfully deployed.',
+     background: '#111',
+     color: '#fff',
+     confirmButtonColor: '#00ff7f'
+    });
+    
+    // Immediately switch to dashboard with new data
+    renderDashboard(result);
+   }
+  });
+ }
 }
