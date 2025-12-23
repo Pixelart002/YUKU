@@ -127,7 +127,7 @@ window.initStorePage = async function() {
    // Link to the Public Store Host page
    const origin = window.location.origin; // e.g. https://yuku-nine.vercel.app
    // IMPORTANT: Updated path to match your request
-   const fullUrl = `${origin}/public/misc/store-host.html?store=${store.slug}`;
+   const fullUrl = `${origin}/misc/store-host.html?store=${store.slug}`;
    
    linkEl.href = fullUrl;
    
