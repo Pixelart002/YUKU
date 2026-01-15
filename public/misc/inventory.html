@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>luviio</title>
+    <title>Billing Pro V9.7 - Logic Fixed</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -62,7 +62,7 @@
     <header class="h-16 bg-background/60 backdrop-blur-md border-b border-surfaceLight flex items-center justify-between px-4 sticky top-0 z-30">
         <div class="flex items-center gap-3">
             <button onclick="toggleDrawer(true)" class="lg:hidden p-2 rounded-lg text-textMuted active:bg-white/5"><span class="material-icons-round text-2xl">menu</span></button>
-            <span class="font-bold text-lg text-white lg:hidden">luviio</span>
+            <span class="font-bold text-lg text-white lg:hidden">Billing Pro</span>
         </div>
         <div class="flex items-center gap-2">
             <div class="relative">
@@ -82,7 +82,7 @@
     <aside id="drawer" class="fixed inset-y-0 left-0 w-72 bg-surface/90 backdrop-blur-xl z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 border-r border-surfaceLight flex flex-col">
         <div class="h-20 flex items-center px-8 border-b border-surfaceLight bg-background/50">
             <div class="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white mr-3 shadow-[0_0_15px_rgba(99,102,241,0.5)]"><span class="material-icons-round text-2xl">receipt_long</span></div>
-            <div><h2 class="font-bold text-lg leading-tight truncate w-40 text-white" id="sidebar-shop">luviio</h2><div class="text-xs text-textMuted font-medium">Dashboard</div></div>
+            <div><h2 class="font-bold text-lg leading-tight truncate w-40 text-white" id="sidebar-shop">My Shop</h2><div class="text-xs text-textMuted font-medium">Dashboard</div></div>
         </div>
         <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
             <button onclick="nav('tab-store')" class="nav-item w-full flex items-center px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-textMuted hover:bg-white/5 hover:text-primary"><span class="material-icons-round text-xl mr-3 opacity-70">storefront</span> Store</button>
@@ -118,6 +118,7 @@
                 <div id="cart-list" class="space-y-3 pb-24"></div>
                 
                 <div id="checkout-bar" class="fixed bottom-20 lg:bottom-8 left-4 right-4 lg:left-80 lg:right-8 lg:w-auto bg-surface/90 backdrop-blur border border-surfaceLight text-white p-4 rounded-2xl shadow-2xl z-30 flex flex-col gap-3 hidden">
+                    
                     <div id="row-discount" class="flex items-center justify-between border-b border-white/10 pb-2 mb-1">
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold text-textMuted uppercase flex items-center gap-1"><span class="material-icons-round text-sm">local_offer</span> Discount</span>
@@ -226,9 +227,7 @@
                         <div class="flex justify-between items-center mb-1"><span class="text-slate-500">Subtotal:</span><span class="font-bold">₹<span id="inv-subtotal">0.00</span></span></div>
                         <div id="bill-row-disc" class="flex justify-between items-center mb-1 text-slate-500"><span class="text-slate-500">Discount:</span><span class="font-bold text-slate-700">-₹<span id="inv-discount">0.00</span></span></div>
                         <div id="bill-row-tax" class="flex justify-between items-center mb-1 text-slate-500"><span class="text-slate-500">Tax (<span id="inv-tax-rate">0</span>%):</span><span class="font-bold text-slate-700">+₹<span id="inv-tax-amt">0.00</span></span></div>
-                        
                         <div class="border-t border-slate-800 my-2"></div>
-                        
                         <div class="flex justify-between items-center mb-4"><span class="text-lg font-extrabold text-slate-900">Grand Total:</span><span class="text-lg font-extrabold text-slate-900">₹<span id="inv-grand-total-A">0.00</span></span></div>
                         
                         <div id="pay-sep" class="border-b-2 border-dashed border-slate-300 my-4 relative"><span class="absolute top-[-10px] left-1/2 transform -translate-x-1/2 bg-white px-2 text-[10px] text-slate-400 uppercase tracking-widest">Payment Details</span></div>
@@ -451,13 +450,14 @@
             if(app.data.cart.length < prevLen) UI.toast('⚠️ Removed unavailable items', 'warning');
 
             // UPDATE BADGES (Always run this)
-            const cartLen = app.data.cart.length;
+            // Fix 2: Reduce quantity sum
+            const totalQty = app.data.cart.reduce((sum, item) => sum + item.qty, 0);
             const badgeD = document.getElementById('badge-desktop');
             const badgeM = document.getElementById('badge-mobile');
-            badgeD.innerText = cartLen;
-            badgeM.innerText = cartLen;
+            badgeD.innerText = totalQty;
+            badgeM.innerText = totalQty;
 
-            if(cartLen === 0) {
+            if(app.data.cart.length === 0) {
                 badgeD.classList.add('hidden');
                 badgeM.classList.add('hidden');
                 list.innerHTML = `<div class="text-center py-10 opacity-40 text-textMuted">Cart Empty</div>`; 
@@ -551,7 +551,12 @@
 
             document.getElementById('inv-note').innerText = app.data.sets.note; document.getElementById('inv-sign').innerHTML = app.data.sets.sign ? `<img src="${app.data.sets.sign}" class="h-full object-contain">` : '';
             
-            document.getElementById('pay-status').value = 'Paid'; document.getElementById('pay-amount').value = total.toFixed(2); updatePayUI();
+            // Fix: Set default pay amount to Grand Total
+            document.getElementById('pay-status').value = 'Paid'; 
+            document.getElementById('pay-amount').value = total.toFixed(2); 
+            
+            updatePayUI(); // This will trigger the calculation
+            
             const m = document.getElementById('preview-modal'); m.classList.remove('hidden'); gsap.fromTo(m, {opacity:0,y:50},{opacity:1,y:0,duration:0.3});
             document.getElementById('inv-controls-new').classList.remove('hidden'); document.getElementById('inv-controls-hist').classList.add('hidden');
         }
@@ -569,7 +574,7 @@
             const payInput = document.getElementById('pay-amount');
             if(status === 'Paid') { payInput.value = tot.toFixed(2); payInput.disabled = true; } else if(status === 'Pending') { payInput.value = 0; payInput.disabled = true; } else { payInput.disabled = false; }
             const paid = parseFloat(payInput.value) || 0;
-            const due = safeMath.round(tot - paid); 
+            const due = safeMath.round(Math.max(0, tot - paid));
             
             // Logic for Badge & Hiding Paid Row
             const dueContainer = document.getElementById('due-container');
@@ -610,7 +615,7 @@
                 dueContainer.classList.add('hidden');
                 badge.classList.remove('hidden');
                 badge.innerText = "FULLY PAID";
-                badge.className = "hidden mt-4 text-center border-2 border-emerald-500 text-emerald-600 font-bold text-xs uppercase py-2 px-4 rounded tracking-widest bg-emerald-50 block";
+                badge.className = "hidden mt-2 text-center border-2 border-emerald-500 text-emerald-600 font-bold text-xs uppercase py-1 px-2 rounded tracking-widest bg-emerald-50 block";
             } else if (due < -0.1) {
                  // Advance
                 dueContainer.classList.remove('hidden');
@@ -853,7 +858,7 @@
                 dueContainer.classList.add('hidden');
                 badgeEl.classList.remove('hidden');
                 badgeEl.innerText = "FULLY PAID";
-                badgeEl.className = "hidden mt-4 text-center border-2 border-emerald-500 text-emerald-600 font-bold text-xs uppercase py-2 px-4 rounded tracking-widest bg-emerald-50 block";
+                badgeEl.className = "hidden mt-4 text-center border-2 border-emerald-500 text-emerald-600 font-bold text-xs uppercase py-1 px-2 rounded tracking-widest bg-emerald-50 block";
             } else if (h.due < -0.1) {
                 // Advance
                 dueContainer.classList.remove('hidden');
@@ -889,11 +894,7 @@
                 onConfirm: () => {
                     const val = parseFloat(document.getElementById('rp-amt').value);
                     if(!val || val <= 0 || val > h.due + 1) { UI.toast('Invalid Amount', 'error'); return false; }
-                    h.paid = safeMath.round((h.paid || 0) + val); h.due = safeMath.round(h.total - h.paid); 
-                    
-                    if (h.due <= 0.1) h.status = 'Paid';
-                    else h.status = 'Partial';
-
+                    h.paid = safeMath.round((h.paid || 0) + val); h.due = safeMath.round(h.total - h.paid); h.status = h.due <= 0.1 ? 'Paid' : 'Partial';
                     if(!h.history) h.history = []; h.history.push({ date: new Date().toLocaleString(), amount: val, type: 'Payment' });
                     save(); UI.toast('Payment Recorded', 'success'); loadHist(h.id); renderHist(); return true;
                 }
