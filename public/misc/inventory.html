@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Billing Pro V11 - Enterprise Stable</title>
-
+    <title>Billing Pro V11 - Enterprise (Auto Roundoff)</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -19,9 +20,17 @@
                 extend: {
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
                     colors: {
-                        background: '#020617', surface: '#0f172a', surfaceLight: '#1e293b',
-                        primary: '#6366f1', accent: '#a855f7', danger: '#ef4444', 
-                        success: '#10b981', warning: '#f59e0b', info: '#3b82f6', textMain: '#f8fafc', textMuted: '#94a3b8'
+                        background: '#020617',
+                        surface: '#0f172a',
+                        surfaceLight: '#1e293b',
+                        primary: '#6366f1',
+                        accent: '#a855f7',
+                        danger: '#ef4444',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        info: '#3b82f6',
+                        textMain: '#f8fafc',
+                        textMuted: '#94a3b8'
                     },
                     backgroundImage: { 'gradient-primary': "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)" },
                     animation: { 'border-spin': 'border-spin 3s linear infinite' },
@@ -31,34 +40,91 @@
         }
     </script>
     <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        canvas { touch-action: none; }
-        .modal-backdrop { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); }
-        .goog-te-banner-frame { display: none !important; }
-        body { top: 0 !important; }
-        #google_translate_element { display: none; position: absolute; top: 60px; right: 20px; z-index: 100; background: #1e293b; padding: 10px; border-radius: 12px; border: 1px solid #334155; }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        canvas {
+            touch-action: none;
+        }
+        
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+        }
+        
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+        
+        body {
+            top: 0 !important;
+        }
+        
+        #google_translate_element {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            z-index: 100;
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+        
+        .settle-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.5fr;
+            gap: 10px;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
         
         @media print {
-            body * { visibility: hidden; }
-            #invoice-paper, #invoice-paper * { visibility: visible; }
-            #invoice-paper {
-                position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0;
-                box-shadow: none; border: none; background-color: white !important; color: black !important;
+            body * {
+                visibility: hidden;
             }
-            .col-img { display: none !important; }
-            #inv-controls-new, #inv-controls-hist, #payment-log-box { display: none !important; }
+            
+            #invoice-paper,
+            #invoice-paper * {
+                visibility: visible;
+            }
+            
+            #invoice-paper {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                border: none;
+                background-color: white !important;
+                color: black !important;
+            }
+            
+            .col-img,
+            #inv-controls-new,
+            #inv-controls-hist,
+            #ext-pay-details {
+                display: none !important;
+            }
         }
     </style>
 </head>
-<body class="bg-background text-textMain h-screen flex flex-col overflow-hidden selection:bg-primary/30">
 
+<body class="bg-background text-textMain h-screen flex flex-col overflow-hidden selection:bg-primary/30">
+    
     <canvas id="bg-beams" class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-40"></canvas>
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
-
+    
     <div id="custom-modal-overlay" class="fixed inset-0 z-[80] modal-backdrop hidden flex items-center justify-center opacity-0">
         <div id="custom-modal-box" class="w-[90%] max-w-lg bg-surface border border-surfaceLight rounded-2xl shadow-2xl relative overflow-hidden transform scale-95 opacity-0"></div>
     </div>
-
+    
     <header class="h-16 bg-background/60 backdrop-blur-md border-b border-surfaceLight flex items-center justify-between px-4 sticky top-0 z-30">
         <div class="flex items-center gap-3">
             <button onclick="toggleDrawer(true)" class="lg:hidden p-2 rounded-lg text-textMuted active:bg-white/5"><span class="material-icons-round text-2xl">menu</span></button>
@@ -77,12 +143,15 @@
             </button>
         </div>
     </header>
-
+    
     <div id="overlay" onclick="toggleDrawer(false)" class="fixed inset-0 bg-black/60 z-40 hidden backdrop-blur-sm transition-opacity opacity-0"></div>
     <aside id="drawer" class="fixed inset-y-0 left-0 w-72 bg-surface/90 backdrop-blur-xl z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 border-r border-surfaceLight flex flex-col">
         <div class="h-20 flex items-center px-8 border-b border-surfaceLight bg-background/50">
             <div class="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white mr-3 shadow-[0_0_15px_rgba(99,102,241,0.5)]"><span class="material-icons-round text-2xl">receipt_long</span></div>
-            <div><h2 class="font-bold text-lg leading-tight truncate w-40 text-white" id="sidebar-shop">My Shop</h2><div class="text-xs text-textMuted font-medium">Dashboard</div></div>
+            <div>
+                <h2 class="font-bold text-lg leading-tight truncate w-40 text-white" id="sidebar-shop">My Shop</h2>
+                <div class="text-xs text-textMuted font-medium">Dashboard</div>
+            </div>
         </div>
         <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
             <button onclick="nav('tab-store')" class="nav-item w-full flex items-center px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-textMuted hover:bg-white/5 hover:text-primary"><span class="material-icons-round text-xl mr-3 opacity-70">storefront</span> Store</button>
@@ -94,7 +163,7 @@
             <button onclick="nav('tab-settings')" class="nav-item w-full flex items-center px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-textMuted hover:bg-white/5 hover:text-primary"><span class="material-icons-round text-xl mr-3 opacity-70">settings</span> Settings</button>
         </nav>
     </aside>
-
+    
     <div class="flex-1 flex flex-col h-full lg:ml-72 relative z-10">
         <main class="flex-1 overflow-y-auto p-4 lg:p-8 pb-48 scroll-smooth" id="main-scroll">
             
@@ -107,13 +176,12 @@
             
             <div id="tab-cart" class="view-section hidden max-w-3xl mx-auto">
                 <div class="bg-surface/50 backdrop-blur rounded-2xl border border-surfaceLight p-6 mb-4">
-                    <div class="flex items-center gap-2 mb-4 text-primary"><span class="material-icons-round">person</span><h3 class="font-bold text-sm uppercase tracking-wider text-white">Customer Details</h3></div>
+                    <div class="flex items-center gap-2 mb-4 text-primary"><span class="material-icons-round">person</span>
+                        <h3 class="font-bold text-sm uppercase tracking-wider text-white">Customer Details</h3>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="relative">
-                             <input id="c-name" oninput="checkCustomerCredit()" placeholder="Customer Name *" class="w-full bg-surfaceLight/50 border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white placeholder-slate-500 transition">
-                             <button onclick="applyCredit()" id="btn-use-credit" class="absolute right-2 top-2 hidden px-3 py-1 bg-blue-500/20 text-blue-400 text-[10px] font-bold rounded-lg border border-blue-500/30 hover:bg-blue-500 hover:text-white transition items-center gap-1">
-                                <span class="material-icons-round text-sm">account_balance_wallet</span> Use Credit: ₹<span id="credit-val">0</span>
-                             </button>
+                            <input id="c-name" placeholder="Customer Name *" class="w-full bg-surfaceLight/50 border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white placeholder-slate-500 transition">
                         </div>
                         <input id="c-phone" type="tel" placeholder="Phone Number" class="w-full bg-surfaceLight/50 border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white placeholder-slate-500 transition">
                     </div>
@@ -133,7 +201,7 @@
                         </div>
                         <input id="cart-discount" type="number" oninput="renderCart()" value="0" class="w-20 bg-transparent text-right text-sm font-bold text-white focus:outline-none placeholder-slate-600 border-b border-transparent focus:border-primary transition" placeholder="0">
                     </div>
-
+                    
                     <div class="flex items-center justify-between">
                         <div class="flex flex-col">
                             <span class="text-[10px] text-textMuted font-bold uppercase tracking-widest">Grand Total</span>
@@ -144,7 +212,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <div id="tab-items" class="view-section hidden">
                 <div class="flex gap-3 mb-6 sticky top-0 z-20 pt-2 pb-2 bg-background/80 backdrop-blur-md">
                     <div class="relative flex-1">
@@ -155,46 +223,73 @@
                 </div>
                 <div id="inv-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
             </div>
-
+            
             <div id="tab-history" class="view-section hidden">
                 <div class="flex p-1 bg-surface border border-surfaceLight rounded-xl mb-4 overflow-x-auto no-scrollbar">
                     <button onclick="toggleHist('all')" id="btn-h-all" class="flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap bg-surfaceLight text-white">All</button>
                     <button onclick="toggleHist('club')" id="btn-h-club" class="flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap text-textMuted hover:bg-white/5">By Customer</button>
                     <button onclick="toggleHist('pend')" id="btn-h-pend" class="flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap text-textMuted hover:bg-white/5 text-danger">Pending</button>
                     <button onclick="toggleHist('part')" id="btn-h-part" class="flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap text-textMuted hover:bg-white/5 text-warning">Partial</button>
-                    <button onclick="toggleHist('adv')" id="btn-h-adv" class="flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap text-textMuted hover:bg-white/5 text-info">Advance</button>
                 </div>
-
+                
                 <div class="flex gap-2 mb-4">
                     <input id="hist-search" oninput="renderHist()" type="text" placeholder="Search invoices..." class="flex-1 px-4 py-3 bg-surface border border-surfaceLight shadow-sm rounded-xl text-sm focus:border-primary transition text-white placeholder-slate-500">
                     <button onclick="toggleView()" class="w-12 h-11 bg-surface border border-surfaceLight rounded-xl flex items-center justify-center text-textMuted hover:text-white transition"><span class="material-icons-round" id="view-icon">grid_view</span></button>
                 </div>
-
+                
                 <div id="hist-list" class="space-y-3"></div>
             </div>
-
+            
             <div id="tab-analytics" class="view-section hidden max-w-5xl mx-auto">
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-surface p-4 rounded-xl border border-surfaceLight"><div class="text-[10px] font-bold text-textMuted uppercase tracking-wide">Revenue</div><div class="text-xl md:text-2xl font-bold text-white mt-1 truncate" id="an-rev">₹0</div></div>
-                    <div class="bg-surface p-4 rounded-xl border border-surfaceLight"><div class="text-[10px] font-bold text-textMuted uppercase tracking-wide">Cost</div><div class="text-xl md:text-2xl font-bold text-slate-500 mt-1 truncate" id="an-cost">₹0</div></div>
-                    <div class="bg-surface p-4 rounded-xl border border-surfaceLight"><div class="text-[10px] font-bold text-warning uppercase tracking-wide">Pending</div><div class="text-xl md:text-2xl font-bold text-warning mt-1 truncate" id="an-due">₹0</div></div>
-                    <div class="bg-gradient-to-br from-emerald-600 to-teal-800 p-4 rounded-xl text-white border border-emerald-500/30 shadow-lg"><div class="text-[10px] font-bold text-emerald-100 uppercase tracking-wide">Profit</div><div class="text-xl md:text-2xl font-bold mt-1 truncate" id="an-profit">₹0</div><div class="text-[10px] bg-black/20 inline-block px-2 py-0.5 rounded mt-1">Margin: <span id="an-margin">0%</span></div></div>
+                    <div class="bg-surface p-4 rounded-xl border border-surfaceLight">
+                        <div class="text-[10px] font-bold text-textMuted uppercase tracking-wide">Revenue</div>
+                        <div class="text-xl md:text-2xl font-bold text-white mt-1 truncate" id="an-rev">₹0</div>
+                    </div>
+                    <div class="bg-surface p-4 rounded-xl border border-surfaceLight">
+                        <div class="text-[10px] font-bold text-textMuted uppercase tracking-wide">Cost</div>
+                        <div class="text-xl md:text-2xl font-bold text-slate-500 mt-1 truncate" id="an-cost">₹0</div>
+                    </div>
+                    <div class="bg-surface p-4 rounded-xl border border-surfaceLight">
+                        <div class="text-[10px] font-bold text-warning uppercase tracking-wide">Pending</div>
+                        <div class="text-xl md:text-2xl font-bold text-warning mt-1 truncate" id="an-due">₹0</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-emerald-600 to-teal-800 p-4 rounded-xl text-white border border-emerald-500/30 shadow-lg">
+                        <div class="text-[10px] font-bold text-emerald-100 uppercase tracking-wide">Profit</div>
+                        <div class="text-xl md:text-2xl font-bold mt-1 truncate" id="an-profit">₹0</div>
+                        <div class="text-[10px] bg-black/20 inline-block px-2 py-0.5 rounded mt-1">Margin: <span id="an-margin">0%</span></div>
+                    </div>
                 </div>
             </div>
-
+            
             <div id="tab-settings" class="view-section hidden max-w-md mx-auto">
-                <div class="bg-surface p-6 rounded-2xl border border-surfaceLight text-center mb-6"><div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 text-primary border border-primary/20"><span class="material-icons-round text-3xl">store</span></div><h2 class="text-lg font-bold text-white">Store Settings</h2></div>
+                <div class="bg-surface p-6 rounded-2xl border border-surfaceLight text-center mb-6">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 text-primary border border-primary/20"><span class="material-icons-round text-3xl">store</span></div>
+                    <h2 class="text-lg font-bold text-white">Store Settings</h2>
+                </div>
                 <div class="space-y-3">
-                    <div class="bg-surface p-4 rounded-2xl border border-surfaceLight flex items-center justify-between"><span class="text-sm font-bold text-textMuted">Manual Add Btn</span><div onclick="toggleSet('showMan')" id="tog-man" class="w-12 h-7 bg-surfaceLight rounded-full relative cursor-pointer transition-colors p-1 border border-slate-600"><div class="w-5 h-5 bg-white rounded-full shadow-sm transition-all transform translate-x-0"></div></div></div>
-                    <div class="bg-surface p-4 rounded-2xl border border-surfaceLight flex items-center justify-between"><span class="text-sm font-bold text-textMuted">Enable Discount</span><div onclick="toggleSet('showDisc')" id="tog-disc" class="w-12 h-7 bg-surfaceLight rounded-full relative cursor-pointer transition-colors p-1 border border-slate-600"><div class="w-5 h-5 bg-white rounded-full shadow-sm transition-all transform translate-x-0"></div></div></div>
-                    <div class="bg-surface p-4 rounded-2xl border border-surfaceLight flex items-center justify-between"><span class="text-sm font-bold text-textMuted">Enable Tax (GST)</span><div onclick="toggleSet('showTax')" id="tog-tax" class="w-12 h-7 bg-surfaceLight rounded-full relative cursor-pointer transition-colors p-1 border border-slate-600"><div class="w-5 h-5 bg-white rounded-full shadow-sm transition-all transform translate-x-0"></div></div></div>
+                    <div class="bg-surface p-4 rounded-2xl border border-surfaceLight flex items-center justify-between"><span class="text-sm font-bold text-textMuted">Manual Add Btn</span>
+                        <div onclick="toggleSet('showMan')" id="tog-man" class="w-12 h-7 bg-surfaceLight rounded-full relative cursor-pointer transition-colors p-1 border border-slate-600">
+                            <div class="w-5 h-5 bg-white rounded-full shadow-sm transition-all transform translate-x-0"></div>
+                        </div>
+                    </div>
+                    <div class="bg-surface p-4 rounded-2xl border border-surfaceLight flex items-center justify-between"><span class="text-sm font-bold text-textMuted">Enable Discount</span>
+                        <div onclick="toggleSet('showDisc')" id="tog-disc" class="w-12 h-7 bg-surfaceLight rounded-full relative cursor-pointer transition-colors p-1 border border-slate-600">
+                            <div class="w-5 h-5 bg-white rounded-full shadow-sm transition-all transform translate-x-0"></div>
+                        </div>
+                    </div>
+                    <div class="bg-surface p-4 rounded-2xl border border-surfaceLight flex items-center justify-between"><span class="text-sm font-bold text-textMuted">Enable Tax (GST)</span>
+                        <div onclick="toggleSet('showTax')" id="tog-tax" class="w-12 h-7 bg-surfaceLight rounded-full relative cursor-pointer transition-colors p-1 border border-slate-600">
+                            <div class="w-5 h-5 bg-white rounded-full shadow-sm transition-all transform translate-x-0"></div>
+                        </div>
+                    </div>
                     
                     <div class="grid grid-cols-2 gap-3">
                         <button onclick="backupData()" class="p-3 rounded-xl border border-primary/30 text-primary font-bold text-sm hover:bg-primary/10 transition flex items-center justify-center gap-2"><span class="material-icons-round text-base">cloud_download</span> Backup</button>
                         <button onclick="document.getElementById('import-file').click()" class="p-3 rounded-xl border border-surfaceLight text-textMuted font-bold text-sm hover:bg-white/5 transition flex items-center justify-center gap-2"><span class="material-icons-round text-base">cloud_upload</span> Restore</button>
                         <input type="file" id="import-file" hidden accept=".json" onchange="restoreData(this)">
                     </div>
-
+                    
                     <button onclick="editShopDetails()" class="w-full bg-surface p-4 rounded-2xl border border-surfaceLight flex items-center justify-between hover:bg-white/5 transition group"><span class="text-sm font-bold text-textMuted">Business & Tax Details</span><span class="material-icons-round text-slate-500 group-hover:text-primary transition">chevron_right</span></button>
                     <button onclick="openSignature()" class="w-full bg-surface p-4 rounded-2xl border border-surfaceLight flex items-center justify-between hover:bg-white/5 transition group"><span class="text-sm font-bold text-textMuted">Digital Signature</span><span class="material-icons-round text-slate-500 group-hover:text-primary transition">chevron_right</span></button>
                     <button onclick="resetApp()" class="w-full mt-8 p-4 rounded-2xl border border-danger/30 text-danger font-bold text-sm hover:bg-danger/10 transition">Reset All Data</button>
@@ -209,22 +304,46 @@
             <button onclick="nav('tab-history')" class="nav-mobile p-2 text-textMuted hover:text-primary flex flex-col items-center flex-1"><span class="material-icons-round text-2xl mb-0.5">history</span><span class="text-[10px] font-medium">History</span></button>
         </nav>
     </div>
-
+    
     <div id="preview-modal" class="fixed inset-0 z-[60] bg-background hidden flex flex-col">
         <div class="h-16 bg-surface border-b border-surfaceLight flex items-center justify-between px-4 shrink-0 shadow-sm">
             <button onclick="closePreview()" class="flex items-center text-sm font-bold text-textMuted hover:text-white transition"><span class="material-icons-round mr-1">arrow_back</span> Back</button>
-            <span class="font-bold text-white">Invoice Details</span><div class="w-10"></div> 
+            <span class="font-bold text-white">Invoice Details</span>
+            <div class="w-10"></div>
         </div>
         <div class="flex-1 overflow-y-auto p-4 md:p-8">
-            <div id="payment-log-box" class="bg-surfaceLight p-4 rounded-xl mb-4 hidden no-print">
-                <div class="text-xs font-bold text-textMuted uppercase mb-2">Payment Timeline</div>
-                <div id="payment-log-list" class="space-y-2 text-sm"></div>
-            </div>
-
+            
             <div id="invoice-paper" class="bg-white max-w-xl mx-auto p-4 md:p-8 shadow-2xl rounded-sm text-slate-800 text-sm leading-relaxed relative print:shadow-none">
-                <div class="flex justify-between items-start border-b border-slate-100 pb-6 mb-6"><div><h1 id="inv-shop" class="text-xl font-extrabold text-indigo-600 uppercase"></h1><p id="inv-addr" class="text-slate-500 mt-1 whitespace-pre-line text-xs"></p></div><div class="text-right"><div class="text-slate-400 font-bold text-[10px] uppercase">Invoice #</div><div class="text-lg font-bold" id="inv-id"></div><div class="text-slate-500 text-xs mt-1" id="inv-date"></div><div id="inv-status-badge" class="inline-block px-2 py-0.5 rounded text-[10px] font-bold mt-2 bg-slate-100 text-slate-500">DRAFT</div></div></div>
-                <div class="bg-slate-50 p-4 rounded-lg mb-6 border border-slate-100"><div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Bill To</div><div class="font-bold text-base text-slate-800" id="inv-client"></div><div class="text-slate-500 text-xs" id="inv-client-addr"></div></div>
-                <table class="w-full mb-8"><thead><tr class="border-b-2 border-slate-100"><th class="text-center py-2 font-bold text-slate-500 text-xs w-10">S.No</th><th class="col-img text-center py-2 font-bold text-slate-500 text-xs w-14">Img</th><th class="text-left py-2 font-bold text-slate-500 text-xs">Item</th><th class="text-center py-2 font-bold text-slate-500 text-xs">Qty</th><th class="text-right py-2 font-bold text-slate-500 text-xs">Price</th><th class="text-right py-2 font-bold text-slate-500 text-xs">Total</th></tr></thead><tbody id="inv-body" class="divide-y divide-slate-50 text-xs"></tbody></table>
+                <div class="flex justify-between items-start border-b border-slate-100 pb-6 mb-6">
+                    <div>
+                        <h1 id="inv-shop" class="text-xl font-extrabold text-indigo-600 uppercase"></h1>
+                        <p id="inv-addr" class="text-slate-500 mt-1 whitespace-pre-line text-xs"></p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-slate-400 font-bold text-[10px] uppercase">Invoice #</div>
+                        <div class="text-lg font-bold" id="inv-id"></div>
+                        <div class="text-slate-500 text-xs mt-1" id="inv-date"></div>
+                        <div id="inv-status-badge" class="inline-block px-2 py-0.5 rounded text-[10px] font-bold mt-2 bg-slate-100 text-slate-500">DRAFT</div>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-lg mb-6 border border-slate-100">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Bill To</div>
+                    <div class="font-bold text-base text-slate-800" id="inv-client"></div>
+                    <div class="text-slate-500 text-xs" id="inv-client-addr"></div>
+                </div>
+                <table class="w-full mb-8">
+                    <thead>
+                        <tr class="border-b-2 border-slate-100">
+                            <th class="text-center py-2 font-bold text-slate-500 text-xs w-10">S.No</th>
+                            <th class="col-img text-center py-2 font-bold text-slate-500 text-xs w-14">Img</th>
+                            <th class="text-left py-2 font-bold text-slate-500 text-xs">Item</th>
+                            <th class="text-center py-2 font-bold text-slate-500 text-xs">Qty</th>
+                            <th class="text-right py-2 font-bold text-slate-500 text-xs">Price</th>
+                            <th class="text-right py-2 font-bold text-slate-500 text-xs">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inv-body" class="divide-y divide-slate-50 text-xs"></tbody>
+                </table>
                 
                 <div class="flex justify-end pt-4 mb-8">
                     <div class="text-right w-full md:w-1/2">
@@ -234,41 +353,103 @@
                         <div class="border-t border-slate-800 my-2"></div>
                         <div class="flex justify-between items-center mb-4"><span class="text-lg font-extrabold text-slate-900">Grand Total:</span><span class="text-lg font-extrabold text-slate-900">₹<span id="inv-grand-total-A">0.00</span></span></div>
                         
-                        <div id="pay-sep" class="border-b-2 border-dashed border-slate-300 my-4 relative"><span class="absolute top-[-10px] left-1/2 transform -translate-x-1/2 bg-white px-2 text-[10px] text-slate-400 uppercase tracking-widest">Payment Details</span></div>
-
-                        <div id="inv-paid-row" class="flex justify-between items-center mb-1 text-indigo-600"><span class="text-primary font-bold">Paid Amount:</span><span class="font-bold">-₹<span id="inv-paid-display">0.00</span></span></div>
-                        
-                        <div id="due-container" class="flex justify-between items-center pt-2 border-t border-slate-200 mt-2">
-                            <span class="text-lg font-extrabold text-slate-900" id="due-label">Balance Due:</span>
-                            <span class="text-lg font-extrabold text-danger" id="inv-due-val">₹<span id="inv-due-display">0.00</span></span>
-                        </div>
-                        <div id="paid-badge" class="hidden mt-4 text-center border-2 border-emerald-500 text-emerald-600 font-bold text-xs uppercase py-2 px-4 rounded tracking-widest bg-emerald-50">FULLY PAID</div>
                     </div>
                 </div>
-
-                <div class="flex justify-between items-end"><div class="w-1/2"><div class="text-[10px] font-bold text-slate-400 uppercase">Notes</div><p id="inv-note" class="text-slate-500 text-xs italic mt-1"></p></div><div class="text-center"><div id="inv-sign" class="h-12 flex items-end justify-center mb-1"></div><div class="border-t border-slate-300 w-32 mx-auto pt-1 text-[10px] font-bold text-slate-400 uppercase">Authorized Signatory</div></div></div>
+                
+                <div class="flex justify-between items-end">
+                    <div class="w-1/2">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Notes</div>
+                        <p id="inv-note" class="text-slate-500 text-xs italic mt-1"></p>
+                    </div>
+                    <div class="text-center">
+                        <div id="inv-sign" class="h-12 flex items-end justify-center mb-1"></div>
+                        <div class="border-t border-slate-300 w-32 mx-auto pt-1 text-[10px] font-bold text-slate-400 uppercase">Authorized Signatory</div>
+                    </div>
+                </div>
             </div>
+            
+            <div id="ext-pay-details" class="max-w-xl mx-auto mt-4 bg-surfaceLight/50 backdrop-blur border border-surfaceLight rounded-xl p-5 hidden no-print">
+                <h4 class="text-xs font-bold text-textMuted uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="material-icons-round text-primary text-sm">receipt_long</span> Payment Summary
+                </h4>
+                
+                <div id="ext-paid-banner" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 mb-4 flex items-center justify-center gap-2">
+                    <span class="material-icons-round text-emerald-400">check_circle</span>
+                    <span class="text-lg font-bold text-emerald-400 uppercase tracking-widest">Fully Paid</span>
+                </div>
+                
+                <div id="ext-cards" class="grid grid-cols-3 gap-3 mb-4">
+                    <div class="bg-surface p-3 rounded-lg border border-white/5 text-center shadow-lg">
+                        <div class="text-[10px] text-textMuted uppercase mb-1">Total</div>
+                        <div class="text-sm font-bold text-white" id="ext-total">₹0</div>
+                    </div>
+                    <div class="bg-surface p-3 rounded-lg border border-white/5 text-center shadow-lg">
+                        <div class="text-[10px] text-textMuted uppercase mb-1">Paid</div>
+                        <div class="text-sm font-bold text-emerald-400" id="ext-paid">₹0</div>
+                    </div>
+                    <div class="bg-surface p-3 rounded-lg border border-white/5 text-center shadow-lg">
+                        <div class="text-[10px] text-textMuted uppercase mb-1">Due</div>
+                        <div class="text-sm font-bold text-danger" id="ext-due">₹0</div>
+                    </div>
+                </div>
+                
+                <div class="text-xs font-bold text-textMuted uppercase mb-2 mt-4">Transaction History</div>
+                <div id="ext-pay-log" class="space-y-2 text-sm max-h-40 overflow-y-auto custom-scroll pr-2"></div>
+            </div>
+            
             <div id="inv-controls-new" class="max-w-xl mx-auto mt-6 pb-10">
-                <div class="bg-surface p-5 rounded-2xl border border-surfaceLight mb-4"><h3 class="text-xs font-bold text-textMuted uppercase mb-3">Payment</h3><div class="grid grid-cols-2 gap-4 mb-3"><select id="pay-status" onchange="updatePayUI()" class="bg-surfaceLight border border-surfaceLight text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary"><option value="Paid">Fully Paid</option><option value="Partial">Partially Paid</option><option value="Pending">Pending</option></select><input id="pay-amount" type="number" oninput="updatePayUI()" class="bg-surfaceLight border border-surfaceLight text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="Amount Recv"></div><div class="text-right text-xs text-textMuted">Due: <span id="pay-balance" class="font-bold text-danger">₹0.00</span></div></div>
+                <div class="bg-surface p-5 rounded-2xl border border-surfaceLight mb-4">
+                    <h3 class="text-xs font-bold text-textMuted uppercase mb-3">Payment</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-3"><select id="pay-status" onchange="updatePayUI()" class="bg-surfaceLight border border-surfaceLight text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary">
+                            <option value="Paid">Fully Paid</option>
+                            <option value="Partial">Partially Paid</option>
+                            <option value="Pending">Pending</option>
+                        </select><input id="pay-amount" type="number" oninput="updatePayUI()" class="bg-surfaceLight border border-surfaceLight text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary" placeholder="Amount Recv"></div>
+                    
+                </div>
                 <div class="grid grid-cols-2 gap-4"><button onclick="printBill()" class="py-3.5 rounded-xl border border-surfaceLight font-bold text-white bg-surface hover:bg-surfaceLight transition">Print Bill</button><button onclick="finishBill(true)" class="py-3.5 rounded-xl bg-gradient-primary text-white font-bold shadow-lg hover:brightness-110 transition">Save & Download</button></div>
             </div>
-            <div id="inv-controls-hist" class="max-w-xl mx-auto mt-6 pb-10 hidden space-y-3"><button id="btn-record-pay" onclick="recordPayment()" class="w-full py-3.5 rounded-xl bg-success text-white font-bold shadow-lg shadow-success/30 hidden">Record Payment</button><div class="grid grid-cols-2 gap-4"><button onclick="printBill()" class="py-3.5 rounded-xl border border-surfaceLight font-bold text-white bg-surface hover:bg-surfaceLight transition">Print Bill</button><button onclick="downloadInvoice()" class="py-3.5 rounded-xl bg-surfaceLight text-white font-bold shadow-lg hover:bg-slate-700 transition flex items-center justify-center gap-2">Download Image</button></div></div>
+            <div id="inv-controls-hist" class="max-w-xl mx-auto mt-6 pb-10 hidden space-y-3"><button id="btn-record-pay" onclick="recordPayment()" class="w-full py-3.5 rounded-xl bg-success text-white font-bold shadow-lg shadow-success/30 hidden">Record Payment</button>
+                <div class="grid grid-cols-2 gap-4"><button onclick="printBill()" class="py-3.5 rounded-xl border border-surfaceLight font-bold text-white bg-surface hover:bg-surfaceLight transition">Print Bill</button><button onclick="downloadInvoice()" class="py-3.5 rounded-xl bg-surfaceLight text-white font-bold shadow-lg hover:bg-slate-700 transition flex items-center justify-center gap-2">Download Image</button></div>
+            </div>
         </div>
     </div>
-
+    
     <div id="notif-overlay" onclick="toggleNotif(false)" class="fixed inset-0 bg-black/50 z-[60] hidden backdrop-blur-sm opacity-0 transition-opacity"></div>
-    <div id="notif-drawer" class="fixed inset-y-0 right-0 w-80 bg-surface border-l border-surfaceLight z-[61] transform translate-x-full transition-transform shadow-2xl flex flex-col"><div class="p-5 border-b border-surfaceLight flex justify-between items-center bg-surfaceLight/30"><h3 class="font-bold text-lg text-white">Notifications</h3><button onclick="clearNotifs()" class="text-xs font-bold text-primary hover:text-accent transition">Clear All</button></div><div id="notif-list" class="flex-1 overflow-y-auto p-4 space-y-3"></div></div>
-    <div id="carousel-modal" class="fixed inset-0 z-[70] bg-black/90 hidden backdrop-blur-md flex items-center justify-center opacity-0 transition-opacity duration-300"><div class="relative w-full max-w-4xl h-full md:h-[80vh] flex flex-col items-center justify-center p-4"><button onclick="closeCarousel()" class="absolute top-4 right-4 text-white hover:text-primary z-50 bg-surface/50 p-2 rounded-full backdrop-blur-sm transition"><span class="material-icons-round text-2xl">close</span></button><div class="relative w-full h-full flex items-center justify-center group"><div id="carousel-track" class="w-full h-full flex items-center justify-center overflow-hidden relative rounded-2xl"><img id="carousel-img" src="" class="max-h-full max-w-full object-contain shadow-2xl rounded-lg transition-transform duration-500"></div><button onclick="moveSlide(-1)" class="absolute left-2 md:left-4 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition transform active:scale-95 group-hover:opacity-100 opacity-0 md:opacity-100"><span class="material-icons-round">chevron_left</span></button><button onclick="moveSlide(1)" class="absolute right-2 md:right-4 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition transform active:scale-95 group-hover:opacity-100 opacity-0 md:opacity-100"><span class="material-icons-round">chevron_right</span></button><div id="carousel-dots" class="absolute bottom-4 flex gap-2 justify-center w-full z-10"></div><div class="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/80 to-transparent text-center"><h3 id="carousel-title" class="text-xl font-bold text-white"></h3><p id="carousel-price" class="text-primary font-bold"></p></div></div></div></div>
-
+    <div id="notif-drawer" class="fixed inset-y-0 right-0 w-80 bg-surface border-l border-surfaceLight z-[61] transform translate-x-full transition-transform shadow-2xl flex flex-col">
+        <div class="p-5 border-b border-surfaceLight flex justify-between items-center bg-surfaceLight/30">
+            <h3 class="font-bold text-lg text-white">Notifications</h3><button onclick="clearNotifs()" class="text-xs font-bold text-primary hover:text-accent transition">Clear All</button>
+        </div>
+        <div id="notif-list" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+    </div>
+    
+    <div id="carousel-modal" class="fixed inset-0 z-[70] bg-black/90 hidden backdrop-blur-md flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="relative w-full max-w-4xl h-full md:h-[80vh] flex flex-col items-center justify-center p-4"><button onclick="closeCarousel()" class="absolute top-4 right-4 text-white hover:text-primary z-50 bg-surface/50 p-2 rounded-full backdrop-blur-sm transition"><span class="material-icons-round text-2xl">close</span></button>
+            <div class="relative w-full h-full flex items-center justify-center group">
+                <div id="carousel-track" class="w-full h-full flex items-center justify-center overflow-hidden relative rounded-2xl"><img id="carousel-img" src="" class="max-h-full max-w-full object-contain shadow-2xl rounded-lg transition-transform duration-500"></div><button onclick="moveSlide(-1)" class="absolute left-2 md:left-4 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition transform active:scale-95 group-hover:opacity-100 opacity-0 md:opacity-100"><span class="material-icons-round">chevron_left</span></button><button onclick="moveSlide(1)" class="absolute right-2 md:right-4 p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition transform active:scale-95 group-hover:opacity-100 opacity-0 md:opacity-100"><span class="material-icons-round">chevron_right</span></button>
+                <div id="carousel-dots" class="absolute bottom-4 flex gap-2 justify-center w-full z-10"></div>
+                <div class="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/80 to-transparent text-center">
+                    <h3 id="carousel-title" class="text-xl font-bold text-white"></h3>
+                    <p id="carousel-price" class="text-primary font-bold"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <script type="text/javascript">function googleTranslateElementInit() { new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element'); } function toggleTranslate() { const el = document.getElementById('google_translate_element'); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }</script>
-
+    <script type="text/javascript">
+        function googleTranslateElementInit() { new google.translate.TranslateElement({ pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element'); }
+        
+        function toggleTranslate() { const el = document.getElementById('google_translate_element');
+            el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
+    </script>
+    
     <script>
-        const escapeHTML = (str) => !str ? '' : str.toString().replace(/[&<>'"]/g, t => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"': '&quot;'}[t]));
+        const escapeHTML = (str) => !str ? '' : str.toString().replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' } [t]));
         const safeMath = { round: (n) => Math.round((n + Number.EPSILON) * 100) / 100 };
-
+        
         const UI = {
-            toast: (msg, type='info') => {
+            toast: (msg, type = 'info') => {
                 const con = document.getElementById('toast-container');
                 const el = document.createElement('div');
                 const colors = type === 'success' ? 'border-l-emerald-500 text-emerald-100' : (type === 'error' ? 'border-l-red-500 text-red-100' : 'border-l-indigo-500 text-indigo-100');
@@ -277,826 +458,795 @@
                 el.innerHTML = `<span class="material-icons-round text-lg">${type==='success'?'check_circle':(type==='error'?'error':'info')}</span><span class="font-medium text-sm">${msg}</span>`;
                 con.appendChild(el);
                 requestAnimationFrame(() => el.classList.remove('translate-x-full'));
-                setTimeout(() => { el.classList.add('translate-x-full', 'opacity-0'); setTimeout(() => el.remove(), 500); }, 3000);
+                setTimeout(() => { el.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => el.remove(), 500); }, 3000);
             },
-            modal: ({ title, html, confirmText, onConfirm, showCancel=true, large=false }) => {
-                const o = document.getElementById('custom-modal-overlay'), b = document.getElementById('custom-modal-box');
+            modal: ({ title, html, confirmText, onConfirm, showCancel = true, large = false }) => {
+                const o = document.getElementById('custom-modal-overlay'),
+                    b = document.getElementById('custom-modal-box');
                 b.className = `w-[90%] ${large?'max-w-4xl':'max-w-lg'} bg-surface border border-surfaceLight rounded-2xl shadow-2xl relative overflow-hidden transform scale-95 opacity-0`;
-                b.innerHTML = `<div class="relative p-6 z-10 bg-surface"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">${title}</h3><button onclick="UI.closeModal()" class="text-textMuted hover:text-white transition"><span class="material-icons-round">close</span></button></div><div class="space-y-4 text-sm text-slate-300 overflow-y-auto max-h-[60vh] custom-scroll">${html}</div><div class="mt-6 flex justify-end gap-3 pt-4 border-t border-white/5">${showCancel ? `<button onclick="UI.closeModal()" class="px-4 py-2 rounded-lg text-textMuted hover:bg-white/5 transition text-sm font-medium">Cancel</button>` : ''}${confirmText ? `<button id="modal-confirm-btn" class="px-6 py-2 rounded-lg bg-gradient-primary text-white font-bold text-sm shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] active:scale-95 transition border border-white/10">${confirmText}</button>` : ''}</div></div><div class="absolute inset-0 z-0 pointer-events-none rounded-2xl p-[1px] bg-gradient-to-br from-white/10 to-transparent mask-linear"></div>`;
-                if(confirmText && onConfirm) document.getElementById('modal-confirm-btn').onclick = async () => { if(await onConfirm() !== false) UI.closeModal(); };
-                o.classList.remove('hidden'); gsap.to(o, {opacity:1,duration:0.2}); gsap.to(b, {scale:1,opacity:1,duration:0.3,ease:"back.out(1.2)"});
+                b.innerHTML = `<div class="relative p-6 z-10 bg-surface"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">${title}</h3><button onclick="UI.closeModal()" class="text-textMuted hover:text-white transition"><span class="material-icons-round">close</span></button></div><div class="space-y-4 text-sm text-slate-300 overflow-y-auto max-h-[60vh] custom-scroll">${html}</div><div class="mt-6 flex justify-end gap-3 pt-4 border-t border-white/5">${showCancel ? `<button onclick="UI.closeModal()" class="px-4 py-2 rounded-lg text-textMuted hover:bg-white/5 transition text-sm font-medium">Close</button>` : ''}${confirmText ? `<button id="modal-confirm-btn" class="px-6 py-2 rounded-lg bg-gradient-primary text-white font-bold text-sm shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] active:scale-95 transition border border-white/10">${confirmText}</button>` : ''}</div></div><div class="absolute inset-0 z-0 pointer-events-none rounded-2xl p-[1px] bg-gradient-to-br from-white/10 to-transparent mask-linear"></div>`;
+                if (confirmText && onConfirm) document.getElementById('modal-confirm-btn').onclick = async () => { if (await onConfirm() !== false) UI.closeModal(); };
+                o.classList.remove('hidden');
+                gsap.to(o, { opacity: 1, duration: 0.2 });
+                gsap.to(b, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.2)" });
             },
-            closeModal: () => { const o = document.getElementById('custom-modal-overlay'), b = document.getElementById('custom-modal-box'); gsap.to(b, {scale:0.95,opacity:0,duration:0.2}); gsap.to(o, {opacity:0,duration:0.2,onComplete:()=>o.classList.add('hidden')}); }
+            closeModal: () => {
+                const o = document.getElementById('custom-modal-overlay'),
+                    b = document.getElementById('custom-modal-box');
+                gsap.to(b, { scale: 0.95, opacity: 0, duration: 0.2 });
+                gsap.to(o, { opacity: 0, duration: 0.2, onComplete: () => o.classList.add('hidden') });
+            }
         };
-
-        const canvas = document.getElementById('bg-beams'), ctx = canvas.getContext('2d');
+        
+        const canvas = document.getElementById('bg-beams'),
+            ctx = canvas.getContext('2d');
         let width, height, particles = [];
-        function resizeCanvas() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+        
+        function resizeCanvas() { width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
         class Particle {
             constructor() { this.reset(); }
-            reset() { this.x = Math.random() * width; this.y = Math.random() * height; this.size = Math.random() * 2; this.speedX = (Math.random() - 0.5) * 0.5; this.speedY = (Math.random() - 0.5) * 0.5; this.alpha = Math.random() * 0.5 + 0.1; }
-            update() { this.x += this.speedX; this.y += this.speedY; if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset(); }
-            draw() { ctx.fillStyle = `rgba(99, 102, 241, ${this.alpha})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
+            reset() { this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.alpha = Math.random() * 0.5 + 0.1; }
+            update() { this.x += this.speedX;
+                this.y += this.speedY; if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset(); }
+            draw() { ctx.fillStyle = `rgba(99, 102, 241, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill(); }
         }
         for (let i = 0; i < 50; i++) particles.push(new Particle());
-        function animateBeams() {
-            ctx.clearRect(0, 0, width, height); particles.forEach(p => { p.update(); p.draw(); });
-            ctx.strokeStyle = 'rgba(99, 102, 241, 0.05)'; ctx.lineWidth = 1;
-            for(let i=0; i<particles.length; i++) { for(let j=i; j<particles.length; j++) { if(Math.sqrt((particles[i].x-particles[j].x)**2 + (particles[i].y-particles[j].y)**2) < 100) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke(); } } }
-            requestAnimationFrame(animateBeams);
-        }
+        
+        function animateBeams() { ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => { p.update();
+                p.draw(); });
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.05)';
+            ctx.lineWidth = 1; for (let i = 0; i < particles.length; i++) { for (let j = i; j < particles.length; j++) { if (Math.sqrt((particles[i].x - particles[j].x) ** 2 + (particles[i].y - particles[j].y) ** 2) < 100) { ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke(); } } } requestAnimationFrame(animateBeams); }
         animateBeams();
-
-        // --- APP DATA ---
+        
         const safeParse = (key, def) => { try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : def; } catch (e) { console.error('Corrupt:', key); return def; } };
-        const app = { 
-            data: { inv: safeParse('bp8_inv', []), hist: safeParse('bp8_hist', []), notifs: safeParse('bp8_notifs', []), cart: [], count: parseInt(localStorage.getItem('bp8_cnt')) || 1001, sets: safeParse('bp8_sets', {name:'My Shop', addr:'India', note:'Thank you.', sign:null, showMan:true, showTax:true, showDisc:true, taxRate:0, tourDone:false}) }, 
-            ui: { tab:'tab-store', imgs:[], viewHistId:null, carouselImgs:[], carouselIdx:0, scrollTimer:null, discType: 'flat', histView: 'list' } 
+        const app = {
+            data: { inv: safeParse('bp8_inv', []), hist: safeParse('bp8_hist', []), notifs: safeParse('bp8_notifs', []), cart: [], count: parseInt(localStorage.getItem('bp8_cnt')) || 1001, sets: safeParse('bp8_sets', { name: 'My Shop', addr: 'India', note: 'Thank you.', sign: null, showMan: true, showTax: true, showDisc: true, taxRate: 0, tourDone: false }) },
+            ui: { tab: 'tab-store', imgs: [], viewHistId: null, carouselImgs: [], carouselIdx: 0, scrollTimer: null, discType: 'flat', histView: 'list' }
         };
-
-        window.onload = () => { renderAll(); updateSettingsUI(); updateNotifBadge(); if(!app.data.sets.tourDone) setTimeout(startTour, 2000); };
-        function save() { 
+        
+        window.onload = () => { renderAll();
+            updateSettingsUI();
+            updateNotifBadge(); if (!app.data.sets.tourDone) setTimeout(startTour, 2000); };
+        
+        function save() {
             try {
-                localStorage.setItem('bp8_inv', JSON.stringify(app.data.inv)); localStorage.setItem('bp8_hist', JSON.stringify(app.data.hist)); localStorage.setItem('bp8_notifs', JSON.stringify(app.data.notifs)); localStorage.setItem('bp8_cnt', app.data.count); localStorage.setItem('bp8_sets', JSON.stringify(app.data.sets)); renderAnalytics(); 
-            } catch(e) { UI.toast(e.name === 'QuotaExceededError' ? '❌ Storage Full! Delete old items.' : '❌ Error saving data.', 'error'); }
+                localStorage.setItem('bp8_inv', JSON.stringify(app.data.inv));
+                localStorage.setItem('bp8_hist', JSON.stringify(app.data.hist));
+                localStorage.setItem('bp8_notifs', JSON.stringify(app.data.notifs));
+                localStorage.setItem('bp8_cnt', app.data.count);
+                localStorage.setItem('bp8_sets', JSON.stringify(app.data.sets));
+                renderAnalytics();
+            } catch (e) { UI.toast(e.name === 'QuotaExceededError' ? '❌ Storage Full! Delete old items.' : '❌ Error saving data.', 'error'); }
         }
-
-        // --- BACKUP & RESTORE LOGIC ---
+        
         function backupData() {
             const data = { inv: app.data.inv, hist: app.data.hist, sets: app.data.sets, cnt: app.data.count };
-            const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+            const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `Backup_BillingPro_${new Date().toISOString().slice(0,10)}.json`;
-            a.click(); UI.toast('Backup Downloaded', 'success');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Backup_BillingPro_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            UI.toast('Backup Downloaded', 'success');
         }
-
+        
         function restoreData(input) {
             const file = input.files[0];
-            if(!file) return;
+            if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
-                try {
-                    const d = JSON.parse(e.target.result);
-                    if(d.inv && d.hist) {
-                        app.data.inv = d.inv; app.data.hist = d.hist; app.data.sets = d.sets; app.data.count = d.cnt;
-                        save(); location.reload();
-                    } else throw new Error("Invalid");
-                } catch(err) { UI.toast('Invalid Backup File', 'error'); }
+                try { const d = JSON.parse(e.target.result); if (d.inv && d.hist) { app.data.inv = d.inv;
+                        app.data.hist = d.hist;
+                        app.data.sets = d.sets;
+                        app.data.count = d.cnt;
+                        save();
+                        location.reload(); } else throw new Error("Invalid"); } catch (err) { UI.toast('Invalid Backup File', 'error'); }
             };
             reader.readAsText(file);
         }
-
-        // --- NAVIGATION & UI ---
-        var originalNav = nav;
+        
         function nav(id) {
-            gsap.to('.view-section:not(.hidden)', { opacity: 0, duration: 0.2, onComplete: () => {
-                document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-                const target = document.getElementById(id); target.classList.remove('hidden'); target.style.opacity = 0;
-                gsap.to(target, { opacity: 1, duration: 0.3 });
-                renderAll(); 
-            }});
-            document.querySelectorAll('.nav-item').forEach(b => { b.classList.remove('bg-white/5', 'text-primary'); b.classList.add('text-textMuted'); });
-            const idx = ['tab-store','tab-cart','tab-items','tab-history','tab-analytics','tab-settings'].indexOf(id);
-            if(idx > -1 && document.querySelectorAll('.nav-item')[idx]) { document.querySelectorAll('.nav-item')[idx].classList.add('bg-white/5', 'text-primary'); document.querySelectorAll('.nav-item')[idx].classList.remove('text-textMuted'); }
+            gsap.to('.view-section:not(.hidden)', { opacity: 0, duration: 0.2, onComplete: () => { document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); const target = document.getElementById(id);
+                    target.classList.remove('hidden');
+                    target.style.opacity = 0;
+                    gsap.to(target, { opacity: 1, duration: 0.3 });
+                    renderAll(); } });
+            document.querySelectorAll('.nav-item').forEach(b => { b.classList.remove('bg-white/5', 'text-primary');
+                b.classList.add('text-textMuted'); });
+            const idx = ['tab-store', 'tab-cart', 'tab-items', 'tab-history', 'tab-analytics', 'tab-settings'].indexOf(id);
+            if (idx > -1 && document.querySelectorAll('.nav-item')[idx]) { document.querySelectorAll('.nav-item')[idx].classList.add('bg-white/5', 'text-primary');
+                document.querySelectorAll('.nav-item')[idx].classList.remove('text-textMuted'); }
             toggleDrawer(false);
         }
-        function toggleDrawer(show) { const d=document.getElementById('drawer'), o=document.getElementById('overlay'); if(show){d.classList.remove('-translate-x-full');o.classList.remove('hidden');gsap.to(o,{opacity:1,duration:0.3});}else{d.classList.add('-translate-x-full');gsap.to(o,{opacity:0,duration:0.3,onComplete:()=>o.classList.add('hidden')});}}
-        function renderAll() { renderStore(); renderCart(); renderInv(); renderAnalytics(); renderHist(); }
-
-        // --- MODALS ---
+        
+        function toggleDrawer(show) { const d = document.getElementById('drawer'),
+                o = document.getElementById('overlay'); if (show) { d.classList.remove('-translate-x-full');
+                o.classList.remove('hidden');
+                gsap.to(o, { opacity: 1, duration: 0.3 }); } else { d.classList.add('-translate-x-full');
+                gsap.to(o, { opacity: 0, duration: 0.3, onComplete: () => o.classList.add('hidden') }); } }
+        
+        function renderAll() { renderStore();
+            renderCart();
+            renderInv();
+            renderAnalytics();
+            renderHist(); }
+        
         function openManualAdd() {
             app.ui.imgs = [];
-            UI.modal({ title: 'Add Custom Item', confirmText: 'Add to Cart', html: `<div class="space-y-4"><div onclick="document.getElementById('m-file').click()" class="border-2 border-dashed border-slate-700 rounded-xl p-6 text-center cursor-pointer hover:bg-white/5 transition hover:border-primary/50 group"><span class="material-icons-round text-4xl text-slate-500 group-hover:text-primary transition">add_photo_alternate</span></div><input type="file" id="m-file" hidden multiple accept="image/*" onchange="handleImg(this)"><div id="modal-img-prev" class="flex gap-2 overflow-x-auto h-16 no-scrollbar"></div><input id="m-n" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Item Name"><textarea id="m-d" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Description (Optional)" rows="2"></textarea><div class="grid grid-cols-2 gap-4"><input id="m-p" type="number" class="bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Price"><input id="m-c" type="number" class="bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Cost"></div></div>`,
+            UI.modal({
+                title: 'Add Custom Item',
+                confirmText: 'Add to Cart',
+                html: `<div class="space-y-4"><div onclick="document.getElementById('m-file').click()" class="border-2 border-dashed border-slate-700 rounded-xl p-6 text-center cursor-pointer hover:bg-white/5 transition hover:border-primary/50 group"><span class="material-icons-round text-4xl text-slate-500 group-hover:text-primary transition">add_photo_alternate</span></div><input type="file" id="m-file" hidden multiple accept="image/*" onchange="handleImg(this)"><div id="modal-img-prev" class="flex gap-2 overflow-x-auto h-16 no-scrollbar"></div><input id="m-n" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Item Name"><textarea id="m-d" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Description (Optional)" rows="2"></textarea><div class="grid grid-cols-2 gap-4"><input id="m-p" type="number" class="bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Price"><input id="m-c" type="number" class="bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Cost"></div></div>`,
                 onConfirm: () => {
-                    const n = document.getElementById('m-n').value, p = parseFloat(document.getElementById('m-p').value), c = parseFloat(document.getElementById('m-c').value)||0;
-                    if(!n || isNaN(p)) { UI.toast('Valid Name & Price required', 'error'); return false; }
-                    if(p < 0 || c < 0) { UI.toast('Negative values not allowed', 'error'); return false; }
-                    app.data.cart.push({ id: 'm_'+Date.now(), name: n, desc: document.getElementById('m-d').value, price: p, cost: c, qty: 1, imgs: [...app.ui.imgs], isManual: true });
-                    renderCart(); return true;
+                    const n = document.getElementById('m-n').value,
+                        p = parseFloat(document.getElementById('m-p').value),
+                        c = parseFloat(document.getElementById('m-c').value) || 0;
+                    if (!n || isNaN(p)) { UI.toast('Valid Name & Price required', 'error'); return false; }
+                    if (p < 0 || c < 0) { UI.toast('Negative values not allowed', 'error'); return false; }
+                    app.data.cart.push({ id: 'm_' + Date.now(), name: n, desc: document.getElementById('m-d').value, price: p, cost: c, qty: 1, imgs: [...app.ui.imgs], isManual: true });
+                    renderCart();
+                    return true;
                 }
             });
         }
+        
         function openItemModal(idx = null) {
             const isEdit = idx !== null;
-            const i = isEdit ? app.data.inv[idx] : { name:'', price:'', cost:'', stock:'', imgs:[] };
+            const i = isEdit ? app.data.inv[idx] : { name: '', price: '', cost: '', stock: '', imgs: [] };
             app.ui.imgs = [...i.imgs];
-            UI.modal({ title: isEdit ? 'Edit Item' : 'New Product', confirmText: 'Save Product', html: `<div class="space-y-4"><div onclick="document.getElementById('i-file').click()" class="border-2 border-dashed border-slate-700 rounded-xl p-6 text-center cursor-pointer hover:bg-white/5 transition hover:border-primary/50 group"><span class="material-icons-round text-4xl text-slate-500 group-hover:text-primary transition">collections</span></div><input type="file" id="i-file" hidden multiple accept="image/*" onchange="handleImg(this)"><div id="modal-img-prev" class="flex gap-2 overflow-x-auto h-16 no-scrollbar"></div><input id="i-n" value="${i.name}" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Product Name"><div class="grid grid-cols-2 gap-4"><input id="i-p" type="number" value="${i.price}" class="bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Price"><input id="i-c" type="number" value="${i.cost}" class="bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Cost"></div><input id="i-s" type="number" value="${i.stock}" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Stock Quantity"></div>`,
+            UI.modal({
+                title: isEdit ? 'Edit Item' : 'New Product',
+                confirmText: 'Save Product',
+                html: `<div class="space-y-4"><div onclick="document.getElementById('i-file').click()" class="border-2 border-dashed border-slate-700 rounded-xl p-6 text-center cursor-pointer hover:bg-white/5 transition hover:border-primary/50 group"><span class="material-icons-round text-4xl text-slate-500 group-hover:text-primary transition">collections</span></div><input type="file" id="i-file" hidden multiple accept="image/*" onchange="handleImg(this)"><div id="modal-img-prev" class="flex gap-2 overflow-x-auto h-16 no-scrollbar"></div><input id="i-n" value="${i.name}" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Product Name"><div class="grid grid-cols-2 gap-4"><input id="i-p" type="number" value="${i.price}" class="bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Price"><input id="i-c" type="number" value="${i.cost}" class="bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Cost"></div><input id="i-s" type="number" value="${i.stock}" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white" placeholder="Stock Quantity"></div>`,
                 onConfirm: () => {
-                    const n = document.getElementById('i-n').value, p = parseFloat(document.getElementById('i-p').value), c = parseFloat(document.getElementById('i-c').value)||0, s = parseInt(document.getElementById('i-s').value)||0;
-                    if(!n || isNaN(p)) { UI.toast('Name & Price required', 'error'); return false; }
-                    if(p < 0 || c < 0 || s < 0) { UI.toast('Negative values not allowed', 'error'); return false; }
-                    const newItem = { id: isEdit ? i.id : 'i_'+Date.now(), name: n, price: p, cost: c, stock: s, imgs: [...app.ui.imgs] };
-                    if(isEdit) app.data.inv[idx] = newItem; else app.data.inv.push(newItem);
-                    save(); renderInv(); renderStore(); return true;
+                    const n = document.getElementById('i-n').value,
+                        p = parseFloat(document.getElementById('i-p').value),
+                        c = parseFloat(document.getElementById('i-c').value) || 0,
+                        s = parseInt(document.getElementById('i-s').value) || 0;
+                    if (!n || isNaN(p)) { UI.toast('Name & Price required', 'error'); return false; }
+                    if (p < 0 || c < 0 || s < 0) { UI.toast('Negative values not allowed', 'error'); return false; }
+                    const newItem = { id: isEdit ? i.id : 'i_' + Date.now(), name: n, price: p, cost: c, stock: s, imgs: [...app.ui.imgs] };
+                    if (isEdit) app.data.inv[idx] = newItem;
+                    else app.data.inv.push(newItem);
+                    save();
+                    renderInv();
+                    renderStore();
+                    return true;
                 }
             });
             renderImgs();
         }
-
-        async function handleImg(inp) { if(inp.files) { for(let f of Array.from(inp.files).slice(0, 5 - app.ui.imgs.length)) { if(f.size > 2000000) UI.toast('Compressing...', 'warning'); app.ui.imgs.push(await resize(f)); } renderImgs(); } }
-        function resize(f) { return new Promise(r => { const rd = new FileReader(); rd.onload = e => { const i = new Image(); i.onload = () => { const c = document.createElement('canvas'); let w = i.width, h = i.height, max = 300; if(w > max || h > max){ if(w > h) { h *= max/w; w = max; } else { w *= max/h; h = max; } } c.width=w; c.height=h; c.getContext('2d').drawImage(i,0,0,w,h); r(c.toDataURL('image/jpeg', 0.6)); }; i.src = e.target.result; }; rd.readAsDataURL(f); }); }
-        function renderImgs() { const el = document.getElementById('modal-img-prev'); if(el) el.innerHTML = app.ui.imgs.map((s,i) => `<div class="relative w-16 h-16 flex-shrink-0"><img src="${s}" class="w-full h-full rounded border border-slate-600 object-cover"><button onclick="rmImg(${i})" class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px]">x</button></div>`).join(''); }
-        window.rmImg = i => { app.ui.imgs.splice(i,1); renderImgs(); };
-
-        // --- RENDERERS ---
+        
+        async function handleImg(inp) { if (inp.files) { for (let f of Array.from(inp.files).slice(0, 5 - app.ui.imgs.length)) { if (f.size > 2000000) UI.toast('Compressing...', 'warning');
+                    app.ui.imgs.push(await resize(f)); } renderImgs(); } }
+        
+        function resize(f) { return new Promise(r => { const rd = new FileReader();
+                rd.onload = e => { const i = new Image();
+                    i.onload = () => { const c = document.createElement('canvas'); let w = i.width,
+                            h = i.height,
+                            max = 300; if (w > max || h > max) { if (w > h) { h *= max / w;
+                                w = max; } else { w *= max / h;
+                                h = max; } } c.width = w;
+                        c.height = h;
+                        c.getContext('2d').drawImage(i, 0, 0, w, h);
+                        r(c.toDataURL('image/jpeg', 0.6)); };
+                    i.src = e.target.result; };
+                rd.readAsDataURL(f); }); }
+        
+        function renderImgs() { const el = document.getElementById('modal-img-prev'); if (el) el.innerHTML = app.ui.imgs.map((s, i) => `<div class="relative w-16 h-16 flex-shrink-0"><img src="${s}" class="w-full h-full rounded border border-slate-600 object-cover"><button onclick="rmImg(${i})" class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px]">x</button></div>`).join(''); }
+        window.rmImg = i => { app.ui.imgs.splice(i, 1);
+            renderImgs(); };
+        
         function renderStore() {
-             const grid = document.getElementById('store-grid');
-             const term = document.getElementById('store-search') ? document.getElementById('store-search').value.toLowerCase() : '';
-             const filtered = app.data.inv.filter(i => i.name.toLowerCase().includes(term));
-             if(filtered.length === 0) return grid.innerHTML = `<div class="col-span-full text-center py-20 text-textMuted opacity-50">No Items Found</div>`;
-             grid.innerHTML = filtered.map(item => {
-                 const inCart = app.data.cart.find(c => c.id === item.id);
-                 const img = item.imgs[0] ? `<img src="${item.imgs[0]}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">` : `<div class="w-full h-full bg-surfaceLight flex items-center justify-center text-slate-600"><span class="material-icons-round">image</span></div>`;
-                 const btn = inCart ? `<div class="flex items-center bg-surfaceLight border border-white/10 rounded-lg p-1 justify-between"><button onclick="modCart('${item.id}',-1)" class="w-8 h-8 rounded hover:bg-white/10">-</button><span class="font-bold text-primary">${inCart.qty}</span><button onclick="modCart('${item.id}',1)" class="w-8 h-8 rounded hover:bg-white/10">+</button></div>` : `<button onclick="addCart('${item.id}')" class="w-full py-2.5 bg-white/5 border border-white/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition">Add</button>`;
-                 return `<div class="bg-surface rounded-2xl border border-surfaceLight overflow-hidden group hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-primary/20"><div class="aspect-square relative overflow-hidden cursor-pointer" onclick="viewItem('${item.id}')">${img}<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center"><span class="material-icons-round text-white bg-white/20 p-2 rounded-full backdrop-blur">visibility</span></div></div><div class="p-4"><h3 class="font-bold text-white text-sm line-clamp-1">${escapeHTML(item.name)}</h3><div class="text-xs text-textMuted mb-3">Stock: ${item.stock}</div><div class="flex items-center justify-between"><span class="text-lg font-bold text-white">₹${item.price}</span><div class="w-24">${btn}</div></div></div></div>`;
-             }).join('');
+            const grid = document.getElementById('store-grid'),
+                term = document.getElementById('store-search') ? document.getElementById('store-search').value.toLowerCase() : '';
+            const filtered = app.data.inv.filter(i => i.name.toLowerCase().includes(term));
+            if (filtered.length === 0) return grid.innerHTML = `<div class="col-span-full text-center py-20 text-textMuted opacity-50">No Items Found</div>`;
+            grid.innerHTML = filtered.map(item => {
+                const inCart = app.data.cart.find(c => c.id === item.id);
+                const img = item.imgs[0] ? `<img src="${item.imgs[0]}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">` : `<div class="w-full h-full bg-surfaceLight flex items-center justify-center text-slate-600"><span class="material-icons-round">image</span></div>`;
+                const btn = inCart ? `<div class="flex items-center bg-surfaceLight border border-white/10 rounded-lg p-1 justify-between"><button onclick="modCart('${item.id}',-1)" class="w-8 h-8 rounded hover:bg-white/10">-</button><span class="font-bold text-primary">${inCart.qty}</span><button onclick="modCart('${item.id}',1)" class="w-8 h-8 rounded hover:bg-white/10">+</button></div>` : `<button onclick="addCart('${item.id}')" class="w-full py-2.5 bg-white/5 border border-white/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition">Add</button>`;
+                return `<div class="bg-surface rounded-2xl border border-surfaceLight overflow-hidden group hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-primary/20"><div class="aspect-square relative overflow-hidden cursor-pointer" onclick="viewItem('${item.id}')">${img}<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center"><span class="material-icons-round text-white bg-white/20 p-2 rounded-full backdrop-blur">visibility</span></div></div><div class="p-4"><h3 class="font-bold text-white text-sm line-clamp-1">${escapeHTML(item.name)}</h3><div class="text-xs text-textMuted mb-3">Stock: ${item.stock}</div><div class="flex items-center justify-between"><span class="text-lg font-bold text-white">₹${item.price}</span><div class="w-24">${btn}</div></div></div></div>`;
+            }).join('');
         }
-
-        function addCart(id) { 
-            const i = app.data.inv.find(x => x.id === id); 
-            if(!i) return;
+        
+        function addCart(id) {
+            const i = app.data.inv.find(x => x.id === id);
+            if (!i) return;
             const existing = app.data.cart.find(c => c.id === id);
             const currentQty = existing ? existing.qty : 0;
-            if(currentQty + 1 > i.stock) { UI.toast(`❌ Out of Stock! Only ${i.stock} left.`, 'error'); return; }
+            if (currentQty + 1 > i.stock) { UI.toast(`❌ Out of Stock! Only ${i.stock} left.`, 'error'); return; }
             if (existing) modCart(id, 1);
-            else { app.data.cart.push({ id: i.id, name: i.name, price: i.price, cost: i.cost, qty: 1, imgs: i.imgs }); renderCart(); renderStore(); }
+            else { app.data.cart.push({ id: i.id, name: i.name, price: i.price, cost: i.cost, qty: 1, imgs: i.imgs });
+                renderCart();
+                renderStore(); }
         }
-        function modCart(id, d) { 
-            const c = app.data.cart.find(x => x.id === id); 
-            if(c) { 
-                if (d > 0 && !c.isManual) {
-                    const invItem = app.data.inv.find(x => x.id === id);
-                    if (invItem && c.qty + d > invItem.stock) { UI.toast(`❌ Max stock (${invItem.stock})`, 'error'); return; }
-                }
-                c.qty += d; 
-                if(c.qty <= 0) app.data.cart = app.data.cart.filter(x => x.id !== id); 
-                renderCart(); renderStore(); 
-            } 
+        
+        function modCart(id, d) {
+            const c = app.data.cart.find(x => x.id === id);
+            if (c) { if (d > 0 && !c.isManual) { const invItem = app.data.inv.find(x => x.id === id); if (invItem && c.qty + d > invItem.stock) { UI.toast(`❌ Max stock (${invItem.stock})`, 'error'); return; } } c.qty += d; if (c.qty <= 0) app.data.cart = app.data.cart.filter(x => x.id !== id);
+                renderCart();
+                renderStore(); }
         }
-
+        
         function toggleDiscType(type) {
             app.ui.discType = type;
             document.getElementById('disc-btn-flat').className = type === 'flat' ? "px-2 py-0.5 text-[10px] font-bold rounded-md bg-white/10 text-white transition" : "px-2 py-0.5 text-[10px] font-bold rounded-md text-textMuted hover:text-white transition";
             document.getElementById('disc-btn-perc').className = type === 'perc' ? "px-2 py-0.5 text-[10px] font-bold rounded-md bg-white/10 text-white transition" : "px-2 py-0.5 text-[10px] font-bold rounded-md text-textMuted hover:text-white transition";
             renderCart();
         }
-
+        
         function renderCart() {
-            const list = document.getElementById('cart-list'), bar = document.getElementById('checkout-bar');
-            
+            const list = document.getElementById('cart-list'),
+                bar = document.getElementById('checkout-bar');
             document.getElementById('btn-manual-add').style.display = app.data.sets.showMan ? 'flex' : 'none';
             document.getElementById('row-discount').style.display = app.data.sets.showDisc ? 'flex' : 'none';
             document.getElementById('tax-display').style.display = app.data.sets.showTax ? 'block' : 'none';
-
             const prevLen = app.data.cart.length;
             app.data.cart = app.data.cart.filter(c => c.isManual || app.data.inv.find(i => i.id === c.id));
-            if(app.data.cart.length < prevLen) UI.toast('⚠️ Removed unavailable items', 'warning');
-
-            // UPDATE BADGES (Always run this)
-            // Fix 2: Reduce quantity sum
+            if (app.data.cart.length < prevLen) UI.toast('⚠️ Removed unavailable items', 'warning');
             const totalQty = app.data.cart.reduce((sum, item) => sum + item.qty, 0);
-            const badgeD = document.getElementById('badge-desktop');
-            const badgeM = document.getElementById('badge-mobile');
+            const badgeD = document.getElementById('badge-desktop'),
+                badgeM = document.getElementById('badge-mobile');
             badgeD.innerText = totalQty;
             badgeM.innerText = totalQty;
-
-            if(app.data.cart.length === 0) {
-                badgeD.classList.add('hidden');
+            if (app.data.cart.length === 0) { badgeD.classList.add('hidden');
                 badgeM.classList.add('hidden');
-                list.innerHTML = `<div class="text-center py-10 opacity-40 text-textMuted">Cart Empty</div>`; 
-                bar.classList.add('hidden'); 
-            }
+                list.innerHTML = `<div class="text-center py-10 opacity-40 text-textMuted">Cart Empty</div>`;
+                bar.classList.add('hidden'); }
             else {
                 badgeD.classList.remove('hidden');
                 badgeM.classList.remove('hidden');
-                bar.classList.remove('hidden'); gsap.fromTo(bar, {y:20,opacity:0},{y:0,opacity:1,duration:0.3,overwrite:true});
-                list.innerHTML = app.data.cart.map(c => {
-                    const img = c.imgs && c.imgs[0] ? `<img src="${c.imgs[0]}" class="w-10 h-10 rounded object-cover">` : `<div class="w-10 h-10 bg-surfaceLight rounded flex items-center justify-center"><span class="material-icons-round text-slate-500 text-xs">image</span></div>`;
-                    return `<div class="flex items-center gap-3 bg-surface p-3 rounded-xl border border-surfaceLight group">${img}<div class="flex-1"><div class="font-bold text-white text-sm line-clamp-1">${escapeHTML(c.name)}</div><div class="text-xs text-primary">₹${c.price}</div></div><div class="flex items-center bg-surfaceLight rounded-lg"><button onclick="modCart('${c.id}',-1)" class="w-6 h-6 flex items-center justify-center hover:bg-white/10">-</button><span class="text-xs font-bold w-4 text-center text-white">${c.qty}</span><button onclick="modCart('${c.id}',1)" class="w-6 h-6 flex items-center justify-center hover:bg-white/10">+</button></div></div>`;
-                }).join('');
-                
-                const subtotal = app.data.cart.reduce((a,b) => a + (b.price * 100 * b.qty), 0) / 100;
+                bar.classList.remove('hidden');
+                gsap.fromTo(bar, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, overwrite: true });
+                list.innerHTML = app.data.cart.map(c => { const img = c.imgs && c.imgs[0] ? `<img src="${c.imgs[0]}" class="w-10 h-10 rounded object-cover">` : `<div class="w-10 h-10 bg-surfaceLight rounded flex items-center justify-center"><span class="material-icons-round text-slate-500 text-xs">image</span></div>`; return `<div class="flex items-center gap-3 bg-surface p-3 rounded-xl border border-surfaceLight group">${img}<div class="flex-1"><div class="font-bold text-white text-sm line-clamp-1">${escapeHTML(c.name)}</div><div class="text-xs text-primary">₹${c.price}</div></div><div class="flex items-center bg-surfaceLight rounded-lg"><button onclick="modCart('${c.id}',-1)" class="w-6 h-6 flex items-center justify-center hover:bg-white/10">-</button><span class="text-xs font-bold w-4 text-center text-white">${c.qty}</span><button onclick="modCart('${c.id}',1)" class="w-6 h-6 flex items-center justify-center hover:bg-white/10">+</button></div></div>`; }).join('');
+                const subtotal = app.data.cart.reduce((a, b) => a + (b.price * 100 * b.qty), 0) / 100;
                 let discountInput = parseFloat(document.getElementById('cart-discount').value) || 0;
-                if(discountInput < 0) discountInput = 0;
-                
+                if (discountInput < 0) discountInput = 0;
                 let discountAmt = 0;
-                if(app.data.sets.showDisc) {
-                    discountAmt = app.ui.discType === 'perc' ? (subtotal * discountInput / 100) : discountInput;
-                    discountAmt = Math.min(discountAmt, subtotal);
-                }
-                
+                if (app.data.sets.showDisc) { discountAmt = app.ui.discType === 'perc' ? (subtotal * discountInput / 100) : discountInput;
+                    discountAmt = Math.min(discountAmt, subtotal); }
                 const taxable = subtotal - discountAmt;
                 const taxRate = app.data.sets.showTax ? (app.data.sets.taxRate || 0) : 0;
                 const taxAmt = safeMath.round((taxable * taxRate) / 100);
                 const grandTotal = taxable + taxAmt;
-
                 document.getElementById('cart-total').innerText = grandTotal.toFixed(2);
                 document.getElementById('tax-display').innerText = `Tax (${taxRate}%): ₹${taxAmt.toFixed(2)}`;
             }
         }
-
-        // --- NEW: Check Customer Credit ---
-        function checkCustomerCredit() {
-            const name = document.getElementById('c-name').value;
-            const btn = document.getElementById('btn-use-credit');
-            const valSpan = document.getElementById('credit-val');
-            
-            if(!name) { btn.classList.add('hidden'); return; }
-
-            // Find customer history
-            const bills = app.data.hist.filter(h => h.client.toLowerCase() === name.toLowerCase());
-            let totalCredit = 0;
-            bills.forEach(b => { if(b.due < 0) totalCredit += Math.abs(b.due); });
-
-            if(totalCredit > 0) {
-                btn.classList.remove('hidden');
-                valSpan.innerText = totalCredit.toFixed(2);
-            } else {
-                btn.classList.add('hidden');
-            }
-        }
-
-        function applyCredit() {
-            const credit = parseFloat(document.getElementById('credit-val').innerText);
-            document.getElementById('cart-discount').value = credit;
-            renderCart();
-            UI.toast('Credit applied as discount', 'success');
-        }
-
+        
         function renderInv() {
-            const list = document.getElementById('inv-list'), term = document.getElementById('inv-search').value.toLowerCase();
+            const list = document.getElementById('inv-list'),
+                term = document.getElementById('inv-search').value.toLowerCase();
             const filtered = app.data.inv.filter(i => i.name.toLowerCase().includes(term));
-            list.innerHTML = filtered.length===0 ? `<div class="col-span-full text-center text-textMuted opacity-50">No Items</div>` : filtered.map(item => {
-                const img = item.imgs[0] ? `<img src="${item.imgs[0]}" class="w-10 h-10 rounded object-cover">` : `<div class="w-10 h-10 bg-surfaceLight rounded flex items-center justify-center"><span class="material-icons-round text-slate-500">image</span></div>`;
-                return `<div class="bg-surface p-3 rounded-xl border border-surfaceLight flex items-center gap-3 group hover:border-primary/30 transition relative"><div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition flex gap-1"><button onclick="viewItem('${item.id}')" class="text-textMuted hover:text-white"><span class="material-icons-round text-sm">visibility</span></button><button onclick="opts(${app.data.inv.indexOf(item)})" class="text-textMuted hover:text-white"><span class="material-icons-round text-sm">more_vert</span></button></div>${img}<div><div class="font-bold text-white text-sm line-clamp-1">${escapeHTML(item.name)}</div><div class="text-xs text-primary">₹${item.price}</div><div class="text-[10px] text-textMuted">Stock: ${item.stock}</div></div></div>`;
-            }).join('');
+            list.innerHTML = filtered.length === 0 ? `<div class="col-span-full text-center text-textMuted opacity-50">No Items</div>` : filtered.map(item => { const img = item.imgs[0] ? `<img src="${item.imgs[0]}" class="w-10 h-10 rounded object-cover">` : `<div class="w-10 h-10 bg-surfaceLight rounded flex items-center justify-center"><span class="material-icons-round text-slate-500">image</span></div>`; return `<div class="bg-surface p-3 rounded-xl border border-surfaceLight flex items-center gap-3 group hover:border-primary/30 transition relative"><div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition flex gap-1"><button onclick="viewItem('${item.id}')" class="text-textMuted hover:text-white"><span class="material-icons-round text-sm">visibility</span></button><button onclick="opts(${app.data.inv.indexOf(item)})" class="text-textMuted hover:text-white"><span class="material-icons-round text-sm">more_vert</span></button></div>${img}<div><div class="font-bold text-white text-sm line-clamp-1">${escapeHTML(item.name)}</div><div class="text-xs text-primary">₹${item.price}</div><div class="text-[10px] text-textMuted">Stock: ${item.stock}</div></div></div>`; }).join('');
         }
+        
         function opts(idx) { UI.modal({ title: 'Item Options', confirmText: 'Edit Item', showCancel: true, html: `<div class="text-center"><p class="text-slate-300">Manage <b>${escapeHTML(app.data.inv[idx].name)}</b>?</p><button onclick="deleteItem(${idx})" class="mt-4 w-full py-3 rounded-lg border border-danger/30 text-danger hover:bg-danger/10 transition font-bold text-sm">Delete Item</button></div>`, onConfirm: () => { openItemModal(idx); return false; } }); }
-        function deleteItem(idx) { app.data.inv.splice(idx,1); save(); renderInv(); renderStore(); UI.closeModal(); UI.toast('Item deleted', 'success'); }
-
+        
+        function deleteItem(idx) { app.data.inv.splice(idx, 1);
+            save();
+            renderInv();
+            renderStore();
+            UI.closeModal();
+            UI.toast('Item deleted', 'success'); }
+        
         function generateBill() {
-            // CRITICAL: Re-check stock before generating
-            for(let c of app.data.cart) {
-                if(!c.isManual) {
-                    const invItem = app.data.inv.find(i => i.id === c.id);
-                    if(invItem && c.qty > invItem.stock) {
-                         UI.toast(`Not enough stock for ${c.name}. Available: ${invItem.stock}`, 'error');
-                         return;
-                    }
-                }
-            }
-
-            if(app.data.cart.length === 0) return;
+            for (let c of app.data.cart) { if (!c.isManual) { const invItem = app.data.inv.find(i => i.id === c.id); if (invItem && c.qty > invItem.stock) { UI.toast(`Not enough stock for ${c.name}. Available: ${invItem.stock}`, 'error'); return; } } }
+            if (app.data.cart.length === 0) return;
             const cName = escapeHTML(document.getElementById('c-name').value) || 'Cash Customer';
-            document.getElementById('inv-shop').innerText = app.data.sets.name; document.getElementById('inv-addr').innerText = app.data.sets.addr; document.getElementById('inv-id').innerText = app.data.count; document.getElementById('inv-date').innerText = new Date().toLocaleDateString();
-            document.getElementById('inv-client').innerText = cName; document.getElementById('inv-client-addr').innerText = escapeHTML(document.getElementById('c-addr').value) + (document.getElementById('c-phone').value ? '\n'+escapeHTML(document.getElementById('c-phone').value) : '');
+            document.getElementById('inv-shop').innerText = app.data.sets.name;
+            document.getElementById('inv-addr').innerText = app.data.sets.addr;
+            document.getElementById('inv-id').innerText = app.data.count;
+            document.getElementById('inv-date').innerText = new Date().toLocaleDateString();
+            document.getElementById('inv-client').innerText = cName;
+            document.getElementById('inv-client-addr').innerText = escapeHTML(document.getElementById('c-addr').value) + (document.getElementById('c-phone').value ? '\n' + escapeHTML(document.getElementById('c-phone').value) : '');
             
-            const subtotal = app.data.cart.reduce((a,b) => a + (b.price * 100 * b.qty), 0) / 100;
+            const subtotal = app.data.cart.reduce((a, b) => a + (b.price * 100 * b.qty), 0) / 100;
             let discountInput = parseFloat(document.getElementById('cart-discount').value) || 0;
-            
             let discountAmt = 0;
-            if(app.data.sets.showDisc) {
-                discountAmt = app.ui.discType === 'perc' ? (subtotal * discountInput / 100) : discountInput;
-                discountAmt = Math.min(discountAmt, subtotal);
-            }
-            
+            if (app.data.sets.showDisc) { discountAmt = app.ui.discType === 'perc' ? (subtotal * discountInput / 100) : discountInput;
+                discountAmt = Math.min(discountAmt, subtotal); }
             const taxRate = app.data.sets.showTax ? (app.data.sets.taxRate || 0) : 0;
             const taxable = subtotal - discountAmt;
             const taxAmt = safeMath.round((taxable * taxRate) / 100);
             const total = taxable + taxAmt;
-
+            
             document.getElementById('inv-body').innerHTML = app.data.cart.map((c, i) => `<tr><td class="py-2 text-center text-slate-500">${i+1}</td><td class="col-img py-2 text-center">${c.imgs[0]?`<img src="${c.imgs[0]}" class="w-8 h-8 rounded mx-auto">`:''}</td><td class="py-2"><div class="font-bold text-slate-700">${escapeHTML(c.name)}</div></td><td class="text-center py-2 text-slate-600">${c.qty}</td><td class="text-right py-2 text-slate-600">${c.price}</td><td class="text-right py-2 font-bold text-slate-800">${(c.price*c.qty).toFixed(2)}</td></tr>`).join('');
-            document.getElementById('inv-subtotal').innerText = subtotal.toFixed(2); 
+            document.getElementById('inv-subtotal').innerText = subtotal.toFixed(2);
             document.getElementById('inv-grand-total-A').innerText = total.toFixed(2);
             
             const discRow = document.getElementById('bill-row-disc');
             const taxRow = document.getElementById('bill-row-tax');
-            
-            if(app.data.sets.showDisc && discountAmt > 0) {
-                discRow.style.display = 'flex';
-                document.getElementById('inv-discount').innerText = discountAmt.toFixed(2);
-            } else {
-                discRow.style.display = 'none';
-            }
-
-            if(app.data.sets.showTax && taxAmt > 0) {
-                taxRow.style.display = 'flex';
+            if (app.data.sets.showDisc && discountAmt > 0) { discRow.style.display = 'flex';
+                document.getElementById('inv-discount').innerText = discountAmt.toFixed(2); } else { discRow.style.display = 'none'; }
+            if (app.data.sets.showTax && taxAmt > 0) { taxRow.style.display = 'flex';
                 document.getElementById('inv-tax-rate').innerText = taxRate;
-                document.getElementById('inv-tax-amt').innerText = taxAmt.toFixed(2);
-            } else {
-                taxRow.style.display = 'none';
-            }
-
-            // Clear Log
-            document.getElementById('payment-log-list').innerHTML = '';
-            document.getElementById('payment-log-box').classList.add('hidden');
-
-            document.getElementById('inv-note').innerText = app.data.sets.note; document.getElementById('inv-sign').innerHTML = app.data.sets.sign ? `<img src="${app.data.sets.sign}" class="h-full object-contain">` : '';
+                document.getElementById('inv-tax-amt').innerText = taxAmt.toFixed(2); } else { taxRow.style.display = 'none'; }
             
-            document.getElementById('pay-status').value = 'Paid'; 
-            document.getElementById('pay-amount').value = total.toFixed(2); 
+            document.getElementById('inv-note').innerText = app.data.sets.note;
+            document.getElementById('inv-sign').innerHTML = app.data.sets.sign ? `<img src="${app.data.sets.sign}" class="h-full object-contain">` : '';
+            document.getElementById('pay-status').value = 'Paid';
+            document.getElementById('pay-amount').value = total.toFixed(2);
             
-            updatePayUI(); 
+            // Initial External Card Population
+            document.getElementById('ext-total').innerText = '₹' + total.toFixed(2);
+            document.getElementById('ext-paid').innerText = '₹' + total.toFixed(2);
+            document.getElementById('ext-due').innerText = '₹0.00';
+            document.getElementById('ext-pay-log').innerHTML = '<div class="text-center text-textMuted text-xs py-2">New Invoice - Not Saved Yet</div>';
+            document.getElementById('ext-pay-details').classList.remove('hidden');
+            document.getElementById('ext-paid-banner').classList.remove('hidden'); // Assume fully paid initially
+            document.getElementById('ext-cards').classList.add('hidden');
             
-            const m = document.getElementById('preview-modal'); m.classList.remove('hidden'); gsap.fromTo(m, {opacity:0,y:50},{opacity:1,y:0,duration:0.3});
-            document.getElementById('inv-controls-new').classList.remove('hidden'); document.getElementById('inv-controls-hist').classList.add('hidden');
+            updatePayUI();
+            const m = document.getElementById('preview-modal');
+            m.classList.remove('hidden');
+            gsap.fromTo(m, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.3 });
+            document.getElementById('inv-controls-new').classList.remove('hidden');
+            document.getElementById('inv-controls-hist').classList.add('hidden');
         }
-
+        
         function updatePayUI() {
             const sub = parseFloat(document.getElementById('inv-subtotal').innerText);
-            // Safe parse hidden elements
             const discEl = document.getElementById('inv-discount');
             const taxEl = document.getElementById('inv-tax-amt');
             const disc = (discEl && discEl.offsetParent !== null) ? parseFloat(discEl.innerText) : 0;
             const tax = (taxEl && taxEl.offsetParent !== null) ? parseFloat(taxEl.innerText) : 0;
             const tot = sub - disc + tax;
-
             const status = document.getElementById('pay-status').value;
             const payInput = document.getElementById('pay-amount');
-            if(status === 'Paid') { payInput.value = tot.toFixed(2); payInput.disabled = true; } else if(status === 'Pending') { payInput.value = 0; payInput.disabled = true; } else { payInput.disabled = false; }
-            const paid = parseFloat(payInput.value) || 0;
-            const due = safeMath.round(Math.max(0, tot - paid));
+            if (status === 'Paid') { payInput.value = tot.toFixed(2);
+                payInput.disabled = true; } else if (status === 'Pending') { payInput.value = 0;
+                payInput.disabled = true; } else { payInput.disabled = false; }
             
-            const dueContainer = document.getElementById('due-container');
-            const badge = document.getElementById('paid-badge');
-            const paidRow = document.getElementById('inv-paid-row');
+            let paid = parseFloat(payInput.value) || 0;
+            const maxAllowed = Math.ceil(tot);
             
-            const statusBadge = document.getElementById('inv-status-badge');
-            let statusText = 'PENDING';
-            let statusClass = 'bg-rose-100 text-rose-600';
-
-            if (due < -0.1) {
-                statusText = 'ADVANCE';
-                statusClass = 'bg-blue-100 text-blue-600';
-            } else if (due <= 0.1) {
-                statusText = 'PAID';
-                statusClass = 'bg-emerald-100 text-emerald-600';
-            } else if (paid > 0) {
-                statusText = 'PARTIAL';
-                statusClass = 'bg-amber-100 text-amber-600';
-            }
-
-            if(statusBadge) {
-                statusBadge.innerText = statusText;
-                statusBadge.className = `inline-block px-2 py-0.5 rounded text-[10px] font-bold mt-2 ${statusClass}`;
-            }
-
-            if (paid <= 0) {
-                 paidRow.style.display = 'none';
+            if (paid > maxAllowed) {
+                payInput.classList.add('border-danger', 'text-danger');
             } else {
-                 paidRow.style.display = 'flex';
-                 document.getElementById('inv-paid-display').innerText = paid.toFixed(2);
+                payInput.classList.remove('border-danger', 'text-danger');
             }
-
-            if (due <= 0.1 && due >= -0.1) {
-                dueContainer.classList.add('hidden');
-                badge.classList.remove('hidden');
-                badge.innerText = "FULLY PAID";
-                badge.className = "hidden mt-2 text-center border-2 border-emerald-500 text-emerald-600 font-bold text-xs uppercase py-1 px-2 rounded tracking-widest bg-emerald-50 block";
-            } else if (due < -0.1) {
-                dueContainer.classList.remove('hidden');
-                badge.classList.add('hidden');
-                document.getElementById('due-label').innerText = "Advance Credit:";
-                document.getElementById('inv-due-val').className = "text-lg font-extrabold text-blue-600";
-                document.getElementById('inv-due-display').innerText = Math.abs(due).toFixed(2);
-            } else {
-                dueContainer.classList.remove('hidden');
-                badge.classList.add('hidden');
-                document.getElementById('due-label').innerText = "Balance Due:";
-                document.getElementById('inv-due-val').className = "text-lg font-extrabold text-danger";
-                document.getElementById('inv-due-display').innerText = due.toFixed(2);
+            
+            const realDue = tot - paid;
+            const displayDue = realDue < 0 ? 0 : realDue;
+            
+            // External Card Logic
+            if (!document.getElementById('inv-controls-new').classList.contains('hidden')) {
+                document.getElementById('ext-paid').innerText = '₹' + paid.toFixed(2);
+                document.getElementById('ext-due').innerText = '₹' + displayDue.toFixed(2);
+                if (displayDue <= 0.1) {
+                    document.getElementById('ext-cards').classList.add('hidden');
+                    document.getElementById('ext-paid-banner').classList.remove('hidden');
+                } else {
+                    document.getElementById('ext-cards').classList.remove('hidden');
+                    document.getElementById('ext-paid-banner').classList.add('hidden');
+                }
             }
         }
-
+        
         function finishBill(dl) {
-            const subtotal = app.data.cart.reduce((a,b) => a + (b.price * 100 * b.qty), 0) / 100;
+            const subtotal = app.data.cart.reduce((a, b) => a + (b.price * 100 * b.qty), 0) / 100;
             let discountInput = parseFloat(document.getElementById('cart-discount').value) || 0;
             let discountAmt = 0;
-            if(app.data.sets.showDisc) {
-                discountAmt = app.ui.discType === 'perc' ? (subtotal * discountInput / 100) : discountInput;
-                discountAmt = Math.min(discountAmt, subtotal);
-            }
-
+            if (app.data.sets.showDisc) { discountAmt = app.ui.discType === 'perc' ? (subtotal * discountInput / 100) : discountInput;
+                discountAmt = Math.min(discountAmt, subtotal); }
             const taxRate = app.data.sets.showTax ? (app.data.sets.taxRate || 0) : 0;
             const taxable = subtotal - discountAmt;
             const taxAmt = safeMath.round((taxable * taxRate) / 100);
             const total = subtotal - discountAmt + taxAmt;
-
             const payInput = document.getElementById('pay-amount');
-            let paid = parseFloat(payInput.value) || 0; if (paid < 0) paid = 0;
+            let paid = parseFloat(payInput.value) || 0;
+            if (paid < 0) paid = 0;
+            
+            const maxAllowed = Math.ceil(total);
+            if (paid > maxAllowed) {
+                UI.toast(`❌ Amount too high! Round off limit: ₹${maxAllowed.toFixed(2)}`, 'error');
+                return;
+            }
             
             const due = safeMath.round(total - paid);
             let finalStatus = 'Pending';
-            if (due < -0.1) finalStatus = 'Advance';
-            else if (due <= 0.1) finalStatus = 'Paid';
+            if (due <= 0.1) finalStatus = 'Paid';
             else if (paid > 0) finalStatus = 'Partial';
-
-            const rec = { 
-                id: app.data.count, 
-                date: new Date().toLocaleDateString(), 
-                client: escapeHTML(document.getElementById('c-name').value)||'Cash Customer', 
-                addr: escapeHTML(document.getElementById('c-addr').value), 
-                phone: escapeHTML(document.getElementById('c-phone').value), 
-                total: total, 
-                discount: discountAmt, 
-                tax: taxAmt, 
-                // CRITICAL FIX: Save tax rate
-                taxRate: taxRate,
-                items: JSON.parse(JSON.stringify(app.data.cart)), 
-                status: finalStatus, 
-                paid: paid, 
-                due: due, 
-                history: [{ date: new Date().toLocaleString(), amount: paid, type: 'Initial' }] 
-            };
-
-            rec.items.forEach(c => { if(!c.isManual){ const i = app.data.inv.find(x=>x.id===c.id); if(i) i.stock = Math.max(0, i.stock - c.qty); }});
-            app.data.hist.unshift(rec); app.data.count++; app.data.cart = [];
+            const rec = { id: app.data.count, date: new Date().toLocaleDateString(), client: escapeHTML(document.getElementById('c-name').value) || 'Cash Customer', addr: escapeHTML(document.getElementById('c-addr').value), phone: escapeHTML(document.getElementById('c-phone').value), total: total, discount: discountAmt, tax: taxAmt, taxRate: taxRate, items: JSON.parse(JSON.stringify(app.data.cart)), status: finalStatus, paid: paid, due: due, history: [{ date: new Date().toLocaleString(), amount: paid, type: 'Initial' }] };
+            rec.items.forEach(c => { if (!c.isManual) { const i = app.data.inv.find(x => x.id === c.id); if (i) i.stock = Math.max(0, i.stock - c.qty); } });
+            app.data.hist.unshift(rec);
+            app.data.count++;
+            app.data.cart = [];
             addNotif(`Invoice #${rec.id} generated`, 'success');
-            document.getElementById('c-name').value = ''; document.getElementById('c-addr').value = ''; document.getElementById('c-phone').value = ''; document.getElementById('cart-discount').value = 0;
-            save(); closePreview();
-            if(dl) { loadHist(rec.id); setTimeout(downloadInvoice, 500); }
-        }
-
-        // --- PRINT FUNCTION ---
-        function printBill() {
-            window.print();
-        }
-
-        function closePreview() { const m = document.getElementById('preview-modal'); gsap.to(m, {opacity:0,y:50,duration:0.2,onComplete:()=>m.classList.add('hidden')}); }
-        function downloadInvoice() { const el = document.getElementById('invoice-paper'); const prevBg = el.style.backgroundColor; el.style.backgroundColor = '#ffffff'; html2canvas(el, { scale: 2, backgroundColor: '#ffffff' }).then(cvs => { const a = document.createElement('a'); a.download = `Inv_${document.getElementById('inv-id').innerText}.png`; a.href = cvs.toDataURL(); a.click(); el.style.backgroundColor = prevBg; }); }
-
-        function toggleHist(v) { 
-            ['all','club','pend', 'part', 'adv'].forEach(k => { 
-                const b = document.getElementById('btn-h-'+k); 
-                if(k===v) { b.classList.remove('text-textMuted','hover:bg-white/5'); b.classList.add('bg-surfaceLight','text-white'); } 
-                else { b.classList.add('text-textMuted','hover:bg-white/5'); b.classList.remove('bg-surfaceLight','text-white'); } 
-            }); 
-            renderHist(); 
+            document.getElementById('c-name').value = '';
+            document.getElementById('c-addr').value = '';
+            document.getElementById('c-phone').value = '';
+            document.getElementById('cart-discount').value = 0;
+            save();
+            closePreview();
+            if (dl) { loadHist(rec.id);
+                setTimeout(downloadInvoice, 500); }
         }
         
-        function toggleView() {
-            app.ui.histView = app.ui.histView === 'list' ? 'grid' : 'list';
+        function printBill() { window.print(); }
+        
+        function closePreview() { const m = document.getElementById('preview-modal');
+            gsap.to(m, { opacity: 0, y: 50, duration: 0.2, onComplete: () => m.classList.add('hidden') }); }
+        
+        function downloadInvoice() { const el = document.getElementById('invoice-paper'); const prevBg = el.style.backgroundColor;
+            el.style.backgroundColor = '#ffffff';
+            html2canvas(el, { scale: 2, backgroundColor: '#ffffff' }).then(cvs => { const a = document.createElement('a');
+                a.download = `Inv_${document.getElementById('inv-id').innerText}.png`;
+                a.href = cvs.toDataURL();
+                a.click();
+                el.style.backgroundColor = prevBg; }); }
+        
+        function toggleHist(v) {
+            ['all', 'club', 'pend', 'part'].forEach(k => { const b = document.getElementById('btn-h-' + k); if (k === v) { b.classList.remove('text-textMuted', 'hover:bg-white/5');
+                    b.classList.add('bg-surfaceLight', 'text-white'); } else { b.classList.add('text-textMuted', 'hover:bg-white/5');
+                    b.classList.remove('bg-surfaceLight', 'text-white'); } });
+            renderHist(); }
+        
+        function toggleView() { app.ui.histView = app.ui.histView === 'list' ? 'grid' : 'list';
             document.getElementById('view-icon').innerText = app.ui.histView === 'list' ? 'grid_view' : 'view_list';
-            renderHist();
-        }
+            renderHist(); }
         
         function renderHist() {
-            const div = document.getElementById('hist-list'), term = document.getElementById('hist-search').value.toLowerCase();
+            const div = document.getElementById('hist-list'),
+                term = document.getElementById('hist-search').value.toLowerCase();
             const isGrid = app.ui.histView === 'grid';
             div.className = isGrid ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" : "space-y-3";
-
             let filterMode = 'all';
-            if(document.getElementById('btn-h-club').classList.contains('bg-surfaceLight')) filterMode = 'club';
-            if(document.getElementById('btn-h-pend').classList.contains('bg-surfaceLight')) filterMode = 'pend';
-            if(document.getElementById('btn-h-part').classList.contains('bg-surfaceLight')) filterMode = 'part';
-            if(document.getElementById('btn-h-adv').classList.contains('bg-surfaceLight')) filterMode = 'adv';
-
-            if(app.data.hist.length === 0) return div.innerHTML = `<div class="text-center text-textMuted opacity-50 col-span-full">No History</div>`;
-            
+            if (document.getElementById('btn-h-club').classList.contains('bg-surfaceLight')) filterMode = 'club';
+            if (document.getElementById('btn-h-pend').classList.contains('bg-surfaceLight')) filterMode = 'pend';
+            if (document.getElementById('btn-h-part').classList.contains('bg-surfaceLight')) filterMode = 'part';
+            if (app.data.hist.length === 0) return div.innerHTML = `<div class="text-center text-textMuted opacity-50 col-span-full">No History</div>`;
             let filtered = app.data.hist.filter(h => h.client.toLowerCase().includes(term) || h.id.toString().includes(term));
-            
-            if(filterMode === 'pend') filtered = filtered.filter(h => h.status === 'Pending');
-            if(filterMode === 'part') filtered = filtered.filter(h => h.status === 'Partial');
-            if(filterMode === 'adv') filtered = filtered.filter(h => h.status === 'Advance');
+            if (filterMode === 'pend') filtered = filtered.filter(h => h.status === 'Pending');
+            if (filterMode === 'part') filtered = filtered.filter(h => h.status === 'Partial');
             
             const renderRow = (b, showClient = false) => {
-                 let sColor = b.status === 'Paid' ? 'text-emerald-400 bg-emerald-400/10' : (b.status === 'Partial' ? 'text-amber-400 bg-amber-400/10' : (b.status === 'Advance' ? 'text-blue-400 bg-blue-400/10' : 'text-rose-400 bg-rose-400/10'));
-                 
-                 let paidHtml = b.paid > 0 ? `<div><div class="text-slate-500 text-[9px] uppercase">Paid</div><div class="font-bold text-emerald-400">₹${b.paid.toFixed(2)}</div></div>` : `<div></div>`;
-                 let dueHtml = "";
-                 
-                 if (b.due > 0) dueHtml = `<div class="text-right"><div class="text-slate-500 text-[9px] uppercase">Pending</div><div class="font-bold text-danger">₹${b.due.toFixed(2)}</div></div>`;
-                 else if (b.due < 0) dueHtml = `<div class="text-right"><div class="text-slate-500 text-[9px] uppercase">Credit</div><div class="font-bold text-blue-400">+₹${Math.abs(b.due).toFixed(2)}</div></div>`;
-                 else dueHtml = `<div class="text-right"><div class="text-emerald-500 text-[9px] font-bold uppercase mt-3">All Clear</div></div>`;
-
-                 // Added 3-Dot Menu with Delete
-                 return `
-                    <div class="p-3 bg-surface rounded-xl border border-surfaceLight cursor-pointer hover:border-primary/50 transition group relative overflow-visible">
-                        <div onclick="loadHist(${b.id})">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <span class="font-bold text-white text-xs">#${b.id} ${showClient ? '• '+escapeHTML(b.client) : ''}</span>
-                                    <div class="text-[10px] text-textMuted">${b.date}</div>
-                                </div>
-                                <span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${sColor}">${b.status}</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2 text-xs">
-                                <div><div class="text-slate-500 text-[9px] uppercase">Total</div><div class="font-bold text-slate-200">₹${b.total.toFixed(2)}</div></div>
-                                ${paidHtml}
-                                ${dueHtml}
-                            </div>
-                        </div>
-                        <div class="absolute top-2 right-2">
-                            <button onclick="toggleMenu(event, 'menu-${b.id}')" class="text-textMuted hover:text-white p-1"><span class="material-icons-round text-sm">more_vert</span></button>
-                            <div id="menu-${b.id}" class="hidden absolute right-0 top-6 w-24 bg-surfaceLight border border-slate-700 rounded-lg shadow-xl z-20">
-                                <button onclick="deleteBill(${b.id})" class="w-full text-left px-3 py-2 text-xs text-danger hover:bg-white/5">Delete</button>
-                            </div>
-                        </div>
-                    </div>`;
+                let sColor = b.status === 'Paid' ? 'text-emerald-400 bg-emerald-400/10' : (b.status === 'Partial' ? 'text-amber-400 bg-amber-400/10' : 'text-rose-400 bg-rose-400/10');
+                let paidHtml = b.paid > 0 ? `<div><div class="text-slate-500 text-[9px] uppercase">Paid</div><div class="font-bold text-emerald-400">₹${b.paid.toFixed(2)}</div></div>` : `<div></div>`;
+                let dueHtml = b.due > 0 ? `<div class="text-right"><div class="text-slate-500 text-[9px] uppercase">Pending</div><div class="font-bold text-danger">₹${b.due.toFixed(2)}</div></div>` : `<div class="text-right"><div class="text-emerald-500 text-[9px] font-bold uppercase mt-3">All Clear</div></div>`;
+                return `<div class="p-3 bg-surface rounded-xl border border-surfaceLight cursor-pointer hover:border-primary/50 transition group relative overflow-visible"><div onclick="loadHist(${b.id})"><div class="flex justify-between items-start mb-2"><div><span class="font-bold text-white text-xs">#${b.id} ${showClient ? '• '+escapeHTML(b.client) : ''}</span><div class="text-[10px] text-textMuted">${b.date}</div></div><span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${sColor}">${b.status}</span></div><div class="grid grid-cols-3 gap-2 text-xs"><div><div class="text-slate-500 text-[9px] uppercase">Total</div><div class="font-bold text-slate-200">₹${b.total.toFixed(2)}</div></div>${paidHtml}${dueHtml}</div></div><div class="absolute top-2 right-2"><button onclick="toggleMenu(event, 'menu-${b.id}')" class="text-textMuted hover:text-white p-1"><span class="material-icons-round text-sm">more_vert</span></button><div id="menu-${b.id}" class="hidden absolute right-0 top-6 w-24 bg-surfaceLight border border-slate-700 rounded-lg shadow-xl z-20"><button onclick="deleteBill(${b.id})" class="w-full text-left px-3 py-2 text-xs text-danger hover:bg-white/5">Delete</button></div></div></div>`;
             };
-
-            if(filterMode === 'club') {
-                const groups = {}; 
-                div.className = "space-y-3"; 
-                filtered.forEach(h => { 
-                    const k = h.client+h.addr; 
-                    if(!groups[k]) groups[k]={n:h.client, b:[], t:0, d:0}; 
-                    groups[k].b.push(h); 
+            
+            if (filterMode === 'club') {
+                const groups = {};
+                div.className = "space-y-3";
+                filtered.forEach(h => { const k = h.client + h.addr; if (!groups[k]) groups[k] = { n: h.client, b: [], t: 0, d: 0 };
+                    groups[k].b.push(h);
                     groups[k].t += h.total;
-                    groups[k].d += (h.due || 0);
-                });
-                
+                    groups[k].d += (h.due || 0); });
                 div.innerHTML = Object.values(groups).map(g => {
-                    let statusLabel = "";
-                    let settleBtn = "";
-
-                    if(g.d > 0) {
-                         statusLabel = `Total Due: <span class="text-danger font-bold">₹${g.d.toFixed(2)}</span>`;
-                         settleBtn = `<button onclick="openSettleModal('${escapeHTML(g.n)}', ${g.d})" class="px-3 py-1 bg-white/10 hover:bg-primary hover:text-white rounded text-[10px] font-bold transition text-textMuted border border-white/5">SETTLE</button>`;
-                    }
-                    else if(g.d < 0) {
-                        statusLabel = `Credit: <span class="text-blue-400 font-bold">₹${Math.abs(g.d).toFixed(2)}</span>`;
-                        settleBtn = `<button onclick="openSettleModal('${escapeHTML(g.n)}', ${g.d})" class="px-3 py-1 bg-white/10 hover:bg-blue-600 hover:text-white rounded text-[10px] font-bold transition text-textMuted border border-white/5">REFUND</button>`;
-                    }
-                    else statusLabel = `<span class="text-emerald-400 font-bold">All Settled</span>`;
-
-                    return `
-                    <div class="bg-surface rounded-xl border border-surfaceLight overflow-hidden mb-3">
-                        <div class="p-3 bg-white/5 flex justify-between items-center">
-                            <div>
-                                <div class="font-bold text-white text-sm">${escapeHTML(g.n)}</div>
-                                <div class="text-[10px] text-textMuted">${statusLabel}</div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                ${settleBtn}
-                            </div>
-                        </div>
-                        <div class="p-2 space-y-2 bg-surface">
-                            ${g.b.map(b => renderRow(b, false)).join('')}
-                        </div>
-                    </div>`;
+                    let statusLabel = g.d > 0 ? `Total Due: <span class="text-danger font-bold">₹${g.d.toFixed(2)}</span>` : `<span class="text-emerald-400 font-bold">All Settled</span>`;
+                    let settleBtn = g.d > 0 ? `<button onclick="openSettleModal('${escapeHTML(g.n)}')" class="px-3 py-1 bg-white/10 hover:bg-primary hover:text-white rounded text-[10px] font-bold transition text-textMuted border border-white/5">SETTLE</button>` : '';
+                    return `<div class="bg-surface rounded-xl border border-surfaceLight overflow-hidden mb-3"><div class="p-3 bg-white/5 flex justify-between items-center"><div><div class="font-bold text-white text-sm">${escapeHTML(g.n)}</div><div class="text-[10px] text-textMuted">${statusLabel}</div></div><div class="flex items-center gap-2">${settleBtn}</div></div><div class="p-2 space-y-2 bg-surface">${g.b.map(b => renderRow(b, false)).join('')}</div></div>`;
                 }).join('');
+            } else { div.innerHTML = filtered.map(h => renderRow(h, true)).join(''); }
+        }
+        
+        function toggleMenu(e, id) { e.stopPropagation();
+            document.querySelectorAll('[id^="menu-"]').forEach(el => { if (el.id !== id) el.classList.add('hidden'); }); const m = document.getElementById(id); if (m) m.classList.toggle('hidden'); }
+        
+        // --- UPGRADED SETTLE LOGIC (LIST BASED) ---
+        function openSettleModal(name) {
+            // Filter pending bills for this client
+            const pendingBills = app.data.hist.filter(h => h.client === name && h.due > 0.1);
+            
+            if (pendingBills.length === 0) { UI.toast("No pending bills for this customer", "success"); return; }
+            
+            const rows = pendingBills.map(b => `
+                <div class="settle-row">
+                    <div>
+                        <div class="text-xs font-bold text-white">#${b.id}</div>
+                        <div class="text-[10px] text-textMuted">${b.date}</div>
+                    </div>
+                    <div class="text-danger font-bold text-sm">₹${b.due.toFixed(2)}</div>
+                    <div class="flex gap-2">
+                        <input type="number" id="settle-in-${b.id}" class="w-full bg-surfaceLight border border-surfaceLight rounded-lg px-2 py-1.5 text-xs text-white focus:border-primary focus:outline-none" placeholder="Amt">
+                        <button onclick="settleSpecificBill(${b.id}, '${escapeHTML(name)}')" class="bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-white rounded-lg px-3 py-1 text-[10px] font-bold transition">PAY</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            UI.modal({
+                title: `Settle Dues: ${name}`,
+                confirmText: false, // No global confirm
+                showCancel: true,
+                html: `
+                    <div class="mb-2 flex justify-between text-[10px] text-textMuted font-bold uppercase tracking-wider border-b border-white/10 pb-2">
+                        <span>Invoice</span><span>Due Amount</span><span>Payment</span>
+                    </div>
+                    <div class="space-y-1">${rows}</div>
+                `
+            });
+        }
+        
+        function settleSpecificBill(id, clientName) {
+            const input = document.getElementById(`settle-in-${id}`);
+            const val = parseFloat(input.value);
+            const bill = app.data.hist.find(h => h.id === id);
+            
+            if (!bill) return;
+            if (!val || val <= 0) { UI.toast("Enter valid amount", "error"); return; }
+            
+            const maxAllowed = Math.ceil(bill.due);
+            if (val > maxAllowed) {
+                UI.toast(`❌ Overpayment! Max allowed: ₹${maxAllowed.toFixed(2)}`, "error");
+                return;
+            }
+            
+            // Process
+            bill.paid = safeMath.round((bill.paid || 0) + val);
+            bill.due = safeMath.round(bill.total - bill.paid);
+            
+            bill.status = bill.due <= 0.1 ? 'Paid' : 'Partial';
+            
+            if (!bill.history) bill.history = [];
+            bill.history.push({ date: new Date().toLocaleString(), amount: val, type: 'Settlement' });
+            
+            save();
+            UI.toast(`Paid ₹${val} for #${id}`, "success");
+            renderHist();
+            
+            // Check if more pending, refresh modal or close
+            const stillPending = app.data.hist.filter(h => h.client === clientName && h.due > 0.1);
+            if (stillPending.length > 0) {
+                openSettleModal(clientName);
             } else {
-                div.innerHTML = filtered.map(h => renderRow(h, true)).join('');
+                UI.closeModal();
+                UI.toast("All dues settled!", "success");
             }
         }
         
-        function toggleMenu(e, id) {
-            e.stopPropagation();
-            document.querySelectorAll('[id^="menu-"]').forEach(el => { if(el.id !== id) el.classList.add('hidden'); });
-            const m = document.getElementById(id);
-            if(m) m.classList.toggle('hidden');
-        }
-
-        // --- NEW: Settle Modal Logic ---
-        function openSettleModal(name, amount) {
-             const absAmount = Math.abs(amount).toFixed(2);
-             UI.modal({
-                 title: `Settle Dues for ${name}`,
-                 confirmText: "Record Payment",
-                 html: `
-                    <div class="text-center mb-4">
-                        <div class="text-sm text-textMuted">Current Balance</div>
-                        <div class="text-2xl font-bold text-danger">-₹${absAmount}</div>
-                    </div>
-                    <input id="settle-amt" type="number" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-white text-center font-bold text-lg focus:outline-none focus:border-primary" placeholder="Enter Amount" value="${absAmount}">
-                 `,
-                 onConfirm: () => {
-                     const val = parseFloat(document.getElementById('settle-amt').value);
-                     if(!val || val <= 0) { UI.toast('Invalid Amount', 'error'); return false; }
-                     processSettlement(name, val, false);
-                     return true;
-                 }
-             });
-        }
-
-        function processSettlement(name, amount, isCredit) {
-            const bills = app.data.hist.filter(h => h.client === name);
-            let remaining = amount;
-            // Pay oldest bills first
-            for(let i = bills.length - 1; i >= 0; i--) {
-                const b = bills[i];
-                if(remaining <= 0) break;
-                if (b.due > 0) {
-                     const pay = Math.min(remaining, b.due);
-                     b.paid += pay;
-                     b.due = safeMath.round(b.total - b.paid);
-                     b.status = b.due <= 0.1 ? 'Paid' : 'Partial';
-                     b.history.push({ date: new Date().toLocaleString(), amount: pay, type: 'Settlement' });
-                     remaining -= pay;
-                } 
-            }
-            save();
-            renderHist();
-            UI.toast('Settlement Recorded', 'success');
-        }
-
-        // --- NEW: Delete Bill Logic + Stock Return ---
         function deleteBill(id) {
             const bill = app.data.hist.find(h => h.id === id);
-            if(!bill) return;
-
-            if(confirm("Permanently delete this invoice? Stock will be RESTORED.")) {
-                // Restore Stock
-                bill.items.forEach(c => {
-                    if(!c.isManual) {
-                        const product = app.data.inv.find(p => p.id === c.id);
-                        if(product) product.stock += c.qty;
-                    }
-                });
-                
+            if (!bill) return;
+            if (confirm("Permanently delete this invoice? Stock will be RESTORED.")) {
+                bill.items.forEach(c => { if (!c.isManual) { const product = app.data.inv.find(p => p.id === c.id); if (product) product.stock += c.qty; } });
                 app.data.hist = app.data.hist.filter(h => h.id !== id);
                 save();
                 renderHist();
-                // Also update store view if visible to show new stock
-                if(document.getElementById('tab-store').classList.contains('hidden') === false) {
-                    renderStore();
-                }
+                if (document.getElementById('tab-store').classList.contains('hidden') === false) { renderStore(); }
                 UI.toast('Invoice Deleted & Stock Restored', 'success');
             }
         }
-
-        // --- FIX: Tax in History View ---
+        
+        // --- UPDATED LOAD HIST (Cleanup Internal, Enhance External) ---
         function loadHist(id) {
-            const h = app.data.hist.find(x => x.id === id); app.ui.viewHistId = id;
-            document.getElementById('inv-shop').innerText = app.data.sets.name; document.getElementById('inv-addr').innerText = app.data.sets.addr; document.getElementById('inv-id').innerText = h.id; document.getElementById('inv-date').innerText = h.date; document.getElementById('inv-client').innerText = h.client; document.getElementById('inv-client-addr').innerText = (h.addr||'') + (h.phone?'\n'+h.phone:'');
+            const h = app.data.hist.find(x => x.id === id);
+            app.ui.viewHistId = id;
+            document.getElementById('inv-shop').innerText = app.data.sets.name;
+            document.getElementById('inv-addr').innerText = app.data.sets.addr;
+            document.getElementById('inv-id').innerText = h.id;
+            document.getElementById('inv-date').innerText = h.date;
+            document.getElementById('inv-client').innerText = h.client;
+            document.getElementById('inv-client-addr').innerText = (h.addr || '') + (h.phone ? '\n' + h.phone : '');
             
             const statusBadge = document.getElementById('inv-status-badge');
             let sClass = 'bg-rose-100 text-rose-600';
-            if(h.status === 'Paid') sClass = 'bg-emerald-100 text-emerald-600';
-            else if(h.status === 'Partial') sClass = 'bg-amber-100 text-amber-600';
-            else if(h.status === 'Advance') sClass = 'bg-blue-100 text-blue-600';
-            statusBadge.innerText = h.status.toUpperCase(); 
+            if (h.status === 'Paid') sClass = 'bg-emerald-100 text-emerald-600';
+            else if (h.status === 'Partial') sClass = 'bg-amber-100 text-amber-600';
+            statusBadge.innerText = h.status.toUpperCase();
             statusBadge.className = `inline-block px-2 py-0.5 rounded text-[10px] font-bold mt-2 ${sClass}`;
             
             document.getElementById('inv-body').innerHTML = h.items.map((c, i) => `<tr><td class="py-2 text-center text-slate-500">${i+1}</td><td class="py-2 text-center col-img">${c.imgs[0]?`<img src="${c.imgs[0]}" class="w-8 h-8 rounded mx-auto">`:''}</td><td class="py-2"><div class="font-bold text-slate-700">${escapeHTML(c.name)}</div></td><td class="text-center py-2 text-slate-600">${c.qty}</td><td class="text-right py-2 text-slate-600">${c.price}</td><td class="text-right py-2 font-bold text-slate-800">${(c.price*c.qty).toFixed(2)}</td></tr>`).join('');
             
-            // Fix: Calculate Subtotal by reversing math
-            const sub = (h.total - (h.tax||0)) + (h.discount||0);
-            document.getElementById('inv-subtotal').innerText = sub.toFixed(2); 
+            const sub = (h.total - (h.tax || 0)) + (h.discount || 0);
+            document.getElementById('inv-subtotal').innerText = sub.toFixed(2);
             document.getElementById('inv-grand-total-A').innerText = h.total.toFixed(2);
-
+            
             const discRow = document.getElementById('bill-row-disc');
             const taxRow = document.getElementById('bill-row-tax');
-
-            if(h.discount > 0) {
-                discRow.style.display = 'flex';
-                document.getElementById('inv-discount').innerText = (h.discount).toFixed(2);
-            } else {
-                discRow.style.display = 'none';
-            }
-
-            // CRITICAL FIX: Handle Tax Display correctly even for old bills
-            if((h.tax||0) > 0) {
-                taxRow.style.display = 'flex';
-                document.getElementById('inv-tax-amt').innerText = (h.tax).toFixed(2);
-                
-                // If taxRate exists in history, use it.
-                // If not, calculate it: (Tax / Taxable) * 100
-                // Taxable = Total - Tax. (This is approximate if discount was involved after tax, but generally Taxable = Subtotal - Discount)
-                // Let's use the sub calculated above.
-                let rate = h.taxRate;
-                if(!rate) {
-                    const taxable = (h.total - h.tax); // Rough reverse
-                    if(taxable > 0) rate = Math.round((h.tax / taxable) * 100);
-                    else rate = 0;
-                }
-                document.getElementById('inv-tax-rate').innerText = rate; 
-            } else {
-                taxRow.style.display = 'none';
-            }
-
-            const dueContainer = document.getElementById('due-container');
-            const badgeEl = document.getElementById('paid-badge');
-            const paidRow = document.getElementById('inv-paid-row');
+            if (h.discount > 0) { discRow.style.display = 'flex';
+                document.getElementById('inv-discount').innerText = (h.discount).toFixed(2); } else { discRow.style.display = 'none'; }
+            if ((h.tax || 0) > 0) { taxRow.style.display = 'flex';
+                document.getElementById('inv-tax-amt').innerText = (h.tax).toFixed(2); let rate = h.taxRate; if (!rate) { const taxable = (h.total - h.tax); if (taxable > 0) rate = Math.round((h.tax / taxable) * 100);
+                    else rate = 0; } document.getElementById('inv-tax-rate').innerText = rate; } else { taxRow.style.display = 'none'; }
             
-            if((h.paid||0) <= 0) {
-                paidRow.style.display = 'none';
-            } else {
-                paidRow.style.display = 'flex';
-                document.getElementById('inv-paid-display').innerText = (h.paid || 0).toFixed(2);
-            }
-
-            // Payment Log
-            const logBox = document.getElementById('payment-log-box');
-            const logList = document.getElementById('payment-log-list');
-            if(h.history && h.history.length > 0) {
-                logBox.classList.remove('hidden');
-                logList.innerHTML = h.history.map(p => `
-                    <div class="flex justify-between border-b border-surface/10 pb-1">
-                        <span class="text-slate-500">${p.date}</span>
-                        <span class="font-bold text-white">₹${Math.abs(p.amount).toFixed(2)} <span class="text-[10px] text-primary bg-primary/10 px-1 rounded ml-1">${p.type}</span></span>
-                    </div>`).join('');
-            } else {
-                logBox.classList.add('hidden');
-            }
-
-            if (h.due <= 0.1 && h.due >= -0.1) {
-                dueContainer.classList.add('hidden');
-                badgeEl.classList.remove('hidden');
-                badgeEl.innerText = "FULLY PAID";
-                badgeEl.className = "hidden mt-4 text-center border-2 border-emerald-500 text-emerald-600 font-bold text-xs uppercase py-2 px-4 rounded tracking-widest bg-emerald-50 block";
-            } else if (h.due < -0.1) {
-                dueContainer.classList.remove('hidden');
-                badgeEl.classList.add('hidden');
-                document.getElementById('due-label').innerText = "Advance Credit:";
-                document.getElementById('inv-due-val').className = "text-lg font-extrabold text-blue-600";
-                document.getElementById('inv-due-display').innerText = Math.abs(h.due).toFixed(2);
-            } else {
-                dueContainer.classList.remove('hidden');
-                badgeEl.classList.add('hidden');
-                document.getElementById('due-label').innerText = "Balance Due:";
-                document.getElementById('inv-due-val').className = "text-lg font-extrabold text-danger";
-                document.getElementById('inv-due-display').innerText = (h.due || 0).toFixed(2);
-            }
-
-            document.getElementById('inv-note').innerText = app.data.sets.note; document.getElementById('inv-sign').innerHTML = app.data.sets.sign ? `<img src="${app.data.sets.sign}" class="h-full object-contain">` : '';
-            const m = document.getElementById('preview-modal'); m.classList.remove('hidden'); gsap.fromTo(m, {opacity:0,y:50},{opacity:1,y:0,duration:0.3});
-            document.getElementById('inv-controls-new').classList.add('hidden'); document.getElementById('inv-controls-hist').classList.remove('hidden');
-            const btnPay = document.getElementById('btn-record-pay'); 
+            // POPULATE EXTERNAL SUMMARY
+            const extDetails = document.getElementById('ext-pay-details');
+            const logList = document.getElementById('ext-pay-log');
             
-            if(h.due > 0.1) { 
-                btnPay.classList.remove('hidden'); 
-                btnPay.innerText = `Record Payment (Due: ₹${h.due.toFixed(2)})`; 
-            } else { 
-                btnPay.classList.add('hidden'); 
+            document.getElementById('ext-total').innerText = '₹' + h.total.toFixed(2);
+            document.getElementById('ext-paid').innerText = '₹' + (h.paid || 0).toFixed(2);
+            document.getElementById('ext-due').innerText = '₹' + (h.due || 0).toFixed(2);
+            
+            if (h.history && h.history.length > 0) {
+                logList.innerHTML = h.history.map(p => `<div class="flex justify-between border-b border-surface/10 pb-1"><span class="text-slate-500">${p.date}</span><span class="font-bold text-white">₹${Math.abs(p.amount).toFixed(2)} <span class="text-[10px] text-primary bg-primary/10 px-1 rounded ml-1">${p.type}</span></span></div>`).join('');
+            } else { logList.innerHTML = '<div class="text-center text-textMuted text-xs py-2">No transaction history found.</div>'; }
+            
+            extDetails.classList.remove('hidden');
+            
+            // Logic for PAID vs DUE display
+            if (h.due <= 0.1) {
+                document.getElementById('ext-cards').classList.add('hidden');
+                document.getElementById('ext-paid-banner').classList.remove('hidden');
+            } else {
+                document.getElementById('ext-cards').classList.remove('hidden');
+                document.getElementById('ext-paid-banner').classList.add('hidden');
             }
+            
+            document.getElementById('inv-note').innerText = app.data.sets.note;
+            document.getElementById('inv-sign').innerHTML = app.data.sets.sign ? `<img src="${app.data.sets.sign}" class="h-full object-contain">` : '';
+            const m = document.getElementById('preview-modal');
+            m.classList.remove('hidden');
+            gsap.fromTo(m, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.3 });
+            document.getElementById('inv-controls-new').classList.add('hidden');
+            document.getElementById('inv-controls-hist').classList.remove('hidden');
+            const btnPay = document.getElementById('btn-record-pay');
+            if (h.due > 0.1) { btnPay.classList.remove('hidden');
+                btnPay.innerText = `Record Payment (Due: ₹${h.due.toFixed(2)})`; } else { btnPay.classList.add('hidden'); }
         }
+        
         function recordPayment() {
-            const h = app.data.hist.find(x => x.id === app.ui.viewHistId); if(!h) return;
-            UI.modal({ title: 'Record Payment', confirmText: 'Process Payment', html: `<div class="bg-surfaceLight p-4 rounded-xl border border-white/5"><div class="text-xs text-textMuted">Balance Due</div><div class="text-xl font-bold text-danger mb-4">₹${h.due.toFixed(2)}</div><input id="rp-amt" type="number" class="w-full bg-surface border border-surfaceLight rounded-lg px-4 py-3 text-white focus:outline-none focus:border-success" placeholder="Enter Amount" value="${h.due}"></div>`,
+            const h = app.data.hist.find(x => x.id === app.ui.viewHistId);
+            if (!h) return;
+            UI.modal({
+                title: 'Record Payment',
+                confirmText: 'Process Payment',
+                html: `<div class="bg-surfaceLight p-4 rounded-xl border border-white/5"><div class="text-xs text-textMuted">Balance Due</div><div class="text-xl font-bold text-danger mb-4">₹${h.due.toFixed(2)}</div><input id="rp-amt" type="number" class="w-full bg-surface border border-surfaceLight rounded-lg px-4 py-3 text-white focus:outline-none focus:border-success" placeholder="Enter Amount" value="${h.due}"></div>`,
                 onConfirm: () => {
                     const val = parseFloat(document.getElementById('rp-amt').value);
-                    if(!val || val <= 0 || val > h.due + 1) { UI.toast('Invalid Amount', 'error'); return false; }
-                    h.paid = safeMath.round((h.paid || 0) + val); h.due = safeMath.round(h.total - h.paid); h.status = h.due <= 0.1 ? 'Paid' : 'Partial';
-                    if(!h.history) h.history = []; h.history.push({ date: new Date().toLocaleString(), amount: val, type: 'Payment' });
-                    save(); UI.toast('Payment Recorded', 'success'); loadHist(h.id); renderHist(); return true;
+                    if (!val || val <= 0 || val > h.due + 1) { UI.toast('Invalid Amount', 'error'); return false; }
+                    h.paid = safeMath.round((h.paid || 0) + val);
+                    h.due = safeMath.round(h.total - h.paid);
+                    h.status = h.due <= 0.1 ? 'Paid' : 'Partial';
+                    if (!h.history) h.history = [];
+                    h.history.push({ date: new Date().toLocaleString(), amount: val, type: 'Payment' });
+                    save();
+                    UI.toast('Payment Recorded', 'success');
+                    loadHist(h.id);
+                    renderHist();
+                    return true;
                 }
             });
         }
-
+        
         // --- EXTRAS ---
-        function addNotif(msg, type='info') { app.data.notifs.unshift({ id: Date.now(), msg, type, date: new Date().toLocaleTimeString() }); if(app.data.notifs.length > 20) app.data.notifs.pop(); save(); updateNotifBadge(); UI.toast(msg, type); }
+        function addNotif(msg, type = 'info') { app.data.notifs.unshift({ id: Date.now(), msg, type, date: new Date().toLocaleTimeString() }); if (app.data.notifs.length > 20) app.data.notifs.pop();
+            save();
+            updateNotifBadge();
+            UI.toast(msg, type); }
+        
         function updateNotifBadge() { document.getElementById('notif-dot').classList.toggle('hidden', app.data.notifs.length === 0); }
-        function toggleNotif(show) { const d=document.getElementById('notif-drawer'), o=document.getElementById('notif-overlay'); if(show){renderNotifs();o.classList.remove('hidden');gsap.to(o,{opacity:1});d.classList.remove('translate-x-full');}else{d.classList.add('translate-x-full');gsap.to(o,{opacity:0,onComplete:()=>o.classList.add('hidden')});}}
-        function renderNotifs() { document.getElementById('notif-list').innerHTML = app.data.notifs.length===0 ? `<div class="text-center text-textMuted py-10">No notifications</div>` : app.data.notifs.map(n=>`<div class="p-3 bg-white/5 rounded-xl text-sm border-l-4 ${n.type==='success'?'border-emerald-500':'border-indigo-500'}"><div class="text-slate-200">${n.msg}</div><div class="text-[10px] text-textMuted mt-1">${n.date}</div></div>`).join(''); }
-        function clearNotifs() { app.data.notifs=[]; save(); renderNotifs(); updateNotifBadge(); }
+        
+        function toggleNotif(show) { const d = document.getElementById('notif-drawer'),
+                o = document.getElementById('notif-overlay'); if (show) { renderNotifs();
+                o.classList.remove('hidden');
+                gsap.to(o, { opacity: 1 });
+                d.classList.remove('translate-x-full'); } else { d.classList.add('translate-x-full');
+                gsap.to(o, { opacity: 0, onComplete: () => o.classList.add('hidden') }); } }
+        
+        function renderNotifs() { document.getElementById('notif-list').innerHTML = app.data.notifs.length === 0 ? `<div class="text-center text-textMuted py-10">No notifications</div>` : app.data.notifs.map(n => `<div class="p-3 bg-white/5 rounded-xl text-sm border-l-4 ${n.type==='success'?'border-emerald-500':'border-indigo-500'}"><div class="text-slate-200">${n.msg}</div><div class="text-[10px] text-textMuted mt-1">${n.date}</div></div>`).join(''); }
+        
+        function clearNotifs() { app.data.notifs = [];
+            save();
+            renderNotifs();
+            updateNotifBadge(); }
         
         function renderAnalytics() {
-            let rev=0, cost=0, asset=0, pot=0, due=0; app.data.hist.forEach(h => { h.items.forEach(i => { rev += i.price*i.qty; cost += (i.cost||0)*i.qty; }); if(h.status !== 'Paid') due += (h.due || 0); });
-            app.data.inv.forEach(i => { asset += (i.cost||0)*i.stock; pot += i.price*i.stock; });
-            const prof = rev - cost, mar = rev>0 ? ((prof/rev)*100).toFixed(1) : 0;
+            let rev = 0,
+                cost = 0,
+                asset = 0,
+                pot = 0,
+                due = 0;
+            app.data.hist.forEach(h => { h.items.forEach(i => { rev += i.price * i.qty;
+                    cost += (i.cost || 0) * i.qty; }); if (h.status !== 'Paid') due += (h.due || 0); });
+            app.data.inv.forEach(i => { asset += (i.cost || 0) * i.stock;
+                pot += i.price * i.stock; });
+            const prof = rev - cost,
+                mar = rev > 0 ? ((prof / rev) * 100).toFixed(1) : 0;
             const anim = (id, val) => document.getElementById(id).innerText = '₹' + val.toLocaleString('en-IN');
-            anim('an-rev', rev); anim('an-cost', cost); anim('an-profit', prof); anim('an-due', due); document.getElementById('an-margin').innerText = mar + '%';
+            anim('an-rev', rev);
+            anim('an-cost', cost);
+            anim('an-profit', prof);
+            anim('an-due', due);
+            document.getElementById('an-margin').innerText = mar + '%';
         }
-        function updateSettingsUI() { 
-            const m=document.getElementById('tog-man'), d=document.getElementById('tog-disc'), t=document.getElementById('tog-tax');
-            const setToggle = (el, active) => {
-                if(active) { el.className="w-12 h-7 bg-primary rounded-full relative cursor-pointer p-1"; el.firstElementChild.className="w-5 h-5 bg-white rounded-full shadow transition-transform translate-x-5"; }
-                else { el.className="w-12 h-7 bg-surfaceLight rounded-full relative cursor-pointer p-1 border border-slate-600"; el.firstElementChild.className="w-5 h-5 bg-white rounded-full shadow transition-transform translate-x-0"; }
-            };
+        
+        function updateSettingsUI() {
+            const m = document.getElementById('tog-man'),
+                d = document.getElementById('tog-disc'),
+                t = document.getElementById('tog-tax');
+            const setToggle = (el, active) => { if (active) { el.className = "w-12 h-7 bg-primary rounded-full relative cursor-pointer p-1";
+                    el.firstElementChild.className = "w-5 h-5 bg-white rounded-full shadow transition-transform translate-x-5"; } else { el.className = "w-12 h-7 bg-surfaceLight rounded-full relative cursor-pointer p-1 border border-slate-600";
+                    el.firstElementChild.className = "w-5 h-5 bg-white rounded-full shadow transition-transform translate-x-0"; } };
             setToggle(m, app.data.sets.showMan);
             setToggle(d, app.data.sets.showDisc);
             setToggle(t, app.data.sets.showTax);
-            document.getElementById('sidebar-shop').innerText = app.data.sets.name; 
+            document.getElementById('sidebar-shop').innerText = app.data.sets.name;
         }
-        function toggleSet(key) { app.data.sets[key] = !app.data.sets[key]; save(); updateSettingsUI(); renderCart(); }
-        function toggleManualBtn() { toggleSet('showMan'); } 
-        function editShopDetails() { UI.modal({ title:'Business Details', confirmText:'Save Changes', html:`<div class="space-y-4"><input id="s-n" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-white" value="${app.data.sets.name}" placeholder="Shop Name"><textarea id="s-a" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-white" placeholder="Address" rows="2">${app.data.sets.addr}</textarea><input id="s-t" type="number" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-white" value="${app.data.sets.taxRate||0}" placeholder="Default Tax Rate (%)"></div>`, onConfirm:()=>{ const n=document.getElementById('s-n').value, a=document.getElementById('s-a').value, t=parseFloat(document.getElementById('s-t').value)||0; if(!n){UI.toast('Name Required','error');return false;} Object.assign(app.data.sets, {name:n, addr:a, taxRate:t}); save(); updateSettingsUI(); return true; } }); }
-        function openSignature() { UI.modal({ title:'Digital Signature', confirmText:'Save Signature', html:`<canvas id="cvs" width="300" height="150" class="border rounded-lg bg-white mx-auto"></canvas><div class="text-center mt-2"><button onclick="clsCvs()" class="text-xs text-danger font-bold uppercase">Clear Pad</button></div>`, onConfirm:()=>{ app.data.sets.sign=document.getElementById('cvs').toDataURL(); save(); UI.toast('Signature Saved', 'success'); return true; } }); setTimeout(initCvs, 100); }
-        function initCvs() { const c=document.getElementById('cvs'), x=c.getContext('2d'); let d=false; const getPos=(e)=>{const r=c.getBoundingClientRect(), t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}}; const dr=(e)=>{if(!d)return;e.preventDefault();const p=getPos(e);x.lineTo(p.x,p.y);x.stroke();}; const st=(e)=>{e.preventDefault();d=true;x.beginPath();const p=getPos(e);x.moveTo(p.x,p.y);}; c.addEventListener('mousedown',st); c.addEventListener('mousemove',dr); window.addEventListener('mouseup',()=>d=false); c.addEventListener('touchstart',st); c.addEventListener('touchmove',dr); window.addEventListener('touchend',()=>d=false); window.clsCvs=()=>x.clearRect(0,0,300,150); }
-        function startTour() { UI.modal({ title:'Welcome to Billing Pro V8', html:`<div class="text-center"><div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4 text-primary"><span class="material-icons-round text-3xl">rocket_launch</span></div><p class="text-slate-300">Experience the Ultimate UI update.<br>Manage inventory with style and track profits in real-time.</p></div>`, confirmText:"Let's Start", onConfirm:()=>{app.data.sets.tourDone=true;save();return true;} }); }
-        function resetApp() { UI.modal({ title:'Reset System', showCancel:true, html:`<div class="text-center text-danger"><span class="material-icons-round text-4xl mb-2">warning</span><p>This will delete ALL data permanently.</p></div>`, confirmText:'Yes, Delete Everything', onConfirm:()=>{localStorage.clear(); location.reload(); return true;} }); }
         
-        function viewItem(id) {
-            const item = app.data.inv.find(i => i.id === id);
-            if (!item || !item.imgs || item.imgs.length === 0) return UI.toast('No images available', 'info');
-            app.ui.carouselImgs = item.imgs; app.ui.carouselIdx = 0;
-            document.getElementById('carousel-title').innerText = item.name; document.getElementById('carousel-price').innerText = `₹${item.price}`;
-            updateSlide(); 
-            const m = document.getElementById('carousel-modal'); m.classList.remove('hidden'); setTimeout(() => m.classList.remove('opacity-0'), 10);
-            if(app.ui.scrollTimer) clearInterval(app.ui.scrollTimer); app.ui.scrollTimer = setInterval(() => moveSlide(1), 3000);
-        }
-        function closeCarousel() { const m = document.getElementById('carousel-modal'); m.classList.add('opacity-0'); setTimeout(() => m.classList.add('hidden'), 300); if(app.ui.scrollTimer) clearInterval(app.ui.scrollTimer); }
-        function moveSlide(dir) { app.ui.carouselIdx += dir; if (app.ui.carouselIdx < 0) app.ui.carouselIdx = app.ui.carouselImgs.length - 1; if (app.ui.carouselIdx >= app.ui.carouselImgs.length) app.ui.carouselIdx = 0; updateSlide(); }
-        function updateSlide() {
-            const img = document.getElementById('carousel-img'), dots = document.getElementById('carousel-dots');
-            img.style.opacity = 0.5; img.style.transform = "scale(0.95)";
-            setTimeout(() => { img.src = app.ui.carouselImgs[app.ui.carouselIdx]; img.style.opacity = 1; img.style.transform = "scale(1)"; }, 150);
-            dots.innerHTML = app.ui.carouselImgs.map((_, i) => `<div class="carousel-dot ${i === app.ui.carouselIdx ? 'active' : ''}"></div>`).join('');
-        }
-
-        window.addEventListener('storage', (e) => {
-            if (e.key && e.key.startsWith('bp8_')) {
-                app.data.inv = JSON.parse(localStorage.getItem('bp8_inv')) || [];
+        function toggleSet(key) { app.data.sets[key] = !app.data.sets[key];
+            save();
+            updateSettingsUI();
+            renderCart(); }
+        
+        function editShopDetails() { UI.modal({ title: 'Business Details', confirmText: 'Save Changes', html: `<div class="space-y-4"><input id="s-n" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-white" value="${app.data.sets.name}" placeholder="Shop Name"><textarea id="s-a" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-white" placeholder="Address" rows="2">${app.data.sets.addr}</textarea><input id="s-t" type="number" class="w-full bg-surfaceLight border border-surfaceLight rounded-xl px-4 py-3 text-white" value="${app.data.sets.taxRate||0}" placeholder="Default Tax Rate (%)"></div>`, onConfirm: () => { const n = document.getElementById('s-n').value,
+                        a = document.getElementById('s-a').value,
+                        t = parseFloat(document.getElementById('s-t').value) || 0; if (!n) { UI.toast('Name Required', 'error'); return false; } Object.assign(app.data.sets, { name: n, addr: a, taxRate: t });
+                    save();
+                    updateSettingsUI(); return true; } }); }
+        
+        function openSignature() { UI.modal({ title: 'Digital Signature', confirmText: 'Save Signature', html: `<canvas id="cvs" width="300" height="150" class="border rounded-lg bg-white mx-auto"></canvas><div class="text-center mt-2"><button onclick="clsCvs()" class="text-xs text-danger font-bold uppercase">Clear Pad</button></div>`, onConfirm: () => { app.data.sets.sign = document.getElementById('cvs').toDataURL();
+                    save();
+                    UI.toast('Signature Saved', 'success'); return true; } });
+            setTimeout(initCvs, 100); }
+        
+        function initCvs() { const c = document.getElementById('cvs'),
+                x = c.getContext('2d'); let d = false; const getPos = (e) => { const r = c.getBoundingClientRect(),
+                    t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top } }; const dr = (e) => { if (!d) return;
+                e.preventDefault(); const p = getPos(e);
+                x.lineTo(p.x, p.y);
+                x.stroke(); }; const st = (e) => { e.preventDefault();
+                d = true;
+                x.beginPath(); const p = getPos(e);
+                x.moveTo(p.x, p.y); };
+            c.addEventListener('mousedown', st);
+            c.addEventListener('mousemove', dr);
+            window.addEventListener('mouseup', () => d = false);
+            c.addEventListener('touchstart', st);
+            c.addEventListener('touchmove', dr);
+            window.addEventListener('touchend', () => d = false);
+            window.clsCvs = () => x.clearRect(0, 0, 300, 150); }
+        
+        function startTour() { UI.modal({ title: 'Welcome to Billing Pro V8', html: `<div class="text-center"><div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4 text-primary"><span class="material-icons-round text-3xl">rocket_launch</span></div><p class="text-slate-300">Experience the Ultimate UI update.<br>Manage inventory with style and track profits in real-time.</p></div>`, confirmText: "Let's Start", onConfirm: () => { app.data.sets.tourDone = true;
+                    save(); return true; } }); }
+        
+        function resetApp() { UI.modal({ title: 'Reset System', showCancel: true, html: `<div class="text-center text-danger"><span class="material-icons-round text-4xl mb-2">warning</span><p>This will delete ALL data permanently.</p></div>`, confirmText: 'Yes, Delete Everything', onConfirm: () => { localStorage.clear();
+                    location.reload(); return true; } }); }
+        
+        function viewItem(id) { const item = app.data.inv.find(i => i.id === id); if (!item || !item.imgs || item.imgs.length === 0) return UI.toast('No images available', 'info');
+            app.ui.carouselImgs = item.imgs;
+            app.ui.carouselIdx = 0;
+            document.getElementById('carousel-title').innerText = item.name;
+            document.getElementById('carousel-price').innerText = `₹${item.price}`;
+            updateSlide(); const m = document.getElementById('carousel-modal');
+            m.classList.remove('hidden');
+            setTimeout(() => m.classList.remove('opacity-0'), 10); if (app.ui.scrollTimer) clearInterval(app.ui.scrollTimer);
+            app.ui.scrollTimer = setInterval(() => moveSlide(1), 3000); }
+        
+        function closeCarousel() { const m = document.getElementById('carousel-modal');
+            m.classList.add('opacity-0');
+            setTimeout(() => m.classList.add('hidden'), 300); if (app.ui.scrollTimer) clearInterval(app.ui.scrollTimer); }
+        
+        function moveSlide(dir) { app.ui.carouselIdx += dir; if (app.ui.carouselIdx < 0) app.ui.carouselIdx = app.ui.carouselImgs.length - 1; if (app.ui.carouselIdx >= app.ui.carouselImgs.length) app.ui.carouselIdx = 0;
+            updateSlide(); }
+        
+        function updateSlide() { const img = document.getElementById('carousel-img'),
+                dots = document.getElementById('carousel-dots');
+            img.style.opacity = 0.5;
+            img.style.transform = "scale(0.95)";
+            setTimeout(() => { img.src = app.ui.carouselImgs[app.ui.carouselIdx];
+                img.style.opacity = 1;
+                img.style.transform = "scale(1)"; }, 150);
+            dots.innerHTML = app.ui.carouselImgs.map((_, i) => `<div class="carousel-dot ${i === app.ui.carouselIdx ? 'active' : ''}"></div>`).join(''); }
+        
+        window.addEventListener('storage', (e) => { if (e.key && e.key.startsWith('bp8_')) { app.data.inv = JSON.parse(localStorage.getItem('bp8_inv')) || [];
                 app.data.hist = JSON.parse(localStorage.getItem('bp8_hist')) || [];
                 app.data.notifs = JSON.parse(localStorage.getItem('bp8_notifs')) || [];
                 app.data.count = parseInt(localStorage.getItem('bp8_cnt')) || 1001;
                 app.data.sets = JSON.parse(localStorage.getItem('bp8_sets')) || app.data.sets;
-                renderAll(); updateNotifBadge(); updateSettingsUI();
-            }
-        });
+                renderAll();
+                updateNotifBadge();
+                updateSettingsUI(); } });
     </script>
 </body>
+
 </html>
